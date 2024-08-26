@@ -1,3 +1,13 @@
+# P3synth
+
+## References
+
+ * https://github.com/GeoffWilson/VGM
+
+---
+
+# [Original]()
+
 ![P3synth](data/graphics/logo.png)
 
 ---
