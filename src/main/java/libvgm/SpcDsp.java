@@ -20,15 +20,13 @@ package libvgm;
 
 // Nintendo SPC-700 DSP emulator
 // http://www.slack.net/~ant/
-public final class SpcDsp
-{
+public final class SpcDsp {
+
     // Initializes DSP with new RAM and 128 bytes of register state (beginning at regs [regs_offset]).
     // Keeps reference to ram_64k.
-    public void init(byte[] ram_64k, byte[] regs, int regs_offset)
-    {
+    public void init(byte[] ram_64k, byte[] regs, int regs_offset) {
         this.ram = ram_64k;
-        for (int i = register_count; --i >= 0; )
-        {
+        for (int i = register_count; --i >= 0; ) {
             this.regs[i] = regs[i + regs_offset];
         }
 
@@ -50,8 +48,7 @@ public final class SpcDsp
         counter3.i = 11;
 
         // Internal state
-        for (int i = voice_count; --i >= 0; )
-        {
+        for (int i = voice_count; --i >= 0; ) {
             Voice v = new Voice();
             voices[i] = v;
             v.brr_offset = 1;
@@ -59,27 +56,23 @@ public final class SpcDsp
     }
 
     // Sets output volume, where 1.0 is normal and 2.0 is twice as loud
-    public void setVolume(double v)
-    {
+    public void setVolume(double v) {
         volume = (int) (v * 0x8000);
     }
 
     // Sets buffer to write samples into
-    public void setOutput(byte[] out)
-    {
+    public void setOutput(byte[] out) {
         this.out = out;
         out_pos = 0;
     }
 
     // Number of samples written into buffer (stereo, so always a multiple of 2)
-    public int sampleCount()
-    {
+    public int sampleCount() {
         return out_pos >> 1;
     }
 
     // Writes to DSP register
-    public void write(int addr, int data)
-    {
+    public void write(int addr, int data) {
         if (addr == r_endx) // always cleared, regardless of data written
             data = 0;
 
@@ -123,8 +116,7 @@ public final class SpcDsp
     public final byte[] regs = new byte[register_count];
 
     // Runs DSP for sampleCount/32000 of a second
-    public void run(int sampleCount)
-    {
+    public void run(int sampleCount) {
         // locals are faster, and first three are more efficient to access
         final byte[] regs = this.regs;
         Voice v;
@@ -149,11 +141,9 @@ public final class SpcDsp
         int out_pos = this.out_pos;
         final int out_end = out_pos + (sampleCount << 2);
 
-        do
-        {
+        do {
             // KON/KOFF reading
-            if ((every_other_sample ^= 1) != 0)
-            {
+            if ((every_other_sample ^= 1) != 0) {
                 kon = (new_kon &= ~kon);
                 t_koff = regs[r_koff];
             }
@@ -186,8 +176,7 @@ public final class SpcDsp
             int echo_out_l = 0;
             int echo_out_r = 0;
             int voice = -1;
-            do
-            {
+            do {
                 v = voices[++voice];
                 final int vbit = 1 << voice;
                 final int v_regs = voice << 4;
@@ -200,16 +189,14 @@ public final class SpcDsp
                 int brr_header = ram[v.brr_addr];
 
                 // KON phases
-                if (v.kon_delay > 0)
-                {
+                if (v.kon_delay > 0) {
                     final int kon_delay = --v.kon_delay;
 
                     // Disable BRR decoding until last three samples
                     v.interp_pos = (kon_delay & 3) != 0 ? 0x4000 : 0;
 
                     // Get ready to start BRR decoding on next sample
-                    if (kon_delay == 4)
-                    {
+                    if (kon_delay == 4) {
                         int addr = dir + ((regs[v_regs + v_srcn] & 0xFF) << 2);
                         v.brr_addr = (ram[addr + 1] & 0xFF) << 8 | (ram[addr] & 0xFF);
                         v.brr_offset = 1;
@@ -231,8 +218,7 @@ public final class SpcDsp
                 // Gaussian interpolation
                 {
                     int output = 0;
-                    if (env != 0)
-                    {
+                    if (env != 0) {
                         int whole = v.buf_pos + (v.interp_pos >> 12);
                         int fract = v.interp_pos >> 3 & 0x1FE;
                         if ((slow_gaussian & vbit) == 0) // 99%
@@ -242,12 +228,9 @@ public final class SpcDsp
                                     gauss[fract + 1] * v.buf[whole + 1] +
                                     gauss[511 - fract] * v.buf[whole + 2] +
                                     gauss[510 - fract] * v.buf[whole + 3]) >> 11) * env) >> 11;
-                        }
-                        else
-                        {
+                        } else {
                             output = (short) (lfsr << 1);
-                            if ((regs[r_non] & vbit) == 0)
-                            {
+                            if ((regs[r_non] & vbit) == 0) {
                                 output = (gauss[fract] * v.buf[whole]) >> 11;
                                 output += (gauss[fract + 1] * v.buf[whole + 1]) >> 11;
                                 output += (gauss[511 - fract] * v.buf[whole + 2]) >> 11;
@@ -267,8 +250,7 @@ public final class SpcDsp
                         main_out_l += (l = output * regs[v_regs + v_voll]);
                         main_out_r += (r = output * regs[v_regs + v_volr]);
 
-                        if ((regs[r_eon] & vbit) != 0)
-                        {
+                        if ((regs[r_eon] & vbit) != 0) {
                             echo_out_l += l;
                             echo_out_r += r;
                         }
@@ -276,21 +258,18 @@ public final class SpcDsp
                 }
 
                 // Soft reset or end of sample
-                if (flg < 0 || (brr_header & 3) == 1)
-                {
+                if (flg < 0 || (brr_header & 3) == 1) {
                     v.env_mode = env_release;
                     env = 0;
                 }
 
-                if (every_other_sample != 0)
-                {
+                if (every_other_sample != 0) {
                     // KOFF
                     if ((t_koff & vbit) != 0)
                         v.env_mode = env_release;
 
                     // KON
-                    if ((kon & vbit) != 0)
-                    {
+                    if ((kon & vbit) != 0) {
                         v.kon_delay = 5;
                         v.env_mode = env_attack;
                         regs[r_endx] &= ~vbit;
@@ -298,17 +277,14 @@ public final class SpcDsp
                 }
 
                 // Envelope
-                if (v.kon_delay == 0)
-                {
+                if (v.kon_delay == 0) {
                     if (v.env_mode == env_release) // 97%
                     {
-                        if ((v.env = (env -= 0x8)) <= 0)
-                        {
+                        if ((v.env = (env -= 0x8)) <= 0) {
                             v.env = 0;
                             continue; // no BRR decoding for you!
                         }
-                    }
-                    else do // 3%
+                    } else do // 3%
                     {
                         int rate;
                         int env_data = regs[v_regs + v_adsr1] & 0xFF;
@@ -323,19 +299,15 @@ public final class SpcDsp
                                 if ((r.c.i & r.m) == 0)
                                     v.env = env;
                                 break;
-                            }
-                            else if (v.env_mode == env_decay)
-                            {
+                            } else if (v.env_mode == env_decay) {
                                 env -= (env >> 8) + 1;
                                 rate = (adsr0 >> 3 & 0x0E) + 0x10;
-                            }
-                            else // env_attack
+                            } else // env_attack
                             {
                                 rate = ((adsr0 & 0x0F) << 1) + 1;
                                 env += rate < 31 ? 0x20 : 0x400;
                             }
-                        }
-                        else // GAIN
+                        } else // GAIN
                         {
                             int mode;
                             env_data = regs[v_regs + v_gain] & 0xFF;
@@ -344,19 +316,15 @@ public final class SpcDsp
                             {
                                 env = env_data << 4;
                                 rate = 31;
-                            }
-                            else
-                            {
+                            } else {
                                 rate = env_data & 0x1F;
                                 if (mode == 4) // 4: linear decrease
                                 {
                                     env -= 0x20;
-                                }
-                                else if (mode < 6) // 5: exponential decrease
+                                } else if (mode < 6) // 5: exponential decrease
                                 {
                                     env -= (env >> 8) + 1;
-                                }
-                                else // 6,7: linear increase
+                                } else // 6,7: linear increase
                                 {
                                     env += 0x20;
                                     if (mode > 6 && (v.hidden_env < 0 || v.hidden_env >= 0x600))
@@ -371,8 +339,7 @@ public final class SpcDsp
 
                         v.hidden_env = env;
 
-                        if (env < 0 || env > 0x7FF)
-                        {
+                        if (env < 0 || env > 0x7FF) {
                             env = (env < 0 ? 0 : 0x7FF);
                             if (v.env_mode == env_attack)
                                 v.env_mode = env_decay;
@@ -393,8 +360,7 @@ public final class SpcDsp
                 v.interp_pos = interp_pos;
 
                 // BRR decode if necessary
-                if (old_pos > 0x4000 - 1)
-                {
+                if (old_pos > 0x4000 - 1) {
                     // Arrange the four input nybbles in 0xABCD order for easy decoding
                     int brr_addr = v.brr_addr;
                     int brr_offset = v.brr_offset;
@@ -402,13 +368,11 @@ public final class SpcDsp
 
                     // Advance read position
                     final int brr_block_size = 9;
-                    if ((brr_offset += 2) >= brr_block_size)
-                    {
+                    if ((brr_offset += 2) >= brr_block_size) {
                         // Next BRR block
                         brr_addr = (brr_addr + brr_block_size) & 0xFFFF;
                         //assert brr_offset == brr_block_size;
-                        if ((brr_header & 1) != 0)
-                        {
+                        if ((brr_header & 1) != 0) {
                             int addr = dir + ((regs[v_regs + v_srcn] & 0xFF) << 2);
                             brr_addr = (ram[addr + 3] & 0xFF) << 8 | (ram[addr + 2] & 0xFF);
                             if (v.kon_delay == 0)
@@ -432,21 +396,18 @@ public final class SpcDsp
                     int p1 = v.buf[pos + (brr_buf_size - 1)];
                     int p2 = v.buf[pos + (brr_buf_size - 2)] >> 1;
                     final int end = pos + 4;
-                    do
-                    {
+                    do {
                         // Extract upper nybble and scale appropriately
                         int s = ((short) nybbles >> right_shift) << left_shift;
                         nybbles <<= 4;
 
                         // Apply IIR filter (8 is the most commonly used)
-                        if (filter >= 8)
-                        {
+                        if (filter >= 8) {
                             if (filter == 8) // s += p1 * 0.953125 - p2 * 0.46875
                                 s += p1 - p2 + (p2 >> 4) + ((p1 * -3) >> 6);
                             else // s += p1 * 0.8984375 - p2 * 0.40625
                                 s += p1 - p2 + ((p1 * -13) >> 7) + ((p2 * 3) >> 4);
-                        }
-                        else if (filter != 0) // s += p1 * 0.46875
+                        } else if (filter != 0) // s += p1 * 0.46875
                         {
                             s += (p1 >> 1) + ((-p1) >> 5);
                         }
@@ -504,8 +465,7 @@ public final class SpcDsp
                     regs[r_fir + 0x60] * echo_hist[echo_hist_pos + 15];
 
             // Echo out
-            if ((flg & 0x20) == 0)
-            {
+            if ((flg & 0x20) == 0) {
                 final int efb = regs[r_efb];
                 int l = (echo_out_l >> 7) + ((echo_in_l * efb) >> 14);
                 if ((short) l != l) l = (l >> 24) ^ 0x7FFF; // 16-bit clamp
@@ -534,11 +494,9 @@ public final class SpcDsp
         this.out_pos = out_pos;
     }
 
-    public SpcDsp()
-    {
+    public SpcDsp() {
         int mask = 4095;
-        for (int i = 0; i < 32 - 2; i += 3)
-        {
+        for (int i = 0; i < 32 - 2; i += 3) {
             rates[i] = new Rate(counter2, mask);
             rates[i + 1] = new Rate(counter1, mask);
             rates[i + 2] = new Rate(counter3, mask);
@@ -560,8 +518,8 @@ public final class SpcDsp
     static final int brr_buf_size = 12;
     static final int echo_hist_half = 16;
 
-    private static final class Voice
-    {
+    private static final class Voice {
+
         final int[] buf = new int[12 * 2];// decoded samples (twice the size to simplify wrap 	handling)
         int buf_pos;            // place in buffer where next samples will be decoded
         int interp_pos;            // relative fractional position in sample (0x1000 = 1.0)
@@ -573,18 +531,17 @@ public final class SpcDsp
         int hidden_env;            // used by GAIN mode 7, very obscure quirk
     }
 
-    private static final class Counter
-    {
+    private static final class Counter {
+
         int i;
     }
 
-    private static final class Rate
-    {
+    private static final class Rate {
+
         Counter c;
         int m;
 
-        Rate(Counter c, int m)
-        {
+        Rate(Counter c, int m) {
             this.c = c;
             this.m = m;
         }

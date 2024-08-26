@@ -18,33 +18,29 @@
 
 package libvgm;
 
-public final class GbWave extends GbOsc
-{
+public final class GbWave extends GbOsc {
+
     int wave_pos;
     int sample_buf_high;
     int sample_buf;
     static final int wave_size = 32;
     int[] wave = new int[wave_size];
 
-    int period()
-    {
+    int period() {
         return (2048 - frequency()) * 2;
     }
 
-    int dac_enabled()
-    {
+    int dac_enabled() {
         return regs[0] & 0x80;
     }
 
-    int access(int addr)
-    {
+    int access(int addr) {
         if (enabled != 0)
             addr = 0xFF30 + (wave_pos >> 1);
         return addr;
     }
 
-    void reset()
-    {
+    void reset() {
         wave_pos = 0;
         sample_buf_high = 0;
         sample_buf = 0;
@@ -52,19 +48,16 @@ public final class GbWave extends GbOsc
         super.reset();
     }
 
-    boolean write_register(int frame_phase, int reg, int old_data, int data)
-    {
+    boolean write_register(int frame_phase, int reg, int old_data, int data) {
         final int max_len = 256;
 
-        switch (reg)
-        {
+        switch (reg) {
             case 1:
                 length = max_len - data;
                 break;
 
             case 4:
-                if (write_trig(frame_phase, max_len, old_data) != 0)
-                {
+                if (write_trig(frame_phase, max_len, old_data) != 0) {
                     wave_pos = 0;
                     delay = period() + 6;
                     sample_buf = sample_buf_high;
@@ -78,24 +71,20 @@ public final class GbWave extends GbOsc
         return false;
     }
 
-    void run(int time, int end_time)
-    {
+    void run(int time, int end_time) {
         int volume_shift = regs[2] >> 5 & 3;
         int playing = 0;
 
-        if (output != null)
-        {
+        if (output != null) {
             playing = -enabled;
-            if (--volume_shift < 0)
-            {
+            if (--volume_shift < 0) {
                 volume_shift = 7;
                 playing = 0;
             }
 
             int amp = sample_buf & playing;
 
-            if (frequency() > 0x7FB && delay < 16)
-            {
+            if (frequency() > 0x7FB && delay < 16) {
                 // 16 kHz and above, act as DC at mid-level
                 // (really depends on average level of entire wave,
                 // but this is good enough)
@@ -105,47 +94,37 @@ public final class GbWave extends GbOsc
 
             amp >>= volume_shift;
 
-            if (dac_enabled() == 0)
-            {
+            if (dac_enabled() == 0) {
                 playing = 0;
                 amp = 0;
-            }
-            else
-            {
+            } else {
                 amp -= dac_bias;
             }
 
             int delta = amp - last_amp;
-            if (delta != 0)
-            {
+            if (delta != 0) {
                 last_amp = amp;
                 output.addDelta(time, delta * vol_unit);
             }
         }
 
         time += delay;
-        if (time < end_time)
-        {
+        if (time < end_time) {
             int wave_pos = (this.wave_pos + 1) & (wave_size - 1);
             final int period = this.period();
-            if (playing == 0)
-            {
+            if (playing == 0) {
                 // maintain phase
                 int count = (end_time - time + period - 1) / period;
                 wave_pos += count; // will be masked below
                 time += count * period;
-            }
-            else
-            {
+            } else {
                 final BlipBuffer output = this.output;
                 int last_amp = this.last_amp + dac_bias;
-                do
-                {
+                do {
                     int amp = wave[wave_pos] >> volume_shift;
                     wave_pos = (wave_pos + 1) & (wave_size - 1);
                     int delta;
-                    if ((delta = amp - last_amp) != 0)
-                    {
+                    if ((delta = amp - last_amp) != 0) {
                         last_amp = amp;
                         output.addDelta(time, delta * vol_unit);
                     }
@@ -155,8 +134,7 @@ public final class GbWave extends GbOsc
             }
             wave_pos = (wave_pos - 1) & (wave_size - 1);
             this.wave_pos = wave_pos;
-            if (enabled != 0)
-            {
+            if (enabled != 0) {
                 sample_buf_high = wave[wave_pos & ~1];
                 sample_buf = wave[wave_pos];
             }

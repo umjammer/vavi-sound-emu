@@ -1,14 +1,16 @@
 package p3;
 
-import libvgm.*;
+import java.io.File;
+
+import libvgm.VGMPlayer;
 import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PImage;
 import uibooster.UiBooster;
 
-import java.io.File;
 
 public class Main extends PApplet {
+
     VGMPlayer player;
     PlayerDisplay playerDisplay;
     UiBooster ui;
@@ -49,7 +51,7 @@ public class Main extends PApplet {
         Button[] buttons1 = {b1, b4, b2, b3};
         mediaButtons = new ButtonToolbar(154, 16, 1.1, 0, buttons1);
 
-        buttonHelp = new Button(this, 0, 0,  "info", "");
+        buttonHelp = new Button(this, 0, 0, "info", "");
     }
 
     private void setupFonts() {
@@ -77,12 +79,11 @@ public class Main extends PApplet {
 
     public void keyPressed() {
         if (keyCode == UP) {
-        player.setPlaybackRateFactor((float) (player.getPlaybackRateFactor() + 0.1));
+            player.setPlaybackRateFactor((float) (player.getPlaybackRateFactor() + 0.1));
+        } else if (keyCode == DOWN) {
+            player.setPlaybackRateFactor((float) (player.getPlaybackRateFactor() - 0.1));
+        }
     }
-        else if (keyCode == DOWN) {
-        player.setPlaybackRateFactor((float) (player.getPlaybackRateFactor() - 0.1));
-    }
-}
 
     public void mousePressed() {
         // messy... but it works
@@ -107,9 +108,7 @@ public class Main extends PApplet {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                }
-
-                else if (mediaButtons.collided("next")) {
+                } else if (mediaButtons.collided("next")) {
                     try {
                         player.startTrack(
                                 constrain(player.getCurrentTrack() + 1, 0, player.getTrackCount()), TIME);
@@ -122,9 +121,7 @@ public class Main extends PApplet {
             if (mediaButtons.collided("open")) {
                 fileSelected(ui.showFileSelection("Video Game Music files",
                         "vgm", "nsf", "gbs", "spc", "vgz", "zip", "gz"));
-            }
-
-            else if (mediaButtons.collided("pause")) {
+            } else if (mediaButtons.collided("pause")) {
                 Button me = mediaButtons.getButton("pause");
 
                 try {
@@ -137,9 +134,7 @@ public class Main extends PApplet {
                 if (currMidPressed != null) currMidPressed.setPressed(false); // avoid button stucking when click slide
                 me.setPressed(!me.pressed);
                 currMidPressed = null;
-            }
-
-            else if (buttonHelp.collided()) {
+            } else if (buttonHelp.collided()) {
                 ui.showWarningDialog("Thanks for using P3synthVG.\n\n" +
                         "" +
                         "Further development of this program has been cancelled,\n" +
@@ -169,8 +164,7 @@ public class Main extends PApplet {
                 player.startTrack(0, TIME);
 
                 mediaButtons.getButton("pause").setPressed(false);
-            }
-            catch (IllegalArgumentException iae) {
+            } catch (IllegalArgumentException iae) {
                 player.customInfoMsg = "Invalid file";
             } catch (Exception e) {
                 player.customInfoMsg = "Library error";

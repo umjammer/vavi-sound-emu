@@ -18,30 +18,25 @@
 
 package libvgm;
 
-public class NesEnvelope extends NesOsc
-{
+public class NesEnvelope extends NesOsc {
+
     int envVolume;
     int envDelay;
 
-    void clockEnvelope()
-    {
+    void clockEnvelope() {
         int period = regs[0] & 15;
-        if (regWritten[3])
-        {
+        if (regWritten[3]) {
             regWritten[3] = false;
             envDelay = period;
             envVolume = 15;
-        }
-        else if (--envDelay < 0)
-        {
+        } else if (--envDelay < 0) {
             envDelay = period;
             if ((envVolume | (regs[0] & 0x20)) != 0)
                 envVolume = (envVolume - 1) & 15;
         }
     }
 
-    int volume()
-    {
+    int volume() {
         if (lengthCounter == 0)
             return 0;
 
@@ -51,8 +46,7 @@ public class NesEnvelope extends NesOsc
         return envVolume;
     }
 
-    void reset()
-    {
+    void reset() {
         envVolume = 0;
         envDelay = 0;
         super.reset();

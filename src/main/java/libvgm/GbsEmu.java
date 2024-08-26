@@ -20,8 +20,8 @@ package libvgm;
 
 // Nintendo Game Boy GBS music file emulator
 // http://www.slack.net/~ant/
-public final class GbsEmu extends GbCpu
-{
+public final class GbsEmu extends GbCpu {
+
     // header offsets
     static final int trackCountOff = 0x04;
     static final int loadAddrOff = 0x06;
@@ -49,8 +49,7 @@ public final class GbsEmu extends GbCpu
 
     GbApu apu = new GbApu();
 
-    protected int loadFile_(byte in[])
-    {
+    protected int loadFile_(byte in[]) {
         if (!isHeader(in, "GBS\u0001"))
             error("Not a GBS file");
 
@@ -63,8 +62,7 @@ public final class GbsEmu extends GbCpu
         return header[trackCountOff] & 0xFF;
     }
 
-    final void setBank(int n)
-    {
+    final void setBank(int n) {
         int addr = rom.maskAddr(n * bankSize);
         if (addr == 0 && rom.size() > bankSize)
             n = 1;
@@ -73,11 +71,9 @@ public final class GbsEmu extends GbCpu
 
     static final byte[] rates = {10, 4, 6, 8};
 
-    void updateTimer()
-    {
+    void updateTimer() {
         playPeriod = 70224; // 59.73 Hz
-        if ((header[timerModeOff] & 0x04) != 0)
-        {
+        if ((header[timerModeOff] & 0x04) != 0) {
             int shift = rates[ram[hiPage + 7] & 3] - (header[timerModeOff] >> 7 & 1);
             playPeriod = (256 - (ram[hiPage + 6] & 0xFF)) << shift;
         }
@@ -94,22 +90,19 @@ public final class GbsEmu extends GbCpu
             0x2C, 0x04, 0xE5, 0x2C, 0xAC, 0xDD, 0xDA, 0x48
     };
 
-    void cpuCall(int addr)
-    {
+    void cpuCall(int addr) {
         assert sp == getLE16(header, stackPtrOff);
         pc = addr;
         cpuWrite(--sp, idleAddr >> 8);
         cpuWrite(--sp, idleAddr & 0xFF);
     }
 
-    public void startTrack(int track)
-    {
+    public void startTrack(int track) {
         super.startTrack(track);
 
         apu.reset();
         apu.write(0, 0xFF26, 0x80); // power on
-        for (int i = 0; i < sound_data.length; i++)
-        {
+        for (int i = 0; i < sound_data.length; i++) {
             apu.write(0, i + apu.startAddr, sound_data[i]);
         }
 
@@ -136,19 +129,16 @@ public final class GbsEmu extends GbCpu
         cpuCall(getLE16(header, initAddrOff));
     }
 
-    protected int runClocks(int clockCount)
-    {
+    protected int runClocks(int clockCount) {
         endTime = clockCount;
         time = -endTime;
 
-        while (true)
-        {
+        while (true) {
             runCpu();
             if (time >= 0)
                 break;
 
-            if (pc != idleAddr)
-            {
+            if (pc != idleAddr) {
                 // TODO: PC overflow handling
                 pc = (pc + 1) & 0xFFFF;
                 logError();
@@ -157,8 +147,7 @@ public final class GbsEmu extends GbCpu
 
             // Next play call
             int next = nextPlay - endTime;
-            if (time < next)
-            {
+            if (time < next) {
                 time = 0;
                 if (next > 0)
                     break;
@@ -179,8 +168,7 @@ public final class GbsEmu extends GbCpu
         return endTime;
     }
 
-    protected int cpuRead(int addr)
-    {
+    protected int cpuRead(int addr) {
         if (debug) assert 0 <= addr && addr < 0x10000;
 
         if (apu.startAddr <= addr && addr <= apu.endAddr)
@@ -189,37 +177,25 @@ public final class GbsEmu extends GbCpu
         return ram[mapAddr(addr)] & 0xFF;
     }
 
-    protected void cpuWrite(int addr, int data)
-    {
+    protected void cpuWrite(int addr, int data) {
         if (debug) assert 0 <= data && data < 0x100;
         if (debug) assert 0 <= addr && addr < 0x10000;
 
         int offset = addr - ramAddr;
-        if (offset >= 0)
-        {
+        if (offset >= 0) {
             ram[offset] = (byte) data;
-            if (addr < 0xFF80 && addr >= 0xFF00)
-            {
-                if (apu.startAddr <= addr && addr <= apu.endAddr)
-                {
+            if (addr < 0xFF80 && addr >= 0xFF00) {
+                if (apu.startAddr <= addr && addr <= apu.endAddr) {
                     apu.write(time + endTime, addr, data);
-                }
-                else if ((addr ^ 0xFF06) < 2)
-                {
+                } else if ((addr ^ 0xFF06) < 2) {
                     updateTimer();
-                }
-                else if (addr == 0xFF00)
-                {
+                } else if (addr == 0xFF00) {
                     ram[offset] = 0; // keep joypad return value 0
-                }
-                else
-                {
+                } else {
                     ram[offset] = (byte) 0xFF;
                 }
             }
-        }
-        else if ((addr ^ 0x2000) <= 0x2000 - 1)
-        {
+        } else if ((addr ^ 0x2000) <= 0x2000 - 1) {
             setBank(data);
         }
     }

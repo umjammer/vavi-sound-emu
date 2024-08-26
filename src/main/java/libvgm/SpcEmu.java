@@ -20,10 +20,10 @@ package libvgm;
 
 // Nintendo SPC music file player
 // http://www.slack.net/~ant/
-public final class SpcEmu extends SpcCpu
-{
-    private static final class Timer
-    {
+public final class SpcEmu extends SpcCpu {
+
+    private static final class Timer {
+
         int time; // time of next event
         int prescaler;
         int period;
@@ -75,13 +75,11 @@ public final class SpcEmu extends SpcCpu
     final SpcDsp dsp = new SpcDsp();
     final Timer[] timers = new Timer[timerCount];
 
-    protected int setSampleRate_(int rate)
-    {
+    protected int setSampleRate_(int rate) {
         return 32000;
     }
 
-    protected int loadFile_(byte[] in)
-    {
+    protected int loadFile_(byte[] in) {
         if (!isHeader(in, "SNES-SPC700 Sound File Data"))
             error("Not an SPC file");
 
@@ -98,18 +96,15 @@ public final class SpcEmu extends SpcCpu
     }
 
     // Runs timer to present. Time must be >= t.time.
-    static void runTimer_(Timer t, int time)
-    {
+    static void runTimer_(Timer t, int time) {
         int elapsed = ((time - t.time) >> t.prescaler) + 1;
         t.time += elapsed << t.prescaler;
 
-        if (t.enabled != 0)
-        {
+        if (t.enabled != 0) {
             int remain = ((t.period - t.divider - 1) & 0xFF) + 1;
             int divider = t.divider + elapsed;
             int over;
-            if ((over = elapsed - remain) >= 0)
-            {
+            if ((over = elapsed - remain) >= 0) {
                 int n = over / t.period;
                 t.counter = (t.counter + 1 + n) & 0x0F;
                 divider = over - n * t.period;
@@ -119,33 +114,26 @@ public final class SpcEmu extends SpcCpu
     }
 
     // Runs timer to present if it's not already
-    static void runTimer(Timer t, int time)
-    {
+    static void runTimer(Timer t, int time) {
         if (time >= t.time)
             runTimer_(t, time);
     }
 
     // Enables/disables boot ROM by swapping it out of RAM
-    private void enableRom(int enable)
-    {
-        if (romEnabled != enable)
-        {
+    private void enableRom(int enable) {
+        if (romEnabled != enable) {
             romEnabled = enable;
-            if (enable != 0)
-            {
+            if (enable != 0) {
                 System.arraycopy(ram, romAddr, hiRam, 0, romSize);
                 System.arraycopy(rom, 0, ram, romAddr, romSize);
-            }
-            else
-            {
+            } else {
                 System.arraycopy(hiRam, 0, ram, romAddr, romSize);
             }
             // TODO: ROM can still get overwritten when DSP writes to echo buffer
         }
     }
 
-    public void startTrack(int track)
-    {
+    public void startTrack(int track) {
         super.startTrack(track);
 
         time = 0;
@@ -167,8 +155,7 @@ public final class SpcEmu extends SpcCpu
         setPsw(spc[cpuStateOff + 5] & 0xFF);
 
         // SMP registers
-        for (int i = 0; i < regCount; i++)
-        {
+        for (int i = 0; i < regCount; i++) {
             regsIn[i] = regs[i] = ram[0xF0 + i] & 0xFF;
         }
 
@@ -183,8 +170,7 @@ public final class SpcEmu extends SpcCpu
         enableRom(regs[controlReg] & 0x80);
 
         // Timers
-        for (int i = 0; i < timerCount; i++)
-        {
+        for (int i = 0; i < timerCount; i++) {
             Timer t = timers[i] = new Timer();
             t.time = 1;
             t.divider = 0;
@@ -198,8 +184,7 @@ public final class SpcEmu extends SpcCpu
         timers[0].prescaler = 4 + 3;
 
         // Clear echo
-        if ((dsp.regs[dsp.r_flg] & 0x20) == 0)
-        {
+        if ((dsp.regs[dsp.r_flg] & 0x20) == 0) {
             int addr = (dsp.regs[dsp.r_esa] & 0xFF) << 8;
             int end = addr + ((dsp.regs[dsp.r_edl] & 0x0F) << 11);
             if (end > ramSize)
@@ -208,8 +193,7 @@ public final class SpcEmu extends SpcCpu
         }
     }
 
-    protected int play_(byte out[], int count)
-    {
+    protected int play_(byte out[], int count) {
         dsp.setOutput(out);
 
         // Run for count/2*32 clocks + extra to get DSP time half-way between samples,
@@ -235,8 +219,7 @@ public final class SpcEmu extends SpcCpu
 
         // Run DSP to present
         int delta;
-        if ((delta = time - dspTime) >= 0)
-        {
+        if ((delta = time - dspTime) >= 0) {
             delta = (delta >> 5) + 1;
             dspTime += delta << 5;
             dsp.run(delta);
@@ -247,18 +230,14 @@ public final class SpcEmu extends SpcCpu
     }
 
     // Writes to SMP register
-    private void writeReg(int addr, int data)
-    {
-        switch (addr)
-        {
+    private void writeReg(int addr, int data) {
+        switch (addr) {
             case t0targetReg:
             case t1targetReg:
-            case t2targetReg:
-            {
+            case t2targetReg: {
                 Timer t = timers[addr - t0targetReg];
                 int period = ((data - 1) & 0xFF) + 1;
-                if (t.period != period)
-                {
+                if (t.period != period) {
                     runTimer(t, time);
                     t.period = period;
                 }
@@ -286,28 +265,23 @@ public final class SpcEmu extends SpcCpu
 
             case controlReg:
                 // port clears
-                if ((data & 0x10) != 0)
-                {
+                if ((data & 0x10) != 0) {
                     regsIn[cpuio0Reg] = 0;
                     regsIn[cpuio1Reg] = 0;
                 }
-                if ((data & 0x20) != 0)
-                {
+                if ((data & 0x20) != 0) {
                     regsIn[cpuio2Reg] = 0;
                     regsIn[cpuio3Reg] = 0;
                 }
 
                 // timers
-                for (int i = 0; i < timerCount; i++)
-                {
+                for (int i = 0; i < timerCount; i++) {
                     Timer t = timers[i];
                     int enabled = data >> i & 1;
-                    if (t.enabled != enabled)
-                    {
+                    if (t.enabled != enabled) {
                         runTimer(t, time);
                         t.enabled = enabled;
-                        if (enabled != 0)
-                        {
+                        if (enabled != 0) {
                             t.divider = 0;
                             t.counter = 0;
                         }
@@ -318,8 +292,7 @@ public final class SpcEmu extends SpcCpu
         }
     }
 
-    public final void cpuWrite(int addr, int data)
-    {
+    public final void cpuWrite(int addr, int data) {
         // RAM
         ram[addr] = (byte) data;
         if ((addr -= 0xF0) >= 0) // 64%
@@ -349,9 +322,7 @@ public final class SpcEmu extends SpcCpu
                         int dspaddr;
                         if ((dspaddr = regs[dspaddrReg]) <= 0x7F)
                             dsp.write(dspaddr, data);
-                    }
-                    else
-                    {
+                    } else {
                         writeReg(addr, data);
                     }
                 }
@@ -359,14 +330,11 @@ public final class SpcEmu extends SpcCpu
             // IPL ROM area or address wrapped around
             else if ((addr -= romAddr - 0xF0) >= 0) // 1% in IPL ROM area or address wrapped around
             {
-                if (addr < romSize)
-                {
+                if (addr < romSize) {
                     hiRam[addr] = (byte) data;
                     if (romEnabled != 0)
                         ram[addr + romAddr] = rom[addr]; // restore overwritten ROM
-                }
-                else
-                {
+                } else {
                     if (debug) assert ram[addr + romAddr] == (byte) data;
                     ram[addr + romAddr] = (byte) 0xFF; // restore overwritten padding
                     cpuWrite(data, addr - (ramSize - romAddr));
@@ -375,8 +343,7 @@ public final class SpcEmu extends SpcCpu
         }
     }
 
-    public final int cpuRead(int addr)
-    {
+    public final int cpuRead(int addr) {
         // Low RAM
         if (addr < 0xF0) // 60%
             return ram[addr] & 0xFF;
@@ -398,8 +365,7 @@ public final class SpcEmu extends SpcCpu
             if (addr == dspaddrReg + 0xF0)
                 return regs[dspaddrReg];
 
-            if (addr == dspdataReg + 0xF0)
-            {
+            if (addr == dspdataReg + 0xF0) {
                 // DSP
 
                 // Run to present

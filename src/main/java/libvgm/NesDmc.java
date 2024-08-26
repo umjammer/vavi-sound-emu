@@ -18,8 +18,8 @@
 
 package libvgm;
 
-public final class NesDmc extends NesOsc
-{
+public final class NesDmc extends NesOsc {
+
     static final int loop_flag = 0x40;
 
     int address;    // address of next byte to read
@@ -39,8 +39,7 @@ public final class NesDmc extends NesOsc
     int oscEnables;
     NesCpu cpu;
 
-    void reset()
-    {
+    void reset() {
         address = 0;
         dac = 0;
         buf = 0;
@@ -64,8 +63,7 @@ public final class NesDmc extends NesOsc
             176, 148, 132, 118, 98, 78, 66, 50
     };
 
-    void reload_sample()
-    {
+    void reload_sample() {
         address = 0x4000 + regs[2] * 0x40;
         lengthCounter = regs[3] * 0x10 + 1;
     }
@@ -82,21 +80,16 @@ public final class NesDmc extends NesOsc
                     76, 76, 77, 77, 78, 78, 79, 79, 80, 80, 81, 81, 82, 82, 82, 83,
             };
 
-    void write_register(int addr, int data)
-    {
-        if (addr == 0)
-        {
+    void write_register(int addr, int data) {
+        if (addr == 0) {
             period = dmc_period_table[(data & 15) + (palMode ? 16 : 0)];
 
             irqEnabled = 1;
-            if ((data & 0xC0) != 0x80)
-            {
+            if ((data & 0xC0) != 0x80) {
                 irqEnabled = 0;
                 irqFlag = 0;
             }
-        }
-        else if (addr == 1)
-        {
+        } else if (addr == 1) {
             // adjust lastAmp so that "pop" amplitude will be properly non-linear
             // with respect to change in dac
             data &= 0x7F;
@@ -105,16 +98,13 @@ public final class NesDmc extends NesOsc
         }
     }
 
-    void start()
-    {
+    void start() {
         reload_sample();
         fill_buffer();
     }
 
-    void fill_buffer()
-    {
-        if (!buf_full && lengthCounter != 0)
-        {
+    void fill_buffer() {
+        if (!buf_full && lengthCounter != 0) {
             // Read byte via CPU
             buf = cpu.cpuRead(0x8000 + address);
             address = (address + 1) & 0x7FFF;
@@ -122,12 +112,9 @@ public final class NesDmc extends NesOsc
 
             if (--lengthCounter == 0) // Reached end of sample
             {
-                if ((regs[0] & loop_flag) != 0)
-                {
+                if ((regs[0] & loop_flag) != 0) {
                     reload_sample();
-                }
-                else
-                {
+                } else {
                     oscEnables &= ~0x10;
                     irqFlag = irqEnabled;
                 }
@@ -135,44 +122,34 @@ public final class NesDmc extends NesOsc
         }
     }
 
-    void run(BlipBuffer output, int time, int endTime)
-    {
+    void run(BlipBuffer output, int time, int endTime) {
         int delta = updateAmp(dac);
         if (delta != 0)
             output.addDelta(time, delta * dmcUnit);
 
         time += delay;
-        if (time < endTime)
-        {
-            if (silence && !buf_full)
-            {
+        if (time < endTime) {
+            if (silence && !buf_full) {
                 int count = (endTime - time + period - 1) / period;
                 bits_remain = (bits_remain - 1 + 8 - (count % 8)) % 8 + 1;
                 time += count * period;
-            }
-            else
-            {
-                do
-                {
-                    if (!silence)
-                    {
+            } else {
+                do {
+                    if (!silence) {
                         int step;
                         int newDac = dac + (step = (bits << 2 & 4) - 2);
                         // if ( newDac >= 0 && newDac <= 0x7F )
-                        if ((byte) newDac >= 0)
-                        {
+                        if ((byte) newDac >= 0) {
                             dac = newDac;
                             output.addDelta(time, step * dmcUnit);
                         }
                         bits >>= 1;
                     }
 
-                    if (--bits_remain == 0)
-                    {
+                    if (--bits_remain == 0) {
                         bits_remain = 8;
                         silence = true;
-                        if (buf_full)
-                        {
+                        if (buf_full) {
                             buf_full = false;
                             silence = false;
                             bits = buf;

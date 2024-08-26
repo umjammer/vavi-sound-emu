@@ -18,21 +18,19 @@
 
 package libvgm;
 
-public final class NesTriangle extends NesOsc
-{
+public final class NesTriangle extends NesOsc {
+
     static final int phaseRange = 16;
     int phase;
     int linearCounter;
 
-    void reset()
-    {
+    void reset() {
         linearCounter = 0;
         phase = phaseRange;
         super.reset();
     }
 
-    void clockLinearCounter()
-    {
+    void clockLinearCounter() {
         if (regWritten[3])
             linearCounter = regs[0] & 0x7F;
         else if (linearCounter != 0)
@@ -42,16 +40,14 @@ public final class NesTriangle extends NesOsc
             regWritten[3] = false;
     }
 
-    int calc_amp()
-    {
+    int calc_amp() {
         int amp = phaseRange - phase;
         if (amp < 0)
             amp = phase - (phaseRange + 1);
         return amp;
     }
 
-    void run(BlipBuffer output, int time, int endTime)
-    {
+    void run(BlipBuffer output, int time, int endTime) {
         final int timer_period = period() + 1;
 
         // to do: track phase when period < 3
@@ -62,27 +58,19 @@ public final class NesTriangle extends NesOsc
             output.addDelta(time, delta * triangleUnit);
 
         time += delay;
-        if (lengthCounter == 0 || linearCounter == 0 || timer_period < 3)
-        {
+        if (lengthCounter == 0 || linearCounter == 0 || timer_period < 3) {
             time = endTime;
-        }
-        else if (time < endTime)
-        {
+        } else if (time < endTime) {
             int volume = triangleUnit;
-            if (phase > phaseRange)
-            {
+            if (phase > phaseRange) {
                 phase -= phaseRange;
                 volume = -volume;
             }
 
-            do
-            {
-                if (--phase != 0)
-                {
+            do {
+                if (--phase != 0) {
                     output.addDelta(time, volume);
-                }
-                else
-                {
+                } else {
                     phase = phaseRange;
                     volume = -volume;
                 }

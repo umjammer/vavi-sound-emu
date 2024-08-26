@@ -20,10 +20,9 @@ package libvgm;
 
 // Nintendo NES sound chip emulator
 // http://www.slack.net/~ant/
-public final class NesApu
-{
-    public NesApu()
-    {
+public final class NesApu {
+
+    public NesApu() {
         oscs[0] = square1;
         oscs[1] = square2;
         oscs[2] = triangle;
@@ -31,14 +30,12 @@ public final class NesApu
         oscs[4] = dmc;
     }
 
-    public void setOutput(BlipBuffer b)
-    {
+    public void setOutput(BlipBuffer b) {
         output = b;
     }
 
     // Resets oscillators and internal state
-    public void reset(NesCpu cpu, boolean palMode)
-    {
+    public void reset(NesCpu cpu, boolean palMode) {
         dmc.cpu = cpu;
         dmc.palMode = palMode;
 
@@ -57,8 +54,7 @@ public final class NesApu
         write(0, 0x4017, 0x00);
         write(0, 0x4015, 0x00);
 
-        for (int addr = 0x4000; addr <= 0x4013; addr++)
-        {
+        for (int addr = 0x4000; addr <= 0x4013; addr++) {
             write(0, addr, (addr & 3) != 0 ? 0x00 : 0x10);
         }
 
@@ -69,15 +65,13 @@ public final class NesApu
     public static final int startAddr = 0x4000;
     public static final int endAddr = 0x4017;
 
-    public void write(int time, int addr, int data)
-    {
+    public void write(int time, int addr, int data) {
         assert 0 <= data && data < 0x100;
         assert startAddr <= addr && addr <= endAddr;
 
         runUntil(time);
 
-        if (addr < 0x4014)
-        {
+        if (addr < 0x4014) {
             // Write to channel
             int index = (addr - startAddr) >> 2;
             NesOsc osc = oscs[index];
@@ -86,13 +80,10 @@ public final class NesApu
             osc.regs[reg] = data;
             osc.regWritten[reg] = true;
 
-            if (index == 4)
-            {
+            if (index == 4) {
                 // handle DMC specially
                 dmc.write_register(reg, data);
-            }
-            else if (reg == 3)
-            {
+            } else if (reg == 3) {
                 // load length counter
                 if ((dmc.oscEnables >> index & 1) != 0)
                     osc.lengthCounter = length_table[data >> 3 & 0x1F];
@@ -101,12 +92,9 @@ public final class NesApu
                 if (index < 2)
                     ((NesSquare) osc).phase = NesSquare.phaseRange - 1;
             }
-        }
-        else if (addr == 0x4015)
-        {
+        } else if (addr == 0x4015) {
             // Channel enables
-            for (int i = oscCount; i-- > 0; )
-            {
+            for (int i = oscCount; i-- > 0; ) {
                 if ((data >> i & 1) == 0)
                     oscs[i].lengthCounter = 0;
             }
@@ -118,9 +106,7 @@ public final class NesApu
 
             if ((justEnabled & 0x10) != 0)
                 dmc.start();
-        }
-        else if (addr == 0x4017)
-        {
+        } else if (addr == 0x4017) {
             // Frame mode
             frameMode = data;
 
@@ -131,8 +117,7 @@ public final class NesApu
             frameTime = time;
             framePhase = 0;
 
-            if ((data & 0x80) == 0)
-            {
+            if ((data & 0x80) == 0) {
                 // mode 0
                 framePhase = 1;
                 frameTime += framePeriod;
@@ -142,15 +127,13 @@ public final class NesApu
     }
 
     // Reads from status register at specified time
-    public int read(int time)
-    {
+    public int read(int time) {
         runUntil(time);
 
         int result = (dmc.irqFlag << 7) | (irqFlag << 6);
         irqFlag = 0;
 
-        for (int i = 0; i < oscCount; i++)
-        {
+        for (int i = 0; i < oscCount; i++) {
             if (oscs[i].lengthCounter != 0)
                 result |= 1 << i;
         }
@@ -160,8 +143,7 @@ public final class NesApu
 
     // Runs all oscillators up to specified time, ends current time frame, then
     // starts a new frame at time 0
-    public void endFrame(int endTime)
-    {
+    public void endFrame(int endTime) {
         if (endTime > lastTime)
             runUntil(endTime);
 
@@ -194,14 +176,12 @@ public final class NesApu
     int frameMode;
     int irqFlag;
 
-    void runUntil(int endTime)
-    {
+    void runUntil(int endTime) {
         assert endTime >= lastTime; // endTime must not be before previous time
         if (endTime == lastTime)
             return;
 
-        while (true)
-        {
+        while (true) {
             // run oscillators
             int time = endTime;
             if (time > frameTime)
@@ -219,8 +199,7 @@ public final class NesApu
 
             // run frame sequencer
             frameTime += framePeriod;
-            switch (framePhase++)
-            {
+            switch (framePhase++) {
                 case 0:
                     if ((frameMode & 0xC0) == 0)
                         irqFlag = 1;

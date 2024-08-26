@@ -1,23 +1,21 @@
 package uk.co.kernite.VGM;
 
-import java.awt.*;
+import java.awt.Label;
 
-public final class PlayerWithUpdate extends PlayerList
-{
+
+public final class PlayerWithUpdate extends PlayerList {
+
     Label time;
 
-    public PlayerWithUpdate(int sampleRate)
-    {
+    public PlayerWithUpdate(int sampleRate) {
         super(sampleRate);
     }
 
     char[] str = new char[5];
     int last = -1;
 
-    protected void idle()
-    {
-        try
-        {
+    protected void idle() {
+        try {
             super.idle();
             /*
                if ( !isPlaying() )
@@ -27,8 +25,7 @@ public final class PlayerWithUpdate extends PlayerList
                }
                */
             int secs = getCurrentTime();
-            if (last != secs)
-            {
+            if (last != secs) {
                 last = secs;
                 str[4] = (char) ('0' + secs % 10);
                 str[3] = (char) ('0' + secs / 10 % 6);
@@ -38,9 +35,7 @@ public final class PlayerWithUpdate extends PlayerList
 
                 time.setText(new String(str));
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }

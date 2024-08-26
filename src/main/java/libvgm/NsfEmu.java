@@ -22,8 +22,8 @@ package libvgm;
 // http://www.slack.net/~ant/
 
 
-public final class NsfEmu extends NesCpu
-{
+public final class NsfEmu extends NesCpu {
+
     // header offsets
     static final int trackCountOff = 0x06;
     static final int loadAddrOff = 0x08;
@@ -61,8 +61,7 @@ public final class NsfEmu extends NesCpu
     int nextPlay;
     double clockRate;
 
-    protected int loadFile_(byte[] in)
-    {
+    protected int loadFile_(byte[] in) {
         if (!isHeader(in, "NESM"))
             error("Not an NSF file");
 
@@ -75,20 +74,17 @@ public final class NsfEmu extends NesCpu
 
         // Copy initial banks
         int nonZero = 0;
-        for (int i = 0; i < bankCount; i++)
-        {
+        for (int i = 0; i < bankCount; i++) {
             int bank = header[banksOff + i] & 0xFF;
             initialBanks[i] = bank;
             nonZero |= bank;
         }
 
         // Use default banks if initial banks were all zero
-        if (nonZero == 0)
-        {
+        if (nonZero == 0) {
             int totalBanks = rom.size() / bankSize;
             int firstBank = (loadAddr - romStart) / bankSize;
-            for (int i = 0; i < bankCount; i++)
-            {
+            for (int i = 0; i < bankCount; i++) {
                 int bank = i - firstBank;
                 if (bank < 0 || totalBanks <= bank)
                     bank = 0;
@@ -103,8 +99,7 @@ public final class NsfEmu extends NesCpu
         playPeriod = 29781;
         palOnly = 0;
 
-        if ((header[speedFlagsOff] & 3) == 1)
-        {
+        if ((header[speedFlagsOff] & 3) == 1) {
             // PAL rate
             playbackRate = getLE16(header, palSpeedOff);
             clockRate = 1662607.125;
@@ -124,8 +119,7 @@ public final class NsfEmu extends NesCpu
         return (header[trackCountOff] & 0xFF) - 1;
     }
 
-    private void cpuCall(int addr)
-    {
+    private void cpuCall(int addr) {
         pc = addr;
         p |= 0x04;
         ram[s | 0x100] = (byte) ((idleAddr - 1) >> 8);
@@ -133,8 +127,7 @@ public final class NsfEmu extends NesCpu
         s = (s - 2) & 0xFF;
     }
 
-    public void startTrack(int track)
-    {
+    public void startTrack(int track) {
         super.startTrack(track);
 
         // APU
@@ -148,8 +141,7 @@ public final class NsfEmu extends NesCpu
         mapMemory(sramAddr, sramSize, sramOffset);
         // some NSF rips expect to read back 0 from 0x4016 and 0x4017 (Maniac Mansion)
         mapMemory(0x4000, pageSize, unmapped4000Offset);
-        for (int i = 0; i < bankCount; ++i)
-        {
+        for (int i = 0; i < bankCount; ++i) {
             cpuWrite(bankSelectAddr + i, initialBanks[i]);
         }
 
@@ -171,27 +163,23 @@ public final class NsfEmu extends NesCpu
         return (float) (cr / clockRate);
     }
 
-    protected int runClocks(int clockCount)
-    {
+    protected int runClocks(int clockCount) {
         endTime = clockCount;
         time = -endTime;
 
-        while (true)
-        {
+        while (true) {
             runCpu();
             if (time >= 0)
                 break;
 
-            if (pc != idleAddr)
-            {
+            if (pc != idleAddr) {
                 logError();
                 return endTime;
             }
 
             // Next play call
             int next = nextPlay - endTime;
-            if (time < next)
-            {
+            if (time < next) {
                 time = 0;
                 if (next > 0)
                     break;
@@ -212,8 +200,7 @@ public final class NsfEmu extends NesCpu
         return endTime;
     }
 
-    protected final int cpuRead(int addr)
-    {
+    protected final int cpuRead(int addr) {
         if (addr <= 0x7FF) // 90%
             return ram[addr] & 0xFF;
 
@@ -230,22 +217,19 @@ public final class NsfEmu extends NesCpu
         return ram[addr - 0x10000] & 0xFF;
     }
 
-    protected final void cpuWrite(int addr, int data)
-    {
+    protected final void cpuWrite(int addr, int data) {
         if (debug) assert 0 <= data && data < 0x100;
         if (debug) assert 0 <= addr && addr < 0x10100;
 
         // SRAM
         int offset;
-        if ((offset = addr ^ sramAddr) < sramSize)
-        {
+        if ((offset = addr ^ sramAddr) < sramSize) {
             ram[sramOffset + offset] = (byte) data;
             return;
         }
 
         // APU
-        if ((addr ^ 0x4000) <= 0x17)
-        {
+        if ((addr ^ 0x4000) <= 0x17) {
             ram[addr] = (byte) data;
             apu.write(time + endTime, addr, data);
             return;
@@ -253,8 +237,7 @@ public final class NsfEmu extends NesCpu
 
         // Bank
         int bank = addr - bankSelectAddr;
-        if (0 <= bank && bank < bankCount)
-        {
+        if (0 <= bank && bank < bankCount) {
             mapMemory(bank * bankSize + romStart, bankSize, rom.mapAddr(data * bankSize));
             return;
         }

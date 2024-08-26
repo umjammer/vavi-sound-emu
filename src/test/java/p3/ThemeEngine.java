@@ -1,9 +1,11 @@
 package p3;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.HashMap;
 
+
 public class ThemeEngine {
+
     HashMap<String, int[]> availableThemes = new HashMap<>();
     int[] theme;
 

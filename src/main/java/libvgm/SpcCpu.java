@@ -20,8 +20,8 @@ package libvgm;
 
 // Nintendo SNES SPC-700 CPU emulator
 // http://www.slack.net/~ant/
-public class SpcCpu extends MusicEmu
-{
+public class SpcCpu extends MusicEmu {
+
     // Registers. NOT kept updated during runCpu()
     public int a, x, y, psw, sp, pc;
 
@@ -29,18 +29,15 @@ public class SpcCpu extends MusicEmu
     public int time;
 
     // Memory read and write handlers
-    protected int cpuRead(int addr)
-    {
+    protected int cpuRead(int addr) {
         return 0;
     }
 
-    protected void cpuWrite(int addr, int data)
-    {
+    protected void cpuWrite(int addr, int data) {
     }
 
     // Resets registers and uses supplied physical memory
-    public final void reset(byte[] mem)
-    {
+    public final void reset(byte[] mem) {
         this.mem = mem;
         a = 0;
         x = 0;
@@ -52,8 +49,7 @@ public class SpcCpu extends MusicEmu
         time = 0;
     }
 
-    public final void setPsw(int psw)
-    {
+    public final void setPsw(int psw) {
         this.psw = psw;
     }
 
@@ -91,8 +87,7 @@ public class SpcCpu extends MusicEmu
     static final int c01 = 0x01; // (c & 0x100) != 0
 
     // Runs until time >= 0
-    public final void runCpu()
-    {
+    public final void runCpu() {
         // locals are faster, and first three are more efficient to access
         final byte[] mem = this.mem;
         int nz;
@@ -115,11 +110,9 @@ public class SpcCpu extends MusicEmu
         int data = 0;
         int addr = 0;
 
-        loop:
-        while (time < 0)
-        {
-            if (debug)
-            {
+loop:
+        while (time < 0) {
+            if (debug) {
                 assert 0 <= a && a < 0x100;
                 assert 0 <= x && x < 0x100;
                 assert 0 <= y && y < 0x100;
@@ -130,8 +123,7 @@ public class SpcCpu extends MusicEmu
 
             int opcode;
             this.time = (time += instrTimes[opcode = mem[pc] & 0xFF]);
-            switch (opcode)
-            {
+            switch (opcode) {
 
                 //////// Often used
 
@@ -161,8 +153,7 @@ public class SpcCpu extends MusicEmu
 
                 case 0x90: // BCC   r
                     pc += 2;
-                    if ((c & 0x100) == 0)
-                    {
+                    if ((c & 0x100) == 0) {
                         pc += mem[pc - 1];
                         time += 2;
                     }
@@ -170,8 +161,7 @@ public class SpcCpu extends MusicEmu
 
                 case 0xB0: // BCS   r
                     pc += 2;
-                    if ((c & 0x100) != 0)
-                    {
+                    if ((c & 0x100) != 0) {
                         pc += mem[pc - 1];
                         time += 2;
                     }
@@ -179,8 +169,7 @@ public class SpcCpu extends MusicEmu
 
                 case 0xF0: // BEQ   r
                     pc += 2;
-                    if (((byte) nz) == 0)
-                    {
+                    if (((byte) nz) == 0) {
                         pc += mem[pc - 1];
                         time += 2;
                     }
@@ -188,8 +177,7 @@ public class SpcCpu extends MusicEmu
 
                 case 0xD0: // BNE   r
                     pc += 2;
-                    if (((byte) nz) != 0)
-                    {
+                    if (((byte) nz) != 0) {
                         pc += mem[pc - 1];
                         time += 2;
                     }
@@ -197,8 +185,7 @@ public class SpcCpu extends MusicEmu
 
                 case 0x30: // BMI   r
                     pc += 2;
-                    if ((nz & 0x880) != 0)
-                    {
+                    if ((nz & 0x880) != 0) {
                         pc += mem[pc - 1];
                         time += 2;
                     }
@@ -206,8 +193,7 @@ public class SpcCpu extends MusicEmu
 
                 case 0x10: // BPL   r
                     pc += 2;
-                    if ((nz & 0x880) == 0)
-                    {
+                    if ((nz & 0x880) == 0) {
                         pc += mem[pc - 1];
                         time += 2;
                     }
@@ -215,8 +201,7 @@ public class SpcCpu extends MusicEmu
 
                 case 0x50: // BVC   r
                     pc += 2;
-                    if ((psw & v40) == 0)
-                    {
+                    if ((psw & v40) == 0) {
                         pc += mem[pc - 1];
                         time += 2;
                     }
@@ -224,8 +209,7 @@ public class SpcCpu extends MusicEmu
 
                 case 0x70: // BVS   r
                     pc += 2;
-                    if ((psw & v40) != 0)
-                    {
+                    if ((psw & v40) != 0) {
                         pc += mem[pc - 1];
                         time += 2;
                     }
@@ -275,8 +259,7 @@ public class SpcCpu extends MusicEmu
 
                 case 0x1C: // ASL   A
                     c = 0;
-                case 0x3C:
-                {// ROL   A
+                case 0x3C: {// ROL   A
                     int t = c >> 8 & 1;
                     c = a << 1;
                     a = (nz = c | t) & 0xFF;
@@ -300,8 +283,7 @@ public class SpcCpu extends MusicEmu
 
                 case 0xDF: // DAA   A
                     pc++;
-                    if (a > 0x99 || (c & 0x100) != 0)
-                    {
+                    if (a > 0x99 || (c & 0x100) != 0) {
                         a += 0x60;
                         c = 0x100;
                     }
@@ -314,8 +296,7 @@ public class SpcCpu extends MusicEmu
 
                 case 0xBE: // DAS   A
                     pc++;
-                    if (a > 0x99 || (c & 0x100) == 0)
-                    {
+                    if (a > 0x99 || (c & 0x100) == 0) {
                         a -= 0x60;
                         c = 0;
                     }
@@ -326,8 +307,7 @@ public class SpcCpu extends MusicEmu
                     nz = (a &= 0xFF);
                     continue;
 
-                case 0x9E:
-                {// DIV   YA, X
+                case 0x9E: {// DIV   YA, X
                     pc++;
                     int ya = y << 8 | a;
 
@@ -339,13 +319,10 @@ public class SpcCpu extends MusicEmu
                     if ((y & 15) >= (x & 15))
                         psw |= h08;
 
-                    if (y < (x << 1))
-                    {
+                    if (y < (x << 1)) {
                         a = ya / x;
                         y = ya - a * x;
-                    }
-                    else
-                    {
+                    } else {
                         a = 255 - (ya - (x << 9)) / (256 - x);
                         y = x + (ya - (x << 9)) % (256 - x);
                     }
@@ -354,8 +331,7 @@ public class SpcCpu extends MusicEmu
                     continue;
                 }
 
-                case 0xCF:
-                {// MUL   YA
+                case 0xCF: {// MUL   YA
                     pc++;
                     int t = y * a;
                     a = t & 0xFF;
@@ -464,16 +440,14 @@ public class SpcCpu extends MusicEmu
                     pc += 2;
                     continue;
 
-                case 0xD7:
-                {// MOV   [d]+Y, A
+                case 0xD7: {// MOV   [d]+Y, A
                     int t = mem[pc + 1];
                     cpuWrite(((mem[(t + 1) & 0xFF | dp] & 0xFF) << 8 | (mem[t & 0xFF | dp] & 0xFF)) + y, a);
                     pc += 2;
                     continue;
                 }
 
-                case 0xC7:
-                {// MOV   [d+X], A
+                case 0xC7: {// MOV   [d+X], A
                     int t = mem[pc + 1] + x;
                     cpuWrite((mem[(t + 1) & 0xFF | dp] & 0xFF) << 8 | (mem[t & 0xFF | dp] & 0xFF), a);
                     pc += 2;
@@ -525,8 +499,7 @@ public class SpcCpu extends MusicEmu
                     data = mem[pc + 2];
                     data = cpuRead((data & 0x1F) << 8 | (mem[pc + 1] & 0xFF)) << (8 - (data >> 5 & 7));
                     pc += 3;
-                    switch (opcode)
-                    {
+                    switch (opcode) {
                         case 0x4A: // AND1  C, m.b
                             c &= data;
                             continue;
@@ -568,8 +541,7 @@ public class SpcCpu extends MusicEmu
                 case 0x92: // CLR1  d.4
                 case 0xB2: // CLR1  d.5
                 case 0xD2: // CLR1  d.6
-                case 0xF2:
-                {// CLR1  d.7
+                case 0xF2: {// CLR1  d.7
                     data = cpuRead(addr = mem[pc + 1] & 0xFF | dp);
                     int t = 1 << (opcode >> 5);
                     data |= t;
@@ -596,8 +568,7 @@ public class SpcCpu extends MusicEmu
                     continue;
 
                 case 0x0D: // PUSH  PSW
-                case 0x0F:
-                {// BRK
+                case 0x0F: {// BRK
                     // calculate PSW
                     int t = psw & ~(n80 | p20 | z02 | c01);
                     t |= c >> 8 & c01;
@@ -658,8 +629,7 @@ public class SpcCpu extends MusicEmu
                     sp = (sp - 0xFE) | 0x100;
                     continue;
 
-                case 0xDA:
-                {// MOVW  d, YA
+                case 0xDA: {// MOVW  d, YA
                     int t = mem[pc + 1];
                     cpuWrite(t & 0xFF | dp, a);
                     cpuWrite((t + 1) & 0xFF | dp, y);
@@ -672,8 +642,7 @@ public class SpcCpu extends MusicEmu
                 case 0x5A: // CMPW  YA, d
                 case 0x7A: // ADDW  YA, d
                 case 0x9A: // SUBW  YA, d
-                case 0xBA:
-                {// MOVW  YA, d
+                case 0xBA: {// MOVW  YA, d
                     addr = mem[pc + 1] & 0xFF | dp;
                     data = (mem[addr + 1] & 0xFF) << 8 | (mem[addr] & 0xFF);
 
@@ -682,8 +651,7 @@ public class SpcCpu extends MusicEmu
                         data = cpuRead(addr + 1) << 8 | cpuRead(addr);
 
                     pc += 2;
-                    switch (opcode)
-                    {
+                    switch (opcode) {
                         case 0x1A: // DECW  d
                             data -= 2;
                         case 0x3A: // INCW  d
@@ -715,8 +683,7 @@ public class SpcCpu extends MusicEmu
 
                         case 0x9A: // SUBW  YA, d
                             data = -data & 0xFFFF;
-                        default:
-                        {
+                        default: {
                             //case 0x7A: // ADDW  YA, d
                             int t = (data >> 8) ^ y;
                             a = 0xFF & (data += y << 8 | a);
@@ -908,8 +875,7 @@ public class SpcCpu extends MusicEmu
                 case 0x97: // ADC   A, [d]+Y
                 case 0xB7: // SBC   A, [d]+Y
                 case 0x17: // OR    A, [d]+Y
-                case 0xF7:
-                {// MOV   A, [d]+Y
+                case 0xF7: {// MOV   A, [d]+Y
                     int t = mem[pc + 1];
                     nz = cpuRead(((mem[(t + 1) & 0xFF | dp] & 0xFF) << 8 | (mem[t & 0xFF | dp] & 0xFF)) + y);
                     pc += 2;
@@ -922,8 +888,7 @@ public class SpcCpu extends MusicEmu
                 case 0x87: // ADC   A, [d+X]
                 case 0xA7: // SBC   A, [d+X]
                 case 0x07: // OR    A, [d+X]
-                case 0xE7:
-                {// MOV   A, [d+X]
+                case 0xE7: {// MOV   A, [d+X]
                     int t = mem[pc + 1] + x;
                     nz = cpuRead((mem[(t + 1) & 0xFF | dp] & 0xFF) << 8 | (mem[t & 0xFF | dp] & 0xFF));
                     pc += 2;
@@ -960,8 +925,7 @@ public class SpcCpu extends MusicEmu
             }
 
             // Operation
-            switch (opcode)
-            {
+            switch (opcode) {
                 case 0x5F: // JMP   !a
                     pc = addr;
                     continue;
@@ -987,8 +951,7 @@ public class SpcCpu extends MusicEmu
                 case 0xA3: // BBS   d.5, r
                 case 0xC3: // BBS   d.6, r
                 case 0xE3: // BBS   d.7, r
-                    if ((((data >> (opcode >> 5)) ^ (opcode >> 4)) & 1) != 0)
-                    {
+                    if ((((data >> (opcode >> 5)) ^ (opcode >> 4)) & 1) != 0) {
                         pc += mem[pc - 1];
                         time += 2;
                     }
@@ -996,8 +959,7 @@ public class SpcCpu extends MusicEmu
 
                 case 0x6E: // DBNZ  d, r
                     cpuWrite(addr, --data);
-                    if (data != 0)
-                    {
+                    if (data != 0) {
                         pc += mem[pc - 1];
                         time += 2;
                     }
@@ -1089,8 +1051,7 @@ public class SpcCpu extends MusicEmu
                 case 0x87: // ADC   A, [d+X]
                 case 0x97: // ADC   A, [d]+Y
                 case 0x84: // ADC   A, d
-                case 0x94:
-                {// ADC   A, d+X
+                case 0x94: {// ADC   A, d+X
                     int flags = a ^ nz;
                     flags ^= (c = nz += a + (c >> 8 & 1));
                     psw = (psw & ~(v40 | h08)) |
@@ -1106,8 +1067,7 @@ public class SpcCpu extends MusicEmu
                     nz ^= 0xFF;
                 case 0x99: // ADC   (X), (Y)
                 case 0x98: // ADC   d, #i
-                case 0x89:
-                {// ADC   dd, ds
+                case 0x89: {// ADC   dd, ds
                     int flags = nz ^ data;
                     flags ^= (c = nz += data + (c >> 8 & 1));
                     psw = (psw & ~(v40 | h08)) |
@@ -1189,8 +1149,7 @@ public class SpcCpu extends MusicEmu
                     c = 0;
                 case 0x2C: // ROL   !a
                 case 0x2B: // ROL   d
-                case 0x3B:
-                {// ROL   d+X
+                case 0x3B: {// ROL   d+X
                     int t = c >> 8 & 1;
                     c = nz << 1;
                     cpuWrite(addr, nz = c | t);
@@ -1203,24 +1162,21 @@ public class SpcCpu extends MusicEmu
                     c = 0;
                 case 0x6C: // ROR   !a
                 case 0x6B: // ROR   d
-                case 0x7B:
-                {// ROR   d+X
+                case 0x7B: {// ROR   d+X
                     int t = c & 0x100;
                     c = nz << 8;
                     cpuWrite(addr, nz = (nz | t) >> 1);
                     continue;
                 }
 
-                case 0x4E:
-                {// TCLR1 !a
+                case 0x4E: {// TCLR1 !a
                     int t = nz & ~a;
                     nz = (byte) (a - nz);
                     cpuWrite(addr, t);
                     continue;
                 }
 
-                case 0x0E:
-                {// TSET1 !a
+                case 0x0E: {// TSET1 !a
                     int t = nz | a;
                     nz = (byte) (a - nz);
                     cpuWrite(addr, t);

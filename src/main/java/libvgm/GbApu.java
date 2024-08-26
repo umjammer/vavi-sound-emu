@@ -20,10 +20,9 @@ package libvgm;
 
 // Nintendo Game Boy sound emulator
 // http://www.slack.net/~ant/
-public final class GbApu
-{
-    public GbApu()
-    {
+public final class GbApu {
+
+    public GbApu() {
         oscs[0] = square1;
         oscs[1] = square2;
         oscs[2] = wave;
@@ -33,20 +32,17 @@ public final class GbApu
     }
 
     // Resets oscillators and internal state
-    public void setOutput(BlipBuffer center, BlipBuffer left, BlipBuffer right)
-    {
+    public void setOutput(BlipBuffer center, BlipBuffer left, BlipBuffer right) {
         outputs[1] = right;
         outputs[2] = left;
         outputs[3] = center;
 
-        for (int i = osc_count; --i >= 0; )
-        {
+        for (int i = osc_count; --i >= 0; ) {
             oscs[i].output = outputs[oscs[i].output_select];
         }
     }
 
-    private void update_volume()
-    {
+    private void update_volume() {
         final int unit = (int) (1.0 / osc_count / 15 / 8 * 65536);
 
         // TODO: doesn't handle left != right volume (not worth the complexity)
@@ -54,21 +50,17 @@ public final class GbApu
         int left = data >> 4 & 7;
         int right = data & 7;
         int vol_unit = (left > right ? left : right) * unit;
-        for (int i = osc_count; --i >= 0; )
-        {
+        for (int i = osc_count; --i >= 0; ) {
             oscs[i].vol_unit = vol_unit;
         }
     }
 
-    private void reset_regs()
-    {
-        for (int i = 0x20; --i >= 0; )
-        {
+    private void reset_regs() {
+        for (int i = 0x20; --i >= 0; ) {
             regs[i] = 0;
         }
 
-        for (int i = osc_count; --i >= 0; )
-        {
+        for (int i = osc_count; --i >= 0; ) {
             oscs[i].reset();
         }
 
@@ -80,28 +72,24 @@ public final class GbApu
             0x60, 0x59, 0x59, 0xB0, 0x34, 0xB8, 0x2E, 0xDA
     };
 
-    public void reset()
-    {
+    public void reset() {
         frame_time = 0;
         last_time = 0;
         frame_phase = 0;
 
         reset_regs();
 
-        for (int i = 16; --i >= 0; )
-        {
+        for (int i = 16; --i >= 0; ) {
             write(0, i + wave_ram, initial_wave[i]);
         }
     }
 
-    private void run_until(int end_time)
-    {
+    private void run_until(int end_time) {
         assert end_time >= last_time; // end_time must not be before previous time
         if (end_time == last_time)
             return;
 
-        while (true)
-        {
+        while (true) {
             // run oscillators
             int time = end_time;
             if (time > frame_time)
@@ -118,8 +106,7 @@ public final class GbApu
 
             // run frame sequencer
             frame_time += frame_period;
-            switch (frame_phase++)
-            {
+            switch (frame_phase++) {
                 case 2:
                 case 6:
                     // 128 Hz
@@ -145,8 +132,7 @@ public final class GbApu
 
     // Runs all oscillators up to specified time, ends current time frame, then
     // starts a new frame at time 0
-    public void endFrame(int end_time)
-    {
+    public void endFrame(int end_time) {
         if (end_time > last_time)
             run_until(end_time);
 
@@ -157,11 +143,9 @@ public final class GbApu
         last_time -= end_time;
     }
 
-    static void silence_osc(int time, GbOsc osc)
-    {
+    static void silence_osc(int time, GbOsc osc) {
         int amp = osc.last_amp;
-        if (amp != 0)
-        {
+        if (amp != 0) {
             osc.last_amp = 0;
             if (osc.output != null)
                 osc.output.addDelta(time, -amp * osc.vol_unit);
@@ -172,8 +156,7 @@ public final class GbApu
     public static final int startAddr = 0xFF10;
     public static final int endAddr = 0xFF3F;
 
-    public void write(int time, int addr, int data)
-    {
+    public void write(int time, int addr, int data) {
         assert startAddr <= addr && addr <= endAddr;
         assert 0 <= data && data < 0x100;
 
@@ -182,58 +165,44 @@ public final class GbApu
 
         run_until(time);
         int reg = addr - startAddr;
-        if (addr < wave_ram)
-        {
+        if (addr < wave_ram) {
             int old_data = regs[reg];
             regs[reg] = data;
 
-            if (addr < vol_reg)
-            {
+            if (addr < vol_reg) {
                 int index = reg / 5;
                 GbOsc osc = oscs[index];
                 int r = reg - index * 5;
                 osc.regs[r] = data;
                 osc.write_register(frame_phase, r, old_data, data);
-            }
-            else if (addr == vol_reg && data != old_data)
-            {
-                for (int i = osc_count; --i >= 0; )
-                {
+            } else if (addr == vol_reg && data != old_data) {
+                for (int i = osc_count; --i >= 0; ) {
                     silence_osc(time, oscs[i]);
                 }
 
                 update_volume();
-            }
-            else if (addr == stereo_reg)
-            {
-                for (int i = osc_count; --i >= 0; )
-                {
+            } else if (addr == stereo_reg) {
+                for (int i = osc_count; --i >= 0; ) {
                     GbOsc osc = oscs[i];
                     int bits = data >> i;
                     osc.output_select = (bits >> 3 & 2) | (bits & 1);
                     BlipBuffer output = outputs[osc.output_select];
-                    if (osc.output != output)
-                    {
+                    if (osc.output != output) {
                         silence_osc(time, osc);
                         osc.output = output;
                     }
                 }
-            }
-            else if (addr == status_reg && ((data ^ old_data) & power_mask) != 0)
-            {
+            } else if (addr == status_reg && ((data ^ old_data) & power_mask) != 0) {
                 frame_phase = 0;
-                if ((data & power_mask) == 0)
-                {
-                    for (int i = osc_count; --i >= 0; )
-                    {
+                if ((data & power_mask) == 0) {
+                    for (int i = osc_count; --i >= 0; ) {
                         silence_osc(time, oscs[i]);
                     }
 
                     reset_regs();
                 }
             }
-        }
-        else // wave data
+        } else // wave data
         {
             addr = wave.access(addr);
             regs[addr - startAddr] = data;
@@ -253,8 +222,7 @@ public final class GbApu
     };
 
     // Reads from address at specified time
-    public int read(int time, int addr)
-    {
+    public int read(int time, int addr) {
         assert startAddr <= addr && addr <= endAddr;
 
         run_until(time);
@@ -267,8 +235,7 @@ public final class GbApu
         if (index < masks.length)
             data |= masks[index];
 
-        if (addr == status_reg)
-        {
+        if (addr == status_reg) {
             data &= 0xF0;
             if (square1.enabled != 0) data |= 1;
             if (square2.enabled != 0) data |= 2;

@@ -8,46 +8,39 @@ To build gme.jar:
 */
 
 import java.applet.Applet;
-import java.awt.*;
+import java.awt.Button;
+import java.awt.Checkbox;
+import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public final class gme extends Applet implements ActionListener
-{
+
+public final class gme extends Applet implements ActionListener {
+
     // Plays file at given URL (HTTP only). If it's an archive (.zip)
     // then path specifies the file within the archive. Track ranges
     // from 1 to number of tracks in file.
-    public void playFile(String url, String path, int track, String title, int time)
-    {
-        try
-        {
+    public void playFile(String url, String path, int track, String title, int time) {
+        try {
             player.add(url, path, track, title, time, !playlistEnabled.getState() || !player.isPlaying());
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void playFile(String url, String path, int track, String title)
-    {
+    public void playFile(String url, String path, int track, String title) {
         playFile(url, path, track, title, 150);
     }
 
-    public void playFile(String url, String path, int track)
-    {
+    public void playFile(String url, String path, int track) {
         playFile(url, path, track, "");
     }
 
     // Stops currently playing file, if any
-    public void stopFile()
-    {
-        try
-        {
+    public void stopFile() {
+        try {
             player.stop();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -58,8 +51,7 @@ public final class gme extends Applet implements ActionListener
     boolean backgroundPlayback;
     Checkbox playlistEnabled;
 
-    private Button newBut(String name)
-    {
+    private Button newBut(String name) {
         Button b = new Button(name);
         b.setActionCommand(name);
         b.addActionListener(this);
@@ -67,8 +59,7 @@ public final class gme extends Applet implements ActionListener
         return b;
     }
 
-    void createGUI()
-    {
+    void createGUI() {
         add(player.time = new Label("          "));
         add(player.trackLabel = new Label("          "));
 
@@ -83,24 +74,20 @@ public final class gme extends Applet implements ActionListener
     }
 
     // Returns integer parameter passed to applet, or defaultValue if missing
-    int getIntParameter(String name, int defaultValue)
-    {
+    int getIntParameter(String name, int defaultValue) {
         String p = getParameter(name);
         return (p != null ? Integer.parseInt(p) : defaultValue);
     }
 
     // Returns string parameter passed to applet, or defaultValue if missing
-    String getStringParameter(String name, String defaultValue)
-    {
+    String getStringParameter(String name, String defaultValue) {
         String p = getParameter(name);
         return (p != null ? p : defaultValue);
     }
 
     // Called when applet is first loaded
-    public void init()
-    {
-        try
-        {
+    public void init() {
+        try {
             // Setup player and sample rate
             int sampleRate = getIntParameter("SAMPLERATE", 44100);
             player = new PlayerWithUpdate(sampleRate);
@@ -115,26 +102,20 @@ public final class gme extends Applet implements ActionListener
             if (url != null)
                 playFile(url, getStringParameter("PLAYPATH", ""),
                         getIntParameter("PLAYTRACK", 1));
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    static int rand(int range)
-    {
+    static int rand(int range) {
         return (int) (java.lang.Math.random() * range + 0.5);
     }
 
     // Called when button is clicked
-    public void actionPerformed(ActionEvent e)
-    {
-        try
-        {
+    public void actionPerformed(ActionEvent e) {
+        try {
             String cmd = e.getActionCommand();
-            if (cmd == "Stop")
-            {
+            if (cmd == "Stop") {
                 if (player.isPlaying())
                     player.pause();
                 else
@@ -142,39 +123,30 @@ public final class gme extends Applet implements ActionListener
                 return;
             }
 
-            if (cmd == "Prev")
-            {
+            if (cmd == "Prev") {
                 player.prev();
                 return;
             }
 
-            if (cmd == "Next")
-            {
+            if (cmd == "Next") {
                 player.next();
                 return;
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     // Called when applet's page isn't active
-    public void stop()
-    {
+    public void stop() {
         if (!backgroundPlayback)
             stopFile();
     }
 
-    public void destroy()
-    {
-        try
-        {
+    public void destroy() {
+        try {
             stopFile();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

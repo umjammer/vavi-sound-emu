@@ -20,17 +20,15 @@ package libvgm;
 
 // Nintendo Game Boy GB-Z80 CPU emulator
 // http://www.slack.net/~ant/
-public class GbCpu extends ClassicEmu
-{
-    public GbCpu()
-    {
+public class GbCpu extends ClassicEmu {
+
+    public GbCpu() {
         rstBase = 0;
     }
 
     // Resets registers, uses supplied physical memory, and
     // maps all memory pages to unmapped
-    public final void reset(byte[] mem, int unmapped)
-    {
+    public final void reset(byte[] mem, int unmapped) {
         this.mem = mem;
         a = 0;
         bc = 0;
@@ -43,8 +41,7 @@ public class GbCpu extends ClassicEmu
 
         time = 0;
 
-        for (int i = 0; i < pageCount + 1; i++)
-        {
+        for (int i = 0; i < pageCount + 1; i++) {
             mapPage(i, unmapped);
         }
     }
@@ -54,20 +51,17 @@ public class GbCpu extends ClassicEmu
     static final int pageSize = 1 << pageShift;
 
     // Maps address range to offset in physical memory
-    public final void mapMemory(int addr, int size, int offset)
-    {
+    public final void mapMemory(int addr, int size, int offset) {
         assert addr % pageSize == 0;
         assert size % pageSize == 0;
         int firstPage = addr / pageSize;
-        for (int i = size / pageSize; i-- > 0; )
-        {
+        for (int i = size / pageSize; i-- > 0; ) {
             mapPage(firstPage + i, offset + i * pageSize);
         }
     }
 
     // Maps address to memory
-    public final int mapAddr(int addr)
-    {
+    public final int mapAddr(int addr) {
         return pages[addr >> pageShift] + addr;
     }
 
@@ -83,28 +77,24 @@ public class GbCpu extends ClassicEmu
     public int time;
 
     // Memory read and write handlers
-    protected int cpuRead(int addr)
-    {
+    protected int cpuRead(int addr) {
         return 0;
     }
 
-    protected void cpuWrite(int addr, int data)
-    {
+    protected void cpuWrite(int addr, int data) {
     }
 
     int pages[] = new int[pageCount + 1];
     int cz, ph;
     byte[] mem;
 
-    final void mapPage(int page, int offset)
-    {
+    final void mapPage(int page, int offset) {
         if (debug) assert 0 <= page && page < pageCount + 1;
         pages[page] = offset - page * pageSize;
     }
 
     // Runs until time >= 0
-    public final void runCpu()
-    {
+    public final void runCpu() {
         // locals are faster, and first three are more efficient to access
         final byte[] mem = this.mem;
         int pc = this.pc;
@@ -121,11 +111,9 @@ public class GbCpu extends ClassicEmu
         final int pages[] = this.pages;
         final int instrTimes[] = this.instrTimes;
 
-        loop:
-        while (time < 0)
-        {
-            if (debug)
-            {
+loop:
+        while (time < 0) {
+            if (debug) {
                 assert 0 <= a && a < 0x00100;
                 assert 0 <= bc && bc < 0x10000;
                 assert 0 <= de && de < 0x10000;
@@ -136,16 +124,14 @@ public class GbCpu extends ClassicEmu
 
             int instr;
             int opcode;
-            if ((opcode = mem[instr = pages[pc >> pageShift] + pc] & 0xFF) == 0xCB)
-            {
+            if ((opcode = mem[instr = pages[pc >> pageShift] + pc] & 0xFF) == 0xCB) {
                 // CB
 
                 // Source
                 this.time = (time += cbTimes[opcode = mem[instr + 1] & 0xFF]);
                 pc += 2;
                 int operand;
-                switch ((operand = opcode & 7))
-                {
+                switch ((operand = opcode & 7)) {
                     case 0:
                         data = bc >> 8;
                         break;
@@ -174,8 +160,7 @@ public class GbCpu extends ClassicEmu
 
                 // Operation
                 int operation;
-                switch ((operation = opcode >> 3))
-                {
+                switch ((operation = opcode >> 3)) {
                     case 0x08: // BIT  0,r
                     case 0x09: // BIT  1,r
                     case 0x0A: // BIT  2,r
@@ -253,8 +238,7 @@ public class GbCpu extends ClassicEmu
                 }
 
                 // Dest
-                switch (operand)
-                {
+                switch (operand) {
                     case 0:
                         bc = data << 8 | (bc & 0xFF);
                         continue;
@@ -287,8 +271,7 @@ public class GbCpu extends ClassicEmu
             this.time = (time += instrTimes[opcode]);
 
             // Source
-            switch (opcode)
-            {
+            switch (opcode) {
                 case 0xF3: // DI
                     // TODO: implement
                     continue;
@@ -336,21 +319,16 @@ public class GbCpu extends ClassicEmu
                     ph = ~cz & 0xFF; // N=1 H=1
                     continue;
 
-                case 0x27:
-                {// DAA
+                case 0x27: {// DAA
                     int h = ph ^ cz;
-                    if ((ph & 0x100) != 0)
-                    {
+                    if ((ph & 0x100) != 0) {
                         if ((h & 0x10) != 0 || (a & 0x0F) > 9)
                             a += 6;
 
                         if ((cz & 0x100) != 0 || a > 0x9F)
                             a += 0x60;
-                    }
-                    else
-                    {
-                        if ((h & 0x10) != 0)
-                        {
+                    } else {
+                        if ((h & 0x10) != 0) {
                             a -= 6;
                             if ((cz & 0x100) == 0)
                                 a &= 0xFF;
@@ -651,8 +629,7 @@ public class GbCpu extends ClassicEmu
             }
 
             // Operation
-            switch (opcode)
-            {
+            switch (opcode) {
                 case 0x09: // ADD  HL,BC
                 case 0x19: // ADD  HL,DE
                 case 0x29: // ADD  HL,HL
@@ -804,8 +781,7 @@ public class GbCpu extends ClassicEmu
                     continue;
 
                 case 0xE8: // ADD  SP,s
-                case 0xF8:
-                {// LD   HL,SPs
+                case 0xF8: {// LD   HL,SPs
                     int t = (sp + (byte) data) & 0xFFFF;
                     cz = (((sp & 0xFF) + data) & 0x100) | 1; // Z=0 C=*
                     ph = (sp ^ data ^ t) | 0x100; // N=0 H=*
@@ -860,8 +836,7 @@ public class GbCpu extends ClassicEmu
                 case 0xD0: // RET  NC
                 case 0xD8: // RET  C
                     time += 12;
-                case 0xC9:
-                {// RET
+                case 0xC9: {// RET
                     data = pages[sp >> pageShift] + sp;
                     pc = (mem[data + 1] & 0xFF) << 8 | (mem[data] & 0xFF);
                     sp = (sp + 2) & 0xFFFF;
@@ -871,8 +846,7 @@ public class GbCpu extends ClassicEmu
                 case 0xC1: // POP  BC
                 case 0xD1: // POP  DE
                 case 0xE1: // POP  HL
-                case 0xF1:
-                {// POP  AF
+                case 0xF1: {// POP  AF
                     data = pages[sp >> pageShift] + sp;
                     data = (mem[data + 1] & 0xFF) << 8 | (mem[data] & 0xFF);
                     sp = (sp + 2) & 0xFFFF;
@@ -921,8 +895,7 @@ public class GbCpu extends ClassicEmu
             }
 
             // Destination
-            switch (opcode)
-            {
+            switch (opcode) {
                 case 0xC2: // JP   NZ,nn
                 case 0xCA: // JP   Z,nn
                 case 0xD2: // JP   NC,nn
@@ -954,8 +927,7 @@ public class GbCpu extends ClassicEmu
                 case 0xEF: // RST  $28
                 case 0xF7: // RST  $30
                 case 0xFF: // RST  $38
-                case 0xCD:
-                {// CALL nn
+                case 0xCD: {// CALL nn
                     int t = pc;
                     pc = data;
                     data = t;
@@ -963,8 +935,7 @@ public class GbCpu extends ClassicEmu
                 case 0xC5: // PUSH BC
                 case 0xD5: // PUSH DE
                 case 0xE5: // PUSH HL
-                case 0xF5:
-                {// PUSH AF
+                case 0xF5: {// PUSH AF
                     sp = (sp - 2) & 0xFFFF;
                     int offset = pages[sp >> pageShift] + sp;
                     mem[offset + 1] = (byte) (data >> 8);
@@ -972,8 +943,7 @@ public class GbCpu extends ClassicEmu
                     continue;
                 }
 
-                case 0xF1:
-                {// POP  AF
+                case 0xF1: {// POP  AF
                     cz = (data << 4 & 0x100) | ((data >> 7 & 1) ^ 1);
                     ph = (~data << 2 & 0x100) | (data >> 1 & 0x10);
                     a = data >> 8;

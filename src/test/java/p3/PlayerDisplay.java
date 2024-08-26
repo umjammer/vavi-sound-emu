@@ -3,7 +3,9 @@ package p3;
 import libvgm.VGMPlayer;
 import processing.core.PConstants;
 
+
 public class PlayerDisplay {
+
     Main window;
     VGMPlayer player;
 
@@ -29,8 +31,7 @@ public class PlayerDisplay {
                     .getFileName().toString().replaceFirst("[.][^.]+$", "");
             // what a mess... but it works
             labelFilename = window.shrinkString(labelFilename);
-        }
-        else labelFilename = player.customInfoMsg;
+        } else labelFilename = player.customInfoMsg;
 
         if (player != null && player.isPlaying()) {
             int secPos = player.getCurrentTime();
@@ -38,8 +39,7 @@ public class PlayerDisplay {
             labelCurrTrack = String.valueOf(player.getCurrentTrack());
             labelTrackCount = String.valueOf(player.getTrackCount());
             labelEmuName = player.emuName;
-        }
-        else {
+        } else {
             labelTimestamp = "-:--";
             labelCurrTrack = "-";
             labelTrackCount = "-";

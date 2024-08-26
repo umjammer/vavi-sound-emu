@@ -35,8 +35,8 @@ HTTP, the most recently loaded file is kept in memory and a load request
 for the same URL is eliminated. This allows a web page to switch between
 several tracks in a ZIP archive or of a multi-track music file, without
 having to keep track of whether the file was already loaded. */
-public class VGMPlayer extends EmuPlayer
-{
+public class VGMPlayer extends EmuPlayer {
+
     int sampleRate;
 
     final String DEFAULT_STOPPED_MSG = "Player stopped";
@@ -44,21 +44,18 @@ public class VGMPlayer extends EmuPlayer
     public String currFilename = DEFAULT_STOPPED_MSG;
     public String customInfoMsg = "";
 
-    public VGMPlayer(int sampleRate)
-    {
+    public VGMPlayer(int sampleRate) {
         this.sampleRate = sampleRate;
     }
 
     // Stops playback and loads file from given URL (HTTP only).
     // If it's an archive (.zip) then path specifies the file within
     // the archive.
-    public void loadFile(String path) throws Exception
-    {
+    public void loadFile(String path) throws Exception {
         stop();
         closeFile();
 
-        if (!loadedPath.equals(path))
-        {
+        if (!loadedPath.equals(path)) {
             byte[] data = readFile(path);
 
             String name = path.toUpperCase();
@@ -103,8 +100,7 @@ public class VGMPlayer extends EmuPlayer
     byte[] archiveData;
 
     // Creates appropriate emulator for given filename
-    MusicEmu createEmu(String name)
-    {
+    MusicEmu createEmu(String name) {
         if (name.endsWith(".VGM") || name.endsWith(".VGZ"))
             return new VgmEmu();
 
@@ -121,8 +117,7 @@ public class VGMPlayer extends EmuPlayer
     }
 
     // Loads given URL and file within archive, and caches archive for future access
-    byte[] readFile(String path) throws Exception
-    {
+    byte[] readFile(String path) throws Exception {
         InputStream in = null;
         String name = path.toUpperCase();
 
@@ -131,8 +126,7 @@ public class VGMPlayer extends EmuPlayer
         name = path.toUpperCase();
         //System.out.println( "Unzip " + url );
 
-        if (name.endsWith(".GZ") || name.endsWith(".VGZ"))
-        {
+        if (name.endsWith(".GZ") || name.endsWith(".VGZ")) {
             in = DataReader.openGZIP(in);
         }
 

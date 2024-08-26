@@ -20,11 +20,10 @@ package libvgm;
 
 // Nintendo NES 6502 CPU emulator
 // http://www.slack.net/~ant/
-public class NesCpu extends ClassicEmu
-{
+public class NesCpu extends ClassicEmu {
+
     // Resets registers and uses supplied physical memory
-    public final void reset(byte[] mem, int unmapped)
-    {
+    public final void reset(byte[] mem, int unmapped) {
         this.mem = mem;
         a = 0;
         x = 0;
@@ -37,8 +36,7 @@ public class NesCpu extends ClassicEmu
 
         time = 0;
 
-        for (int i = 0; i < pageCount + 1; i++)
-        {
+        for (int i = 0; i < pageCount + 1; i++) {
             mapPage(i, unmapped);
         }
     }
@@ -48,20 +46,17 @@ public class NesCpu extends ClassicEmu
     public static final int pageSize = 1 << pageShift;
 
     // Maps address range to offset in physical memory
-    public final void mapMemory(int addr, int size, int offset)
-    {
+    public final void mapMemory(int addr, int size, int offset) {
         assert addr % pageSize == 0;
         assert size % pageSize == 0;
         int firstPage = addr / pageSize;
-        for (int i = size / pageSize; i-- > 0; )
-        {
+        for (int i = size / pageSize; i-- > 0; ) {
             mapPage(firstPage + i, offset + i * pageSize);
         }
     }
 
     // Maps address to memory
-    public final int mapAddr(int addr)
-    {
+    public final int mapAddr(int addr) {
         return pages[addr >> pageShift] + addr;
     }
 
@@ -74,21 +69,18 @@ public class NesCpu extends ClassicEmu
     public int time;
 
     // Memory read and write handlers
-    protected int cpuRead(int addr)
-    {
+    protected int cpuRead(int addr) {
         return 0;
     }
 
-    protected void cpuWrite(int addr, int data)
-    {
+    protected void cpuWrite(int addr, int data) {
     }
 
     final int pages[] = new int[pageCount + 1];
     int c, nz;
     byte[] mem;
 
-    final void mapPage(int page, int offset)
-    {
+    final void mapPage(int page, int offset) {
         if (debug) assert 0 <= page && page < pageCount + 1;
         pages[page] = offset - page * pageSize;
     }
@@ -127,8 +119,7 @@ public class NesCpu extends ClassicEmu
     static final int C01 = 0x01;
 
     // Runs until time >= 0
-    public final void runCpu()
-    {
+    public final void runCpu() {
         // locals are faster, and first three are more efficient to access
         final byte[] mem = this.mem;
         int nz = this.nz;
@@ -146,11 +137,9 @@ public class NesCpu extends ClassicEmu
 
         int addr = 0;
 
-        loop:
-        while (time < 0)
-        {
-            if (debug)
-            {
+loop:
+        while (time < 0) {
+            if (debug) {
                 assert 0 <= a && a < 0x100;
                 assert 0 <= x && x < 0x100;
                 assert 0 <= y && y < 0x100;
@@ -171,35 +160,29 @@ public class NesCpu extends ClassicEmu
             // will be modifying nz anyway.
 
             // Source
-            switch (opcode)
-            {
+            switch (opcode) {
 
                 //////// Often used
 
-                case 0xD0:
-                {// BNE r
+                case 0xD0: {// BNE r
                     pc += 2;
-                    if (((byte) nz) != 0)
-                    {
+                    if (((byte) nz) != 0) {
                         int old = pc;
                         time += (((pc += mem[instr]) ^ old) >> 8 & 1) + 1;
                     }
                     continue;
                 }
 
-                case 0xF0:
-                {// BEQ r
+                case 0xF0: {// BEQ r
                     pc += 2;
-                    if (((byte) nz) == 0)
-                    {
+                    if (((byte) nz) == 0) {
                         int old = pc;
                         time += (((pc += mem[instr]) ^ old) >> 8 & 1) + 1;
                     }
                     continue;
                 }
 
-                case 0xBD:
-                {// LDA a,X
+                case 0xBD: {// LDA a,X
                     pc += 3;
                     int lsb;
                     time += (lsb = (mem[instr] & 0xFF) + x) >> 8;
@@ -223,8 +206,7 @@ public class NesCpu extends ClassicEmu
                     nz = (byte) nz;
                     continue;
 
-                case 0x20:
-                {// JSR a
+                case 0x20: {// JSR a
                     int t = pc + 2;
                     pc = (mem[instr + 1] & 0xFF) << 8 | (mem[instr] & 0xFF);
                     mem[(sp - 1) | 0x100] = (byte) (t >> 8);
@@ -363,8 +345,7 @@ public class NesCpu extends ClassicEmu
 
                     // Illegal
                 case 0xF2:
-                    if (pc > 0xFFFF)
-                    {
+                    if (pc > 0xFFFF) {
                         // handle wrap-around (assumes caller has put 0xF2 at 0x1000-0x10FF)
                         pc &= 0xFFFF;
                         break;
@@ -404,8 +385,7 @@ public class NesCpu extends ClassicEmu
                  case 0xF3: case 0xF7: case 0xFB: case 0xFF:
                  case 0x9C: case 0x9E:
                  */
-                    if ((opcode >> 4) == 0x0B)
-                    {
+                    if ((opcode >> 4) == 0x0B) {
                         int t = mem[instr] & 0xFF;
                         if (opcode == 0xB3)
                             t = mem[t] & 0xFF;
@@ -482,14 +462,12 @@ public class NesCpu extends ClassicEmu
                 case 0xB1: // LDA (z),Y
                 case 0xD1: // CMP (z),Y
                 case 0xF1: // SBC (z),Y
-                case 0x91:
-                {// STA (z),Y
+                case 0x91: {// STA (z),Y
                     pc += 2;
                     int z = mem[instr];
                     int lsb = (mem[z & 0xFF] & 0xFF) + y;
                     addr = ((mem[(z + 1) & 0xFF] & 0xFF) << 8) + lsb;
-                    if (opcode != 0x91)
-                    {
+                    if (opcode != 0x91) {
                         time += lsb >> 8;
                         nz = cpuRead(addr);
                     }
@@ -503,8 +481,7 @@ public class NesCpu extends ClassicEmu
                 case 0xA1: // LDA (z,X)
                 case 0xC1: // CMP (z,X)
                 case 0xE1: // SBC (z,X)
-                case 0x81:
-                {// STA (z,X)
+                case 0x81: {// STA (z,X)
                     pc += 2;
                     int z = mem[instr] + x;
                     addr = (mem[(z + 1) & 0xFF] & 0xFF) << 8 | (mem[z & 0xFF] & 0xFF);
@@ -562,13 +539,11 @@ public class NesCpu extends ClassicEmu
                 case 0xBC: // LDY a,X
                 case 0xDD: // CMP a,X
                 case 0xFD: // SBC a,X
-                case 0x9D:
-                {// STA a,X
+                case 0x9D: {// STA a,X
                     pc += 3;
                     int lsb = (mem[instr] & 0xFF) + x;
                     addr = ((mem[instr + 1] & 0xFF) << 8) + lsb;
-                    if (opcode != 0x9D)
-                    {
+                    if (opcode != 0x9D) {
                         time += lsb >> 8;
                         nz = cpuRead(addr);
                     }
@@ -583,13 +558,11 @@ public class NesCpu extends ClassicEmu
                 case 0xBE: // LDX a,Y
                 case 0xD9: // CMP a,Y
                 case 0xF9: // SBC a,Y
-                case 0x99:
-                {// STA a,Y
+                case 0x99: {// STA a,Y
                     pc += 3;
                     int lsb = (mem[instr] & 0xFF) + y;
                     addr = ((mem[instr + 1] & 0xFF) << 8) + lsb;
-                    if (opcode != 0x99)
-                    {
+                    if (opcode != 0x99) {
                         time += lsb >> 8;
                         nz = cpuRead(addr);
                     }
@@ -668,8 +641,7 @@ public class NesCpu extends ClassicEmu
             }
 
             // Operation
-            switch (opcode)
-            {
+            switch (opcode) {
                 case 0x60: // RTS
                     continue;
 
@@ -678,8 +650,7 @@ public class NesCpu extends ClassicEmu
                 case 0x8D: // STA a
                 case 0x9D: // STA a,X
                 case 0x99: // STA a,Y
-                    if (addr > 0x7FF)
-                    {
+                    if (addr > 0x7FF) {
                         cpuWrite(addr, a);
                         continue;
                     }
@@ -688,8 +659,7 @@ public class NesCpu extends ClassicEmu
                     continue;
 
                 case 0x8E: // STX a
-                    if (addr > 0x7FF)
-                    {
+                    if (addr > 0x7FF) {
                         cpuWrite(addr, x);
                         continue;
                     }
@@ -699,8 +669,7 @@ public class NesCpu extends ClassicEmu
                     continue;
 
                 case 0x8C: // STY a
-                    if (addr > 0x7FF)
-                    {
+                    if (addr > 0x7FF) {
                         cpuWrite(addr, y);
                         continue;
                     }
@@ -714,8 +683,7 @@ public class NesCpu extends ClassicEmu
                 case 0x50: // BVC r
                 case 0x70: // BVS r
                 case 0x90: // BCC r
-                case 0xB0:
-                {// BCS r
+                case 0xB0: {// BCS r
                     int old = pc;
                     time += (((pc += mem[instr]) ^ old) >> 8 & 1) + 1;
                     continue;
@@ -763,8 +731,7 @@ public class NesCpu extends ClassicEmu
                 case 0x79: // ADC a,Y
                 case 0x65: // ADC z
                 case 0x75: // ADC z,X
-                case 0x69:
-                {// ADC #n
+                case 0x69: {// ADC #n
                     int t = nz ^ a;
                     c = (nz += (c >> 8 & 1) + a);
                     a = nz & 0xFF;
@@ -827,8 +794,7 @@ public class NesCpu extends ClassicEmu
                     nz = (c = nz << 8) | (~nz & Z02);
                     continue;
 
-                case 0x00:
-                {// BRK #n
+                case 0x00: {// BRK #n
                     int t = pc + 2;
                     pc = cpuRead(0xFFFF) << 8 | cpuRead(0xFFFE);
                     mem[(sp - 1) | 0x100] = (byte) (t >> 8);
@@ -857,8 +823,7 @@ public class NesCpu extends ClassicEmu
                 case 0x7E: // ROR a,X
                 case 0x66: // ROR z
                 case 0x76: // ROR z,X
-                case 0x6A:
-                {// ROR
+                case 0x6A: {// ROR
                     int t = c & 0x100;
                     c = nz << 8;
                     nz = (nz | t) >> 1;
@@ -869,8 +834,7 @@ public class NesCpu extends ClassicEmu
                 case 0x3E: // ROL a,X
                 case 0x26: // ROL z
                 case 0x36: // ROL z,X
-                case 0x2A:
-                {// ROL
+                case 0x2A: {// ROL
                     int t = c >> 8 & 1;
                     nz = ((c = nz << 1) & 0xFF) | t;
                     break;
@@ -895,8 +859,7 @@ public class NesCpu extends ClassicEmu
             }
 
             // Destination
-            switch (opcode)
-            {
+            switch (opcode) {
                 case 0x2A: // ROL
                 case 0x0A: // ASL
                 case 0x6A: // ROR
@@ -937,8 +900,7 @@ public class NesCpu extends ClassicEmu
 
                 case 0x08: // PHP
                     pc++;
-                case 0x00:
-                {// BRK #n
+                case 0x00: {// BRK #n
                     int t = p | R20 | B10 | (c >> 8 & C01) | (((nz >> 8) | nz) & N80);
                     if (((byte) nz) == 0)
                         t |= Z02;
@@ -974,8 +936,7 @@ public class NesCpu extends ClassicEmu
                  case 0x46: // LSR z
                  case 0x56: // LSR z,X
                  */
-                    if (addr <= 0x7FF)
-                    {
+                    if (addr <= 0x7FF) {
                         mem[addr] = (byte) nz;
                         continue;
                     }
@@ -984,7 +945,7 @@ public class NesCpu extends ClassicEmu
             }
         }
 
-        stop:
+stop:
         this.a = a;
         this.x = x;
         this.y = y;

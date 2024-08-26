@@ -1,10 +1,12 @@
 package p3;
 
-import processing.core.PApplet;
-
 import java.util.HashMap;
 
+import processing.core.PApplet;
+
+
 public class ButtonToolbar extends PApplet {
+
     int x, y;
     double xSep, ySep;
     HashMap<String, Button> buttons = new HashMap<>();
@@ -30,7 +32,7 @@ public class ButtonToolbar extends PApplet {
     }
 
     public void redraw() {
-        for (Button b: buttons.values()) b.redraw();
+        for (Button b : buttons.values()) b.redraw();
     }
 
     boolean collided(String bName) {
