@@ -18,9 +18,11 @@
 
 package libvgm;
 
-// Band-limited sound synthesis buffer
-// http://www.slack.net/~ant/
-
+/**
+ * Band-limited sound synthesis buffer
+ *
+ * @see "https://www.slack.net/~ant/"
+ */
 public final class BlipBuffer {
 
     static final boolean muchFaster = false; // speeds synthesis at a cost of quality
@@ -69,7 +71,7 @@ public final class BlipBuffer {
 
 
             // must be even since center kernel uses same half twice
-            final int mul = volume;
+            int mul = volume;
 
             final int pc = phaseCount;
             for (int p = 17; --p >= 0; ) {
@@ -88,12 +90,12 @@ public final class BlipBuffer {
 
     // Adds delta at given time
     public void addDelta(int time, int delta) {
-        final int[] buf = this.buf;
-        final int phase = (time = time * factor + offset) >>
+        int[] buf = this.buf;
+        int phase = (time = time * factor + offset) >>
                 (timeBits - phaseBits) & (phaseCount - 1);
 
         if (muchFaster) {
-            final int right = ((delta *= volume) >> phaseBits) * phase;
+            int right = ((delta *= volume) >> phaseBits) * phase;
             buf[time >>= timeBits] += delta - right;
             buf[time + 1] += right;
         } else {
@@ -145,13 +147,13 @@ public final class BlipBuffer {
     // Reads at most count samples into out at offset pos*2 (2 bytes per sample)
     // and returns number of samples actually read.
     public int readSamples(byte[] out, int pos, int count) {
-        final int avail = samplesAvail();
+        int avail = samplesAvail();
         if (count > avail)
             count = avail;
 
         if (count > 0) {
             // Integrate
-            final int[] buf = this.buf;
+            int[] buf = this.buf;
             int accum = this.accum;
             pos <<= 1;
             int i = 0;
@@ -177,10 +179,10 @@ public final class BlipBuffer {
 
 // internal
 
-    final int timeBits = 16;
-    final int phaseBits = (muchFaster ? 8 : 5);
+    static final int timeBits = 16;
+    static final int phaseBits = (muchFaster ? 8 : 5);
     final int phaseCount = 1 << phaseBits;
-    final int halfWidth = 8;
+    static final int halfWidth = 8;
     final int stepWidth = halfWidth * 2;
 
     int factor;

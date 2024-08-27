@@ -16,17 +16,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.vgm;
 
-// Sega Master System, BBC Micro VGM music file emulator
-// http://www.slack.net/~ant/
+import java.lang.System.Logger.Level;
+
+import libvgm.ClassicEmu;
+import libvgm.DataReader;
+
+
+/**
+ * Sega Master System, BBC Micro VGM music file emulator
+ *
+ * @see "https://www.slack.net/~ant"
+ */
 public final class VgmEmu extends ClassicEmu {
 
+    @Override
     protected int loadFile_(byte[] data) {
         if (!isHeader(data, "Vgm "))
-            error("Not a VGM file");
+            throw new IllegalArgumentException("Not a VGM file");
 
-        // TODO: use custom noise taps if present
+        // TODO use custom noise taps if present
 
         // Data and loop
         this.data = data;
@@ -61,7 +71,7 @@ public final class VgmEmu extends ClassicEmu {
         return 1;
     }
 
-// private
+    // private
 
     static final int vgmRate = 44100;
     static final int psgTimeBits = 12;
@@ -98,6 +108,7 @@ public final class VgmEmu extends ClassicEmu {
     static final int ym2612_dac_port = 0x2A;
     static final int pcm_block_type = 0x00;
 
+    @Override
     public void startTrack(int track) {
         super.startTrack(track);
 
@@ -139,8 +150,9 @@ public final class VgmEmu extends ClassicEmu {
             dac_amp |= dac_disabled;
     }
 
+    @Override
     protected int runMsec(int msec) {
-        final int duration = vgmRate / 100 * msec / 10;
+        int duration = vgmRate / 100 * msec / 10;
 
         {
             int sampleCount = toFMTime(duration);
@@ -205,8 +217,10 @@ public final class VgmEmu extends ClassicEmu {
                     break;
 
                 case cmd_data_block:
-                    if (data[pos++] != cmd_end)
-                        logError();
+                    if (data[pos++] != cmd_end) {
+                        setTrackEnded();
+                        logger.log(Level.ERROR, "emulation error");
+                    }
                     int type = data[pos++];
                     long size = getLE32(data, pos);
                     pos += 4;
@@ -236,7 +250,8 @@ public final class VgmEmu extends ClassicEmu {
                             break;
 
                         default:
-                            logError();
+                            setTrackEnded();
+                            logger.log(Level.ERROR, "emulation error");
                             break;
                     }
             }
@@ -252,7 +267,8 @@ public final class VgmEmu extends ClassicEmu {
             setTrackEnded();
             if (pos > data.length) {
                 pos = data.length;
-                logError(); // went past end
+                setTrackEnded(); // went past end
+                logger.log(Level.ERROR, "emulation error");
             }
         }
 
@@ -261,6 +277,7 @@ public final class VgmEmu extends ClassicEmu {
         return endTime;
     }
 
+    @Override
     protected void mixSamples(byte[] out, int out_off, int count) {
         if (fm == null)
             return;

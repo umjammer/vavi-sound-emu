@@ -16,10 +16,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.gbs;
 
-// Nintendo Game Boy GBS music file emulator
-// http://www.slack.net/~ant/
+import java.lang.System.Logger.Level;
+
+import libvgm.MemPager;
+
+
+/**
+ * Nintendo Game Boy GBS music file emulator
+ *
+ * @see "https://www.slack.net/~ant"
+ */
 public final class GbsEmu extends GbCpu {
 
     // header offsets
@@ -49,9 +57,10 @@ public final class GbsEmu extends GbCpu {
 
     GbApu apu = new GbApu();
 
-    protected int loadFile_(byte in[]) {
+    @Override
+    protected int loadFile_(byte[] in) {
         if (!isHeader(in, "GBS\u0001"))
-            error("Not a GBS file");
+            throw new IllegalArgumentException("Not a GBS file");
 
         rstBase = getLE16(in, loadAddrOff);
         ram = rom.load(in, header, rstBase, 0xFF);
@@ -97,6 +106,7 @@ public final class GbsEmu extends GbCpu {
         cpuWrite(--sp, idleAddr & 0xFF);
     }
 
+    @Override
     public void startTrack(int track) {
         super.startTrack(track);
 
@@ -129,6 +139,7 @@ public final class GbsEmu extends GbCpu {
         cpuCall(getLE16(header, initAddrOff));
     }
 
+    @Override
     protected int runClocks(int clockCount) {
         endTime = clockCount;
         time = -endTime;
@@ -141,7 +152,8 @@ public final class GbsEmu extends GbCpu {
             if (pc != idleAddr) {
                 // TODO: PC overflow handling
                 pc = (pc + 1) & 0xFFFF;
-                logError();
+                setTrackEnded();
+                logger.log(Level.ERROR, "emulation error");
                 return endTime;
             }
 
@@ -168,8 +180,9 @@ public final class GbsEmu extends GbCpu {
         return endTime;
     }
 
+    @Override
     protected int cpuRead(int addr) {
-        if (debug) assert 0 <= addr && addr < 0x10000;
+        assert 0 <= addr && addr < 0x10000;
 
         if (apu.startAddr <= addr && addr <= apu.endAddr)
             return apu.read(time + endTime, addr);
@@ -177,9 +190,10 @@ public final class GbsEmu extends GbCpu {
         return ram[mapAddr(addr)] & 0xFF;
     }
 
+    @Override
     protected void cpuWrite(int addr, int data) {
-        if (debug) assert 0 <= data && data < 0x100;
-        if (debug) assert 0 <= addr && addr < 0x10000;
+        assert 0 <= data && data < 0x100;
+        assert 0 <= addr && addr < 0x10000;
 
         int offset = addr - ramAddr;
         if (offset >= 0) {

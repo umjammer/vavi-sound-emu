@@ -16,7 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.nsf;
+
+import libvgm.BlipBuffer;
+
 
 public final class NesTriangle extends NesOsc {
 
@@ -24,6 +27,7 @@ public final class NesTriangle extends NesOsc {
     int phase;
     int linearCounter;
 
+    @Override
     void reset() {
         linearCounter = 0;
         phase = phaseRange;
@@ -48,7 +52,7 @@ public final class NesTriangle extends NesOsc {
     }
 
     void run(BlipBuffer output, int time, int endTime) {
-        final int timer_period = period() + 1;
+        int timer_period = period() + 1;
 
         // to do: track phase when period < 3
         // to do: Output 7.5 on dac when period < 2? More accurate, but results in more clicks.

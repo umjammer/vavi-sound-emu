@@ -16,7 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.nsf;
+
+import libvgm.BlipBuffer;
+
 
 public final class NesDmc extends NesOsc {
 
@@ -39,6 +42,7 @@ public final class NesDmc extends NesOsc {
     int oscEnables;
     NesCpu cpu;
 
+    @Override
     void reset() {
         address = 0;
         dac = 0;

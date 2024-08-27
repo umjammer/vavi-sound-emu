@@ -20,7 +20,7 @@ package libvgm;
 
 public final class StereoBuffer {
 
-    private BlipBuffer[] bufs = new BlipBuffer[3];
+    private final BlipBuffer[] bufs = new BlipBuffer[3];
 
     // Same behavior as in BlipBuffer unless noted
 
@@ -91,7 +91,7 @@ public final class StereoBuffer {
     public int readSamples(byte[] out, int start, int count) {
         assert (count & 1) == 0;
 
-        final int avail = samplesAvail();
+        int avail = samplesAvail();
         if (count > avail)
             count = avail;
 
@@ -99,7 +99,7 @@ public final class StereoBuffer {
             // TODO: optimize for mono case
 
             // calculate center in place
-            final int[] mono = bufs[2].buf;
+            int[] mono = bufs[2].buf;
             {
                 int accum = bufs[2].accum;
                 int i = 0;
@@ -113,7 +113,7 @@ public final class StereoBuffer {
             // calculate left and right
             for (int ch = 2; --ch >= 0; ) {
                 // add right and output
-                final int[] buf = bufs[ch].buf;
+                int[] buf = bufs[ch].buf;
                 int accum = bufs[ch].accum;
                 int pos = (start + ch) << 1;
                 int i = 0;

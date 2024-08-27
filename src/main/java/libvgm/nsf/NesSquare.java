@@ -16,7 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.nsf;
+
+import libvgm.BlipBuffer;
+
 
 public final class NesSquare extends NesEnvelope {
 
@@ -26,6 +29,7 @@ public final class NesSquare extends NesEnvelope {
     int phase;
     int sweepDelay;
 
+    @Override
     void reset() {
         sweepDelay = 0;
         super.reset();
@@ -61,14 +65,14 @@ public final class NesSquare extends NesEnvelope {
     }
 
     void run(BlipBuffer output, int time, int endTime) {
-        final int period = this.period();
-        final int timer_period = (period + 1) * 2;
+        int period = this.period();
+        int timer_period = (period + 1) * 2;
 
         int offset = period >> (regs[1] & shiftMask);
         if ((regs[1] & negateMask) != 0)
             offset = 0;
 
-        final int volume = this.volume();
+        int volume = this.volume();
         if (volume == 0 || period < 8 || (period + offset) > 0x7FF) {
             if (lastAmp != 0) {
                 output.addDelta(time, lastAmp * -squareUnit);

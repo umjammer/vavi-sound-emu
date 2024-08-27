@@ -16,10 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.nsf;
 
-// Nintendo NES sound chip emulator
-// http://www.slack.net/~ant/
+import libvgm.BlipBuffer;
+
+
+/**
+ * Nintendo NES sound chip emulator
+ *
+ * @see "https://www.slack.net/~ant"
+ */
 public final class NesApu {
 
     public NesApu() {

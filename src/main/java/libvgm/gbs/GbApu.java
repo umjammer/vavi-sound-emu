@@ -16,10 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.gbs;
 
-// Nintendo Game Boy sound emulator
-// http://www.slack.net/~ant/
+import libvgm.BlipBuffer;
+
+
+/**
+ * Nintendo Game Boy sound emulator
+ *
+ * @see "https://www.slack.net/~ant"
+ */
 public final class GbApu {
 
     public GbApu() {
@@ -31,7 +37,7 @@ public final class GbApu {
         reset();
     }
 
-    // Resets oscillators and internal state
+    /** Resets oscillators and internal state */
     public void setOutput(BlipBuffer center, BlipBuffer left, BlipBuffer right) {
         outputs[1] = right;
         outputs[2] = left;
@@ -67,7 +73,7 @@ public final class GbApu {
         update_volume();
     }
 
-    static final int initial_wave[] = {
+    static final int[] initial_wave = {
             0x84, 0x40, 0x43, 0xAA, 0x2D, 0x78, 0x92, 0x3C,
             0x60, 0x59, 0x59, 0xB0, 0x34, 0xB8, 0x2E, 0xDA
     };
@@ -130,8 +136,10 @@ public final class GbApu {
         }
     }
 
-    // Runs all oscillators up to specified time, ends current time frame, then
-    // starts a new frame at time 0
+    /**
+     * Runs all oscillators up to specified time, ends current time frame, then
+     * starts a new frame at time 0
+     */
     public void endFrame(int end_time) {
         if (end_time > last_time)
             run_until(end_time);
@@ -212,7 +220,7 @@ public final class GbApu {
         }
     }
 
-    static final int masks[] = {
+    static final int[] masks = {
             0x80, 0x3F, 0x00, 0xFF, 0xBF,
             0xFF, 0x3F, 0x00, 0xFF, 0xBF,
             0x7F, 0xFF, 0x9F, 0xFF, 0xBF,

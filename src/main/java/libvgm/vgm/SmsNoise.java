@@ -16,7 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.vgm;
+
+import libvgm.BlipBuffer;
+
 
 public final class SmsNoise extends SmsOsc {
 
@@ -24,6 +27,7 @@ public final class SmsNoise extends SmsOsc {
     int feedback;
     int select;
 
+    @Override
     void reset() {
         select = 0;
         shifter = 0x8000;
@@ -33,7 +37,7 @@ public final class SmsNoise extends SmsOsc {
 
     void run(int time, int endTime, int period) {
         // TODO: probably also not zero-centered
-        final BlipBuffer output = this.output;
+        BlipBuffer output = this.output;
 
         int amp = volume;
         if ((shifter & 1) != 0)
@@ -52,7 +56,7 @@ public final class SmsNoise extends SmsOsc {
             time = endTime;
 
         if (time < endTime) {
-            final int feedback = this.feedback;
+            int feedback = this.feedback;
             int shifter = this.shifter;
             int delta = amp * (2 * masterVolume);
             if ((period *= 2) == 0)

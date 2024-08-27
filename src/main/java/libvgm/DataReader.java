@@ -19,8 +19,8 @@
 package libvgm;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.zip.GZIPInputStream;
@@ -28,24 +28,26 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 
-// http://www.slack.net/~ant/
+/**
+ * @see "https://www.slack.net/~ant"
+ */
 public class DataReader {
 
-    // Opens InputStream to file stored in various ways
-    static InputStream openHttp(String path) throws Exception {
+    /** Opens InputStream to file stored in various ways */
+    static InputStream openHttp(String path) throws IOException {
         return new URL(path).openConnection().getInputStream();
     }
 
-    static InputStream openFile(String path) throws Exception {
-        return new FileInputStream(new File(path));
+    static InputStream openFile(String path) throws IOException {
+        return new FileInputStream(path);
     }
 
-    static InputStream openGZIP(InputStream in) throws Exception {
+    static InputStream openGZIP(InputStream in) throws IOException {
         return new GZIPInputStream(in);
     }
 
-    // "Resizes" array to new size and preserves elements from in
-    static byte[] resize(byte[] in, int size) {
+    /** "Resizes" array to new size and preserves elements from in */
+    public static byte[] resize(byte[] in, int size) {
         byte[] out = new byte[size];
         if (size > in.length)
             size = in.length;
@@ -53,8 +55,8 @@ public class DataReader {
         return out;
     }
 
-    // Loads entire stream into byte array, then closes stream
-    static byte[] loadData(InputStream in) throws Exception {
+    /** Loads entire stream into byte array, then closes stream */
+    static byte[] loadData(InputStream in) throws IOException {
         byte[] data = new byte[256 * 1024];
         int size = 0;
         int count;
@@ -71,14 +73,16 @@ public class DataReader {
         return data;
     }
 
-    // Loads stream into ByteArrayInputStream
-    static ByteArrayInputStream cacheStream(InputStream in) throws Exception {
+    /** Loads stream into ByteArrayInputStream */
+    static ByteArrayInputStream cacheStream(InputStream in) throws IOException {
         return new ByteArrayInputStream(loadData(in));
     }
 
-    // Finds file named 'path' inside zip file, or returns null if not found.
-    // You should use a BufferedInputStream or cacheStream() for input.
-    static InputStream openZip(InputStream in, String path) throws Exception {
+    /**
+     * Finds file named 'path' inside zip file, or returns null if not found.
+     * You should use a BufferedInputStream or cacheStream() for input.
+     */
+    static InputStream openZip(InputStream in, String path) throws IOException {
         ZipInputStream zis = new ZipInputStream(in);
         for (ZipEntry entry; (entry = zis.getNextEntry()) != null; ) {
             if (path.equals(entry.getName()))

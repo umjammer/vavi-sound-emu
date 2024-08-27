@@ -2,6 +2,7 @@ package uk.co.kernite.VGM;
 
 import java.awt.Label;
 import java.util.ArrayList;
+import java.util.List;
 
 import libvgm.VGMPlayer;
 
@@ -11,7 +12,7 @@ public class PlayerList extends VGMPlayer {
     public Label titleLabel;
     public Label trackLabel;
     int playlistIndex;
-    final ArrayList list = new ArrayList();
+    final List<Entry> list = new ArrayList<>();
 
     PlayerList(int rate) {
         super(rate);
@@ -35,7 +36,6 @@ public class PlayerList extends VGMPlayer {
     }
 
     private static final class Entry {
-
         String url;
         String path;
         int track;
@@ -46,16 +46,16 @@ public class PlayerList extends VGMPlayer {
     private void playIndex(int i) throws Exception {
         playlistIndex = i;
         updateTrack();
-        Entry e = (Entry) list.get(i);
+        Entry e = list.get(i);
         titleLabel.setText(e.title);
         loadFile(e.path);
         startTrack(e.track - 1, e.time);
     }
 
     public void add(String url, String path, int track, String title, int time, boolean playNow) throws Exception {
-        if (title.length() == 0) {
+        if (title.isEmpty()) {
             title = path;
-            if (title.length() == 0)
+            if (title.isEmpty())
                 title = url;
 
             title = title.substring(title.lastIndexOf('/') + 1);

@@ -16,10 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.nsf;
 
-// Nintendo NES 6502 CPU emulator
-// http://www.slack.net/~ant/
+import libvgm.ClassicEmu;
+
+
+/**
+ * Nintendo NES 6502 CPU emulator
+ *
+ * @see "https://www.slack.net/~ant"
+ */
 public class NesCpu extends ClassicEmu {
 
     // Resets registers and uses supplied physical memory
@@ -76,12 +82,12 @@ public class NesCpu extends ClassicEmu {
     protected void cpuWrite(int addr, int data) {
     }
 
-    final int pages[] = new int[pageCount + 1];
+    final int[] pages = new int[pageCount + 1];
     int c, nz;
     byte[] mem;
 
     final void mapPage(int page, int offset) {
-        if (debug) assert 0 <= page && page < pageCount + 1;
+        assert 0 <= page && page < pageCount + 1;
         pages[page] = offset - page * pageSize;
     }
 
@@ -118,10 +124,10 @@ public class NesCpu extends ClassicEmu {
     static final int Z02 = 0x02;
     static final int C01 = 0x01;
 
-    // Runs until time >= 0
+    /** Runs until time >= 0 */
     public final void runCpu() {
         // locals are faster, and first three are more efficient to access
-        final byte[] mem = this.mem;
+        byte[] mem = this.mem;
         int nz = this.nz;
         int pc = this.pc;
 
@@ -132,21 +138,19 @@ public class NesCpu extends ClassicEmu {
         int sp = (this.s + 1) | 0x100;
         int p = this.p;
         int c = this.c;
-        final int pages[] = this.pages;
-        final int instrTimes[] = this.instrTimes;
+        int[] pages = this.pages;
+        int[] instrTimes = this.instrTimes;
 
         int addr = 0;
 
 loop:
         while (time < 0) {
-            if (debug) {
-                assert 0 <= a && a < 0x100;
-                assert 0 <= x && x < 0x100;
-                assert 0 <= y && y < 0x100;
-                assert (p & ~(V40 | D08 | I04)) == 0;
-                assert 0 <= pc && pc < 0x10000;
-                assert 0x100 <= sp && sp < 0x200;
-            }
+            assert 0 <= a && a < 0x100;
+            assert 0 <= x && x < 0x100;
+            assert 0 <= y && y < 0x100;
+            assert (p & ~(V40 | D08 | I04)) == 0;
+            assert 0 <= pc && pc < 0x10000;
+            assert 0x100 <= sp && sp < 0x200;
 
             int instr;
             int opcode;
@@ -365,26 +369,24 @@ loop:
 
                 // Unimplemented
                 default:
-                    /*
-                     assert false;
-                 case 0x03: case 0x07: case 0x0B: case 0x0F:
-                 case 0x13: case 0x17: case 0x1B: case 0x1F:
-                 case 0x23: case 0x27: case 0x2B: case 0x2F:
-                 case 0x33: case 0x37: case 0x3B: case 0x3F:
-                 case 0x43: case 0x47: case 0x4B: case 0x4F:
-                 case 0x53: case 0x57: case 0x5B: case 0x5F:
-                 case 0x63: case 0x67: case 0x6B: case 0x6F:
-                 case 0x73: case 0x77: case 0x7B: case 0x7F:
-                 case 0x83: case 0x87: case 0x8B: case 0x8F:
-                 case 0x93: case 0x97: case 0x9B: case 0x9F:
-                 case 0xA3: case 0xA7: case 0xAB: case 0xAF:
-                 case 0xB3: case 0xB7: case 0xBB: case 0xBF:
-                 case 0xC3: case 0xC7: case 0xCB: case 0xCF:
-                 case 0xD3: case 0xD7: case 0xDB: case 0xDF:
-                 case 0xE3: case 0xE7:            case 0xEF:
-                 case 0xF3: case 0xF7: case 0xFB: case 0xFF:
-                 case 0x9C: case 0x9E:
-                 */
+//                     assert false;
+//                case 0x03: case 0x07: case 0x0B: case 0x0F:
+//                case 0x13: case 0x17: case 0x1B: case 0x1F:
+//                case 0x23: case 0x27: case 0x2B: case 0x2F:
+//                case 0x33: case 0x37: case 0x3B: case 0x3F:
+//                case 0x43: case 0x47: case 0x4B: case 0x4F:
+//                case 0x53: case 0x57: case 0x5B: case 0x5F:
+//                case 0x63: case 0x67: case 0x6B: case 0x6F:
+//                case 0x73: case 0x77: case 0x7B: case 0x7F:
+//                case 0x83: case 0x87: case 0x8B: case 0x8F:
+//                case 0x93: case 0x97: case 0x9B: case 0x9F:
+//                case 0xA3: case 0xA7: case 0xAB: case 0xAF:
+//                case 0xB3: case 0xB7: case 0xBB: case 0xBF:
+//                case 0xC3: case 0xC7: case 0xCB: case 0xCF:
+//                case 0xD3: case 0xD7: case 0xDB: case 0xDF:
+//                case 0xE3: case 0xE7:            case 0xEF:
+//                case 0xF3: case 0xF7: case 0xFB: case 0xFF:
+//                case 0x9C: case 0x9E:
                     if ((opcode >> 4) == 0x0B) {
                         int t = mem[instr] & 0xFF;
                         if (opcode == 0xB3)
@@ -909,33 +911,31 @@ loop:
                 }
 
                 default:
-                    /*
-                     assert false;
-                 case 0x2E: // ROL a
-                 case 0x3E: // ROL a,X
-                 case 0x26: // ROL z
-                 case 0x36: // ROL z,X
-                 case 0x0E: // ASL a
-                 case 0x1E: // ASL a,X
-                 case 0x06: // ASL z
-                 case 0x16: // ASL z,X
-                 case 0xEE: // INC a
-                 case 0xFE: // INC a,X
-                 case 0xE6: // INC z
-                 case 0xF6: // INC z,X
-                 case 0xCE: // DEC a
-                 case 0xDE: // DEC a,X
-                 case 0xC6: // DEC z
-                 case 0xD6: // DEC z,X
-                 case 0x6E: // ROR a
-                 case 0x7E: // ROR a,X
-                 case 0x66: // ROR z
-                 case 0x76: // ROR z,X
-                 case 0x4E: // LSR a
-                 case 0x5E: // LSR a,X
-                 case 0x46: // LSR z
-                 case 0x56: // LSR z,X
-                 */
+//                     assert false;
+//                case 0x2E: // ROL a
+//                case 0x3E: // ROL a,X
+//                case 0x26: // ROL z
+//                case 0x36: // ROL z,X
+//                case 0x0E: // ASL a
+//                case 0x1E: // ASL a,X
+//                case 0x06: // ASL z
+//                case 0x16: // ASL z,X
+//                case 0xEE: // INC a
+//                case 0xFE: // INC a,X
+//                case 0xE6: // INC z
+//                case 0xF6: // INC z,X
+//                case 0xCE: // DEC a
+//                case 0xDE: // DEC a,X
+//                case 0xC6: // DEC z
+//                case 0xD6: // DEC z,X
+//                case 0x6E: // ROR a
+//                case 0x7E: // ROR a,X
+//                case 0x66: // ROR z
+//                case 0x76: // ROR z,X
+//                case 0x4E: // LSR a
+//                case 0x5E: // LSR a,X
+//                case 0x46: // LSR z
+//                case 0x56: // LSR z,X
                     if (addr <= 0x7FF) {
                         mem[addr] = (byte) nz;
                         continue;

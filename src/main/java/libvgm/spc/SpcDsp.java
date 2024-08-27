@@ -16,14 +16,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.spc;
 
-// Nintendo SPC-700 DSP emulator
-// http://www.slack.net/~ant/
+/**
+ * Nintendo SPC-700 DSP emulator
+ *
+ * @see "https://www.slack.net/~ant"
+ */
 public final class SpcDsp {
 
-    // Initializes DSP with new RAM and 128 bytes of register state (beginning at regs [regs_offset]).
-    // Keeps reference to ram_64k.
+    /**
+     * Initializes DSP with new RAM and 128 bytes of register state (beginning at regs [regs_offset]).
+     * Keeps reference to ram_64k.
+     */
     public void init(byte[] ram_64k, byte[] regs, int regs_offset) {
         this.ram = ram_64k;
         for (int i = register_count; --i >= 0; ) {
@@ -118,28 +123,28 @@ public final class SpcDsp {
     // Runs DSP for sampleCount/32000 of a second
     public void run(int sampleCount) {
         // locals are faster, and first three are more efficient to access
-        final byte[] regs = this.regs;
+        byte[] regs = this.regs;
         Voice v;
 
-        final byte[] ram = this.ram;
-        final Rate[] rates = this.rates;
-        final Voice[] voices = this.voices;
-        final int flg = regs[r_flg];
+        byte[] ram = this.ram;
+        Rate[] rates = this.rates;
+        Voice[] voices = this.voices;
+        int flg = regs[r_flg];
 
-        final int dir = (regs[r_dir] & 0xFF) << 8;
-        final int slow_gaussian = ((regs[r_pmon] & 0xFF) >> 1) | regs[r_non];
-        final Rate noise_rate = rates[flg & 0x1F];
+        int dir = (regs[r_dir] & 0xFF) << 8;
+        int slow_gaussian = ((regs[r_pmon] & 0xFF) >> 1) | regs[r_non];
+        Rate noise_rate = rates[flg & 0x1F];
 
         // Global volumes
-        final int volume = (flg & 0x40) == 0 ? this.volume : 0;
-        final int mvoll = (regs[r_mvoll] * volume) >> 15;
-        final int mvolr = (regs[r_mvolr] * volume) >> 15;
-        final int evoll = (regs[r_evoll] * volume) >> 15;
-        final int evolr = (regs[r_evolr] * volume) >> 15;
+        int volume = (flg & 0x40) == 0 ? this.volume : 0;
+        int mvoll = (regs[r_mvoll] * volume) >> 15;
+        int mvolr = (regs[r_mvolr] * volume) >> 15;
+        int evoll = (regs[r_evoll] * volume) >> 15;
+        int evolr = (regs[r_evolr] * volume) >> 15;
 
-        final byte[] out = this.out;
+        byte[] out = this.out;
         int out_pos = this.out_pos;
-        final int out_end = out_pos + (sampleCount << 2);
+        int out_end = out_pos + (sampleCount << 2);
 
         do {
             // KON/KOFF reading
@@ -178,8 +183,8 @@ public final class SpcDsp {
             int voice = -1;
             do {
                 v = voices[++voice];
-                final int vbit = 1 << voice;
-                final int v_regs = voice << 4;
+                int vbit = 1 << voice;
+                int v_regs = voice << 4;
 
                 // Pitch
                 int pitch = (regs[v_regs + v_pitchh] & 0x3F) << 8 | (regs[v_regs + v_pitchl] & 0xFF);
@@ -190,7 +195,7 @@ public final class SpcDsp {
 
                 // KON phases
                 if (v.kon_delay > 0) {
-                    final int kon_delay = --v.kon_delay;
+                    int kon_delay = --v.kon_delay;
 
                     // Disable BRR decoding until last three samples
                     v.interp_pos = (kon_delay & 3) != 0 ? 0x4000 : 0;
@@ -385,17 +390,17 @@ public final class SpcDsp {
 
                     // Decode
 
-                    final int scale = brr_header >> 4 & 0x0F;
-                    final int right_shift = brr_shifts[scale];
-                    final int left_shift = brr_shifts[scale + 16];
+                    int scale = brr_header >> 4 & 0x0F;
+                    int right_shift = brr_shifts[scale];
+                    int left_shift = brr_shifts[scale + 16];
 
-                    final int filter = brr_header & 0x0C;
+                    int filter = brr_header & 0x0C;
 
                     // Decode and write to next four samples in circular buffer
                     int pos = v.buf_pos;
                     int p1 = v.buf[pos + (brr_buf_size - 1)];
                     int p2 = v.buf[pos + (brr_buf_size - 2)] >> 1;
-                    final int end = pos + 4;
+                    int end = pos + 4;
                     do {
                         // Extract upper nybble and scale appropriately
                         int s = ((short) nybbles >> right_shift) << left_shift;
@@ -466,7 +471,7 @@ public final class SpcDsp {
 
             // Echo out
             if ((flg & 0x20) == 0) {
-                final int efb = regs[r_efb];
+                int efb = regs[r_efb];
                 int l = (echo_out_l >> 7) + ((echo_in_l * efb) >> 14);
                 if ((short) l != l) l = (l >> 24) ^ 0x7FFF; // 16-bit clamp
                 ram[echo_ptr] = (byte) l;

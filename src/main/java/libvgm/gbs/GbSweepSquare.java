@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.gbs;
 
 public final class GbSweepSquare extends GbSquare {
 
@@ -28,6 +28,7 @@ public final class GbSweepSquare extends GbSquare {
     int sweep_enabled;
     int sweep_neg;
 
+    @Override
     void reset() {
         sweep_freq = 0;
         sweep_delay = 0;
@@ -70,6 +71,7 @@ public final class GbSweepSquare extends GbSquare {
         }
     }
 
+    @Override
     boolean write_register(int frame_phase, int reg, int old_data, int data) {
         if (reg == 0 && (sweep_neg & 0x08 & ~data) != 0)
             enabled = 0;

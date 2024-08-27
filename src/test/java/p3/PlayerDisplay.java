@@ -9,10 +9,10 @@ public class PlayerDisplay {
     Main window;
     VGMPlayer player;
 
-    final int POS_X_POSBAR = 16;
-    final int POS_Y_POSBAR = 150;
-    final int WIDTH_POSBAR = 268;
-    final int HEIGHT_POSBAR = 18;
+    static final int POS_X_POSBAR = 16;
+    static final int POS_Y_POSBAR = 150;
+    static final int WIDTH_POSBAR = 268;
+    static final int HEIGHT_POSBAR = 18;
 
     String labelFilename = "";
     String labelEmuName = "";
@@ -26,11 +26,11 @@ public class PlayerDisplay {
     }
 
     private void updateAllValues() {
-        if (player.customInfoMsg.equals("")) {
+        if (player.customInfoMsg.isEmpty()) {
             labelFilename = java.nio.file.Paths.get(player.currFilename)
                     .getFileName().toString().replaceFirst("[.][^.]+$", "");
             // what a mess... but it works
-            labelFilename = window.shrinkString(labelFilename);
+            labelFilename = Main.shrinkString(labelFilename);
         } else labelFilename = player.customInfoMsg;
 
         if (player != null && player.isPlaying()) {

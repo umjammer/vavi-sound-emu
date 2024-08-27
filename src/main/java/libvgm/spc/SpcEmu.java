@@ -16,10 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.spc;
 
-// Nintendo SPC music file player
-// http://www.slack.net/~ant/
+import java.lang.System.Logger.Level;
+
+
+/**
+ * Nintendo SPC music file player
+ *
+ * @see "https://www.slack.net/~ant"
+ */
 public final class SpcEmu extends SpcCpu {
 
     private static final class Timer {
@@ -75,13 +81,15 @@ public final class SpcEmu extends SpcCpu {
     final SpcDsp dsp = new SpcDsp();
     final Timer[] timers = new Timer[timerCount];
 
+    @Override
     protected int setSampleRate_(int rate) {
         return 32000;
     }
 
+    @Override
     protected int loadFile_(byte[] in) {
         if (!isHeader(in, "SNES-SPC700 Sound File Data"))
-            error("Not an SPC file");
+            throw new IllegalArgumentException("Not an SPC file");
 
         spc = in;
 
@@ -133,6 +141,7 @@ public final class SpcEmu extends SpcCpu {
         }
     }
 
+    @Override
     public void startTrack(int track) {
         super.startTrack(track);
 
@@ -193,7 +202,8 @@ public final class SpcEmu extends SpcCpu {
         }
     }
 
-    protected int play_(byte out[], int count) {
+    @Override
+    protected int play_(byte[] out, int count) {
         dsp.setOutput(out);
 
         // Run for count/2*32 clocks + extra to get DSP time half-way between samples,
@@ -208,7 +218,8 @@ public final class SpcEmu extends SpcCpu {
 
         if (time < 0) // emulation error
         {
-            logError();
+            setTrackEnded();
+            logger.log(Level.ERROR, "emulation error");
             return 0;
         }
 
@@ -248,8 +259,8 @@ public final class SpcEmu extends SpcCpu {
             case t1outReg:
             case t2outReg:
                 // TODO
-                //if ( data < no_read_before_write / 2 )
-                //	run_timer( &m.timers [addr - t0outReg], time - 1 )->counter = 0;
+//                if (data < no_read_before_write / 2)
+//                    run_timer( & m.timers[addr - t0outReg], time - 1 )->counter = 0;
                 break;
 
             // Registers that act like RAM
@@ -259,8 +270,8 @@ public final class SpcEmu extends SpcCpu {
                 break;
 
             case testReg:
-                //if ( (uint8_t) data != 0x0A )
-                //	dprintf( "SPC wrote to test register\n" );
+//                if ((uint8_t) data != 0x0A)
+//                    dprintf("SPC wrote to test register\n");
                 break;
 
             case controlReg:
@@ -292,6 +303,7 @@ public final class SpcEmu extends SpcCpu {
         }
     }
 
+    @Override
     public final void cpuWrite(int addr, int data) {
         // RAM
         ram[addr] = (byte) data;
@@ -335,7 +347,7 @@ public final class SpcEmu extends SpcCpu {
                     if (romEnabled != 0)
                         ram[addr + romAddr] = rom[addr]; // restore overwritten ROM
                 } else {
-                    if (debug) assert ram[addr + romAddr] == (byte) data;
+                    assert ram[addr + romAddr] == (byte) data;
                     ram[addr + romAddr] = (byte) 0xFF; // restore overwritten padding
                     cpuWrite(data, addr - (ramSize - romAddr));
                 }
@@ -343,14 +355,14 @@ public final class SpcEmu extends SpcCpu {
         }
     }
 
+    @Override
     public final int cpuRead(int addr) {
         // Low RAM
         if (addr < 0xF0) // 60%
             return ram[addr] & 0xFF;
 
         // Timers
-        if ((addr ^= 0xFF) < timerCount) // 68%
-        {
+        if ((addr ^= 0xFF) < timerCount) { // 68%
             Timer t = timers[2 - addr]; // TODO: reorder timers to eliminate 2-
             if (time >= t.time)
                 runTimer_(t, time);
@@ -360,8 +372,7 @@ public final class SpcEmu extends SpcCpu {
         }
 
         // Other registers
-        if ((addr ^= 0xFF) <= 0xFF) // 9%
-        {
+        if ((addr ^= 0xFF) <= 0xFF) { // 9%
             if (addr == dspaddrReg + 0xF0)
                 return regs[dspaddrReg];
 

@@ -16,7 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.gbs;
+
+import libvgm.BlipBuffer;
+
 
 public class GbSquare extends GbEnv {
 
@@ -26,12 +29,14 @@ public class GbSquare extends GbEnv {
         return (2048 - frequency()) * 4;
     }
 
+    @Override
     void reset() {
         phase = 0;
         super.reset();
         delay = 0x40000000; // TODO: less hacky (never clocked until first trigger)
     }
 
+    @Override
     boolean write_register(int frame_phase, int reg, int old_data, int data) {
         boolean result = super.write_register(frame_phase, reg, old_data, data);
         if (result)
@@ -43,9 +48,9 @@ public class GbSquare extends GbEnv {
     static final byte[] duties = {1, 2, 4, 6};
 
     void run(int time, int end_time) {
-        final int duty_code = regs[1] >> 6;
-        final int duty_offset = duty_offsets[duty_code];
-        final int duty = duties[duty_code];
+        int duty_code = regs[1] >> 6;
+        int duty_offset = duty_offsets[duty_code];
+        int duty = duties[duty_code];
         int playing = 0;
         int amp = 0;
         int phase = (this.phase + duty_offset) & 7;
@@ -80,14 +85,14 @@ public class GbSquare extends GbEnv {
 
         time += delay;
         if (time < end_time) {
-            final int period = this.period();
+            int period = this.period();
             if (playing == 0) {
                 // maintain phase
                 int count = (end_time - time + period - 1) / period;
                 phase = (phase + count) & 7;
                 time += count * period;
             } else {
-                final BlipBuffer output = this.output;
+                BlipBuffer output = this.output;
                 // TODO: eliminate ugly +dac_bias -dac_bias adjustments
                 int delta = ((amp + dac_bias) * 2 - volume) * vol_unit;
                 do {

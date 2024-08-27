@@ -16,7 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.nsf;
+
+import libvgm.BlipBuffer;
+
 
 public final class NesNoise extends NesEnvelope {
 
@@ -28,7 +31,7 @@ public final class NesNoise extends NesEnvelope {
     };
 
     void run(BlipBuffer output, int time, int endTime) {
-        final int volume = this.volume();
+        int volume = this.volume();
         int amp = (lfsr & 1) != 0 ? volume : 0;
         {
             int delta = updateAmp(amp);
@@ -38,8 +41,8 @@ public final class NesNoise extends NesEnvelope {
 
         time += delay;
         if (time < endTime) {
-            final int period = noisePeriods[regs[2] & 15];
-            final int tap = (regs[2] & 0x80) != 0 ? 8 : 13;
+            int period = noisePeriods[regs[2] & 15];
+            int tap = (regs[2] & 0x80) != 0 ? 8 : 13;
 
             if (volume == 0) {
                 // round to next multiple of period
@@ -68,6 +71,7 @@ public final class NesNoise extends NesEnvelope {
         delay = time - endTime;
     }
 
+    @Override
     void reset() {
         lfsr = 1 << 14;
         super.reset();

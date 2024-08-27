@@ -16,18 +16,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.gbs;
 
-// Nintendo Game Boy GB-Z80 CPU emulator
-// http://www.slack.net/~ant/
+import libvgm.ClassicEmu;
+
+
+/**
+ * Nintendo Game Boy GB-Z80 CPU emulator
+ *
+ * @see "https://www.slack.net/~ant"
+ */
 public class GbCpu extends ClassicEmu {
 
     public GbCpu() {
         rstBase = 0;
     }
 
-    // Resets registers, uses supplied physical memory, and
-    // maps all memory pages to unmapped
+    /**
+     * Resets registers, uses supplied physical memory, and
+     * maps all memory pages to unmapped
+     */
     public final void reset(byte[] mem, int unmapped) {
         this.mem = mem;
         a = 0;
@@ -50,7 +58,7 @@ public class GbCpu extends ClassicEmu {
     static final int pageCount = 0x10000 >> pageShift;
     static final int pageSize = 1 << pageShift;
 
-    // Maps address range to offset in physical memory
+    /** Maps address range to offset in physical memory */
     public final void mapMemory(int addr, int size, int offset) {
         assert addr % pageSize == 0;
         assert size % pageSize == 0;
@@ -60,23 +68,23 @@ public class GbCpu extends ClassicEmu {
         }
     }
 
-    // Maps address to memory
+    // Maps address to memory */
     public final int mapAddr(int addr) {
         return pages[addr >> pageShift] + addr;
     }
 
     // Emulation
 
-    // Registers. NOT kept updated during runCpu()
+    // Registers. NOT kept updated during runCpu() */
     public int a, bc, de, hl, sp, pc;
 
-    // Base address for RST vectors (normally 0)
+    // Base address for RST vectors (normally 0) */
     public int rstBase;
 
-    // Current time
+    // Current time */
     public int time;
 
-    // Memory read and write handlers
+    // Memory read and write handlers */
     protected int cpuRead(int addr) {
         return 0;
     }
@@ -84,19 +92,19 @@ public class GbCpu extends ClassicEmu {
     protected void cpuWrite(int addr, int data) {
     }
 
-    int pages[] = new int[pageCount + 1];
+    int[] pages = new int[pageCount + 1];
     int cz, ph;
     byte[] mem;
 
     final void mapPage(int page, int offset) {
-        if (debug) assert 0 <= page && page < pageCount + 1;
+        assert 0 <= page && page < pageCount + 1;
         pages[page] = offset - page * pageSize;
     }
 
-    // Runs until time >= 0
+    // Runs until time >= 0 */
     public final void runCpu() {
         // locals are faster, and first three are more efficient to access
-        final byte[] mem = this.mem;
+        byte[] mem = this.mem;
         int pc = this.pc;
         int data = 0;
 
@@ -108,19 +116,17 @@ public class GbCpu extends ClassicEmu {
         int sp = this.sp;
         int cz = this.cz;
         int ph = this.ph;
-        final int pages[] = this.pages;
-        final int instrTimes[] = this.instrTimes;
+        int[] pages = this.pages;
+        int[] instrTimes = this.instrTimes;
 
 loop:
         while (time < 0) {
-            if (debug) {
-                assert 0 <= a && a < 0x00100;
-                assert 0 <= bc && bc < 0x10000;
-                assert 0 <= de && de < 0x10000;
-                assert 0 <= hl && hl < 0x10000;
-                assert 0 <= pc && pc < 0x10000;
-                assert 0 <= pc && pc < 0x10000;
-            }
+            assert 0 <= a && a < 0x00100;
+            assert 0 <= bc && bc < 0x10000;
+            assert 0 <= de && de < 0x10000;
+            assert 0 <= hl && hl < 0x10000;
+            assert 0 <= pc && pc < 0x10000;
+            assert 0 <= pc && pc < 0x10000;
 
             int instr;
             int opcode;
@@ -131,32 +137,16 @@ loop:
                 this.time = (time += cbTimes[opcode = mem[instr + 1] & 0xFF]);
                 pc += 2;
                 int operand;
-                switch ((operand = opcode & 7)) {
-                    case 0:
-                        data = bc >> 8;
-                        break;
-                    case 1:
-                        data = bc & 0xFF;
-                        break;
-                    case 2:
-                        data = de >> 8;
-                        break;
-                    case 3:
-                        data = de & 0xFF;
-                        break;
-                    case 4:
-                        data = hl >> 8;
-                        break;
-                    case 5:
-                        data = hl & 0xFF;
-                        break;
-                    case 6:
-                        data = cpuRead(hl);
-                        break;
-                    default:
-                        data = a;
-                        break;
-                }
+                data = switch ((operand = opcode & 7)) {
+                    case 0 -> bc >> 8;
+                    case 1 -> bc & 0xFF;
+                    case 2 -> de >> 8;
+                    case 3 -> de & 0xFF;
+                    case 4 -> hl >> 8;
+                    case 5 -> hl & 0xFF;
+                    case 6 -> cpuRead(hl);
+                    default -> a;
+                };
 
                 // Operation
                 int operation;
@@ -222,17 +212,15 @@ loop:
                         break;
 
                     default:
-                        /*
-                          assert false;
-                      case 0x18: // SET  0,r
-                      case 0x19: // SET  1,r
-                      case 0x1A: // SET  2,r
-                      case 0x1B: // SET  3,r
-                      case 0x1C: // SET  4,r
-                      case 0x1D: // SET  5,r
-                      case 0x1E: // SET  6,r
-                      case 0x1F: // SET  7,r
-                      */
+//                        assert false;
+//                    case 0x18: // SET  0,r
+//                    case 0x19: // SET  1,r
+//                    case 0x1A: // SET  2,r
+//                    case 0x1B: // SET  3,r
+//                    case 0x1C: // SET  4,r
+//                    case 0x1D: // SET  5,r
+//                    case 0x1E: // SET  6,r
+//                    case 0x1F: // SET  7,r
                         data |= 1 << (operation - 0x18);
                         break;
                 }
@@ -1125,41 +1113,41 @@ loop:
 
     static final int[] instrTimes = {
             //	 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-            4, 12, 8, 8, 4, 4, 8, 4, 20, 8, 8, 8, 4, 4, 8, 4,// 0
-            4, 12, 8, 8, 4, 4, 8, 4, 12, 8, 8, 8, 4, 4, 8, 4,// 1
-            8, 12, 8, 8, 4, 4, 8, 4, 8, 8, 8, 8, 4, 4, 8, 4,// 2
-            8, 12, 8, 8, 12, 12, 12, 4, 8, 8, 8, 8, 4, 4, 8, 4,// 3
-            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,// 4
-            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,// 5
-            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,// 6
-            8, 8, 8, 8, 8, 8, 0, 8, 4, 4, 4, 4, 4, 4, 8, 4,// 7
-            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,// 8
-            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,// 9
-            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,// A
-            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,// B
-            8, 12, 12, 16, 12, 16, 8, 16, 8, 16, 12, 0, 12, 24, 8, 16,// C
-            8, 12, 12, 0, 12, 16, 8, 16, 8, 4, 12, 0, 12, 0, 8, 16,// D
-            12, 12, 8, 0, 0, 16, 8, 16, 16, 4, 16, 0, 0, 0, 8, 16,// E
-            12, 12, 8, 4, 0, 16, 8, 16, 12, 8, 16, 4, 0, 0, 8, 16,// F
+            4, 12, 8, 8, 4, 4, 8, 4, 20, 8, 8, 8, 4, 4, 8, 4, // 0
+            4, 12, 8, 8, 4, 4, 8, 4, 12, 8, 8, 8, 4, 4, 8, 4, // 1
+            8, 12, 8, 8, 4, 4, 8, 4, 8, 8, 8, 8, 4, 4, 8, 4, // 2
+            8, 12, 8, 8, 12, 12, 12, 4, 8, 8, 8, 8, 4, 4, 8, 4, // 3
+            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 4
+            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 5
+            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 6
+            8, 8, 8, 8, 8, 8, 0, 8, 4, 4, 4, 4, 4, 4, 8, 4, // 7
+            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 8
+            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 9
+            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // A
+            4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // B
+            8, 12, 12, 16, 12, 16, 8, 16, 8, 16, 12, 0, 12, 24, 8, 16, // C
+            8, 12, 12, 0, 12, 16, 8, 16, 8, 4, 12, 0, 12, 0, 8, 16, // D
+            12, 12, 8, 0, 0, 16, 8, 16, 16, 4, 16, 0, 0, 0, 8, 16, // E
+            12, 12, 8, 4, 0, 16, 8, 16, 12, 8, 16, 4, 0, 0, 8, 16, // F
     };
 
     static final int[] cbTimes = {
             //	 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,// 0
-            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,// 1
-            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,// 2
-            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,// 3
-            8, 8, 8, 8, 8, 8, 12, 8, 8, 8, 8, 8, 8, 8, 12, 8,// 4
-            8, 8, 8, 8, 8, 8, 12, 8, 8, 8, 8, 8, 8, 8, 12, 8,// 5
-            8, 8, 8, 8, 8, 8, 12, 8, 8, 8, 8, 8, 8, 8, 12, 8,// 6
-            8, 8, 8, 8, 8, 8, 12, 8, 8, 8, 8, 8, 8, 8, 12, 8,// 7
-            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,// 8
-            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,// 9
-            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,// A
-            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,// B
-            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,// C
-            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,// D
-            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,// E
-            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,// F
+            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, // 0
+            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, // 1
+            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, // 2
+            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, // 3
+            8, 8, 8, 8, 8, 8, 12, 8, 8, 8, 8, 8, 8, 8, 12, 8, // 4
+            8, 8, 8, 8, 8, 8, 12, 8, 8, 8, 8, 8, 8, 8, 12, 8, // 5
+            8, 8, 8, 8, 8, 8, 12, 8, 8, 8, 8, 8, 8, 8, 12, 8, // 6
+            8, 8, 8, 8, 8, 8, 12, 8, 8, 8, 8, 8, 8, 8, 12, 8, // 7
+            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, // 8
+            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, // 9
+            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, // A
+            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, // B
+            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, // C
+            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, // D
+            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, // E
+            8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, // F
     };
 }

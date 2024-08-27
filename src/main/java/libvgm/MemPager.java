@@ -18,8 +18,11 @@
 
 package libvgm;
 
-// Manages memory paging used by CPU emulators
-// http://www.slack.net/~ant/
+/**
+ * Manages memory paging used by CPU emulators
+ *
+ * @see "https://www.slack.net/~ant"
+ */
 public final class MemPager {
 
     public MemPager(int pageSize, int ramSize) {
@@ -27,8 +30,8 @@ public final class MemPager {
         this.romOffset = ramSize + pageSize;
     }
 
-    // Loads data and returns memory array
-    public byte[] load(byte in[], byte[] header, int addr, int fill) {
+    /** Loads data and returns memory array */
+    public byte[] load(byte[] in, byte[] header, int addr, int fill) {
         // allocate
         int romLength = in.length - header.length;
         int romSize = (romLength + addr + pageSize - 1) / pageSize * pageSize;
@@ -52,22 +55,22 @@ public final class MemPager {
         return data;
     }
 
-    // Size of ROM data, a multiple of pageSize
+    // Size of ROM data, a multiple of pageSize */
     public int size() {
         return data.length - padding - romOffset;
     }
 
-    // Page of unmapped fill value
+    // Page of unmapped fill value */
     public int unmapped() {
         return romOffset - pageSize;
     }
 
-    // Masks address to nearest power of two greater than size()
+    // Masks address to nearest power of two greater than size() */
     public int maskAddr(int addr) {
         return addr & addrMask;
     }
 
-    // Page starting at addr. Returns unmapped() if outside data.
+    // Page starting at addr. Returns unmapped() if outside data. */
     public int mapAddr(int addr) {
         int offset = maskAddr(addr);
         if (offset < 0 || size() - pageSize < offset)
@@ -75,7 +78,7 @@ public final class MemPager {
         return offset + romOffset;
     }
 
-// private
+    // private
 
     static final int padding = 8; // extra at end for CPU emulators that read past end
     byte[] data;

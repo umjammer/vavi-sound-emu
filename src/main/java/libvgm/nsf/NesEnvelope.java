@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.nsf;
 
 public class NesEnvelope extends NesOsc {
 
@@ -46,6 +46,7 @@ public class NesEnvelope extends NesOsc {
         return envVolume;
     }
 
+    @Override
     void reset() {
         envVolume = 0;
         envDelay = 0;

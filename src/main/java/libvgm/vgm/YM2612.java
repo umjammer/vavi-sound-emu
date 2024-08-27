@@ -1,4 +1,4 @@
-package libvgm;
+package libvgm.vgm;
 
 /**
  * Test port of Gens YM2612 core.
@@ -10,7 +10,7 @@ public final class YM2612 {
 
     static final int NULL_RATE_SIZE = 32;
 
-    // YM2612 Hardware
+    /** YM2612 Hardware */
     private static final class cSlot {
 
         int[] DT;
@@ -205,7 +205,7 @@ public final class YM2612 {
     private int int_cnt;
 
     // Emultaion State
-    private boolean EnableSSGEG = false;
+    private final boolean EnableSSGEG = false;
 
     private static final int MAIN_SHIFT = FINAL_SHFT;
 
@@ -289,7 +289,7 @@ public final class YM2612 {
 
             j = (int) (x / ENV_STEP);             // Get TL range
 
-            if (j > PG_CUT_OFF) j = (int) PG_CUT_OFF;
+            if (j > PG_CUT_OFF) j = PG_CUT_OFF;
 
             SIN_TAB[i] = j;
             SIN_TAB[(SINLEN / 2) - i] = j;
@@ -306,7 +306,7 @@ public final class YM2612 {
             x *= 11.8 / ENV_STEP;
             LFO_ENV_TAB[i] = (int) x;
             x = Math.sin(2.0 * PI * (double) (i) / (double) (LFOLEN));    // Sinus
-            x *= (double) ((1 << (LFO_HBITS - 1)) - 1);
+            x *= (1 << (LFO_HBITS - 1)) - 1;
             LFO_FREQ_TAB[i] = (int) x;
         }
 
@@ -350,9 +350,9 @@ public final class YM2612 {
             x = (double) i * YM2612_Frequency;
 
             if ((SIN_LBITS + SIN_HBITS - (21 - 7)) < 0) {
-                x /= (double) (1 << ((21 - 7) - SIN_LBITS - SIN_HBITS));
+                x /= 1 << ((21 - 7) - SIN_LBITS - SIN_HBITS);
             } else {
-                x *= (double) (1 << (SIN_LBITS + SIN_HBITS - (21 - 7)));
+                x *= 1 << (SIN_LBITS + SIN_HBITS - (21 - 7));
             }
             x /= 2.0;  // because MUL = value * 2
             FINC_TAB[i] = (int) x;    // (unsigned int) x;
@@ -368,8 +368,8 @@ public final class YM2612 {
         for (i = 0; i < 60; i++) {
             x = YM2612_Frequency;
             x *= 1.0 + ((i & 3) * 0.25);          // bits 0-1 : x1.00, x1.25, x1.50, x1.75
-            x *= (double) (1 << ((i >> 2)));        // bits 2-5 : shift bits (x2^0 - x2^15)
-            x *= (double) (ENVLEN << ENV_LBITS);    // on ajuste pour le tableau ENV_TAB
+            x *= 1 << ((i >> 2));        // bits 2-5 : shift bits (x2^0 - x2^15)
+            x *= ENVLEN << ENV_LBITS;    // on ajuste pour le tableau ENV_TAB
 
             AR_TAB[i + 4] = (int) (x / AR_RATE);   // (unsigned int) (x / AR_RATE);
             DR_TAB[i + 4] = (int) (x / DR_RATE);   // (unsigned int) (x / DR_RATE);
@@ -524,8 +524,8 @@ public final class YM2612 {
         if (YM2612_CHANNEL[4].SLOT[0].Finc == -1) calc_FINC_CH(YM2612_CHANNEL[4]);
         if (YM2612_CHANNEL[5].SLOT[0].Finc == -1) calc_FINC_CH(YM2612_CHANNEL[5]);
 
-//		  if(YM2612_Inter_Step & 0x04000) algo_type = 0;
-//		  else algo_type = 16;
+//        if (YM2612_Inter_Step & 0x04000) algo_type = 0;
+//        else algo_type = 16;
         int algo_type = 0;
 
         if ((YM2612_LFOinc) != 0) {
@@ -579,7 +579,7 @@ public final class YM2612 {
     // Parameter Calculation
     //
 
-    private final void calc_FINC_SL(cSlot SL, int finc, int kc) {
+    private void calc_FINC_SL(cSlot SL, int finc, int kc) {
         int ksr;
         SL.Finc = (finc + SL.DT[kc]) * SL.MUL;
         ksr = kc >> SL.KSR_S;
@@ -598,9 +598,9 @@ public final class YM2612 {
         }
     }
 
-    private final void calc_FINC_CH(cChannel CH) {
+    private void calc_FINC_CH(cChannel CH) {
         int finc, kc;
-        finc = (int) (FINC_TAB[CH.FNUM[0]] >> (7 - CH.FOCT[0]));
+        finc = FINC_TAB[CH.FNUM[0]] >> (7 - CH.FOCT[0]);
         kc = CH.KC[0];
         calc_FINC_SL(CH.SLOT[0], finc, kc);
         calc_FINC_SL(CH.SLOT[1], finc, kc);
@@ -612,7 +612,7 @@ public final class YM2612 {
     // Settings
     //
 
-    private final void KEY_ON(cChannel CH, int nsl) {
+    private void KEY_ON(cChannel CH, int nsl) {
         cSlot SL = CH.SLOT[nsl];
         if (SL.Ecurp == RELEASE) {
             SL.Fcnt = 0;
@@ -625,7 +625,7 @@ public final class YM2612 {
         }
     }
 
-    private final void KEY_OFF(cChannel CH, int nsl) {
+    private void KEY_OFF(cChannel CH, int nsl) {
         cSlot SL = CH.SLOT[nsl];
         if (SL.Ecurp != RELEASE) {
             if (SL.Ecnt < ENV_DECAY) {
@@ -637,14 +637,14 @@ public final class YM2612 {
         }
     }
 
-    private final void CSM_Key_Control() {
+    private void CSM_Key_Control() {
         KEY_ON(YM2612_CHANNEL[2], 0);
         KEY_ON(YM2612_CHANNEL[2], 1);
         KEY_ON(YM2612_CHANNEL[2], 2);
         KEY_ON(YM2612_CHANNEL[2], 3);
     }
 
-    private final int setSlot(int address, int data) {  // INT, UCHAR
+    private int setSlot(int address, int data) {  // INT, UCHAR
         data &= 0xFF;    // unsign
         cChannel CH;
         cSlot SL;
@@ -712,7 +712,7 @@ public final class YM2612 {
         return 0;
     }
 
-    private final int setChannel(int address, int data) {   // INT,UCHAR
+    private int setChannel(int address, int data) {   // INT,UCHAR
         data &= 0xFF;        // unsign
         cChannel CH;
         int num;
@@ -730,7 +730,7 @@ public final class YM2612 {
             case 0xA4:
                 if ((address & 0x100) != 0) num += 3;
                 CH = YM2612_CHANNEL[num];
-                CH.FNUM[0] = (CH.FNUM[0] & 0x0FF) + ((int) (data & 0x07) << 8);
+                CH.FNUM[0] = (CH.FNUM[0] & 0x0FF) + ((data & 0x07) << 8);
                 CH.FOCT[0] = (data & 0x38) >> 3;
                 CH.KC[0] = (CH.FOCT[0] << 2) | FKEY_TAB[CH.FNUM[0] >> 7];
                 CH.SLOT[0].Finc = -1;
@@ -746,7 +746,7 @@ public final class YM2612 {
             case 0xAC:
                 if (address < 0x100) {
                     num++;
-                    YM2612_CHANNEL[2].FNUM[num] = (YM2612_CHANNEL[2].FNUM[num] & 0x0FF) + ((int) (data & 0x07) << 8);
+                    YM2612_CHANNEL[2].FNUM[num] = (YM2612_CHANNEL[2].FNUM[num] & 0x0FF) + ((data & 0x07) << 8);
                     YM2612_CHANNEL[2].FOCT[num] = (data & 0x38) >> 3;
                     YM2612_CHANNEL[2].KC[num] = (YM2612_CHANNEL[2].FOCT[num] << 2) | FKEY_TAB[YM2612_CHANNEL[2].FNUM[num] >> 7];
                     YM2612_CHANNEL[2].SLOT[0].Finc = -1;
@@ -763,15 +763,15 @@ public final class YM2612 {
                     CH.SLOT[3].ChgEnM = 0;
                 }
                 CH.FB = 9 - ((data >> 3) & 7);                  // Real thing ?
-                //		if(CH.FB = ((data >> 3) & 7)) CH.FB = 9 - CH.FB;	// Thunder force 4 (music stage 8), Gynoug, Aladdin bug sound...
-                //		else CH.FB = 31;
+//                if(CH.FB = ((data >> 3) & 7)) CH.FB = 9 - CH.FB;	// Thunder force 4 (music stage 8), Gynoug, Aladdin bug sound...
+//                else CH.FB = 31;
                 break;
             case 0xB4:
                 if ((address & 0x100) != 0) num += 3;
                 CH = YM2612_CHANNEL[num];
-                if ((data & 0x80) != 0) CH.LEFT = 0xFFFFFFFF;
+                if ((data & 0x80) != 0) CH.LEFT = 0xFFFF_FFFF;
                 else CH.LEFT = 0;
-                if ((data & 0x40) != 0) CH.RIGHT = 0xFFFFFFFF;
+                if ((data & 0x40) != 0) CH.RIGHT = 0xFFFF_FFFF;
                 else CH.RIGHT = 0;
                 CH.AMS = LFO_AMS_TAB[(data >> 4) & 3];
                 CH.FMS = LFO_FMS_TAB[data & 7];
@@ -788,8 +788,7 @@ public final class YM2612 {
         return 0;
     }
 
-
-    private final int setYM(int address, int data) {       // INT, UCHAR
+    private int setYM(int address, int data) {       // INT, UCHAR
         cChannel CH;
         int nch;
 
@@ -804,7 +803,7 @@ public final class YM2612 {
                 }
                 break;
             case 0x24:
-                YM2612_TimerA = (YM2612_TimerA & 0x003) | (((int) data) << 2);
+                YM2612_TimerA = (YM2612_TimerA & 0x003) | (data << 2);
                 if (YM2612_TimerAL != ((1024 - YM2612_TimerA) << 12)) {
                     YM2612_TimerAcnt = YM2612_TimerAL = (1024 - YM2612_TimerA) << 12;
                 }
@@ -859,24 +858,24 @@ public final class YM2612 {
     // Generation Methods
     //
 
-    private final void Env_NULL_Next(cSlot SL) {
+    private void Env_NULL_Next(cSlot SL) {
     }
 
-    private final void Env_Attack_Next(cSlot SL) {
+    private static void Env_Attack_Next(cSlot SL) {
         SL.Ecnt = ENV_DECAY;
         SL.Einc = SL.EincD;
         SL.Ecmp = SL.SLL;
         SL.Ecurp = DECAY;
     }
 
-    private final void Env_Decay_Next(cSlot SL) {
+    private static void Env_Decay_Next(cSlot SL) {
         SL.Ecnt = SL.SLL;
         SL.Einc = SL.EincS;
         SL.Ecmp = ENV_END;
         SL.Ecurp = SUSTAIN;
     }
 
-    private final void Env_Sustain_Next(cSlot SL) {
+    private void Env_Sustain_Next(cSlot SL) {
         if (EnableSSGEG) {
             if ((SL.SEG & 8) != 0) {
                 if ((SL.SEG & 1) != 0) {
@@ -902,13 +901,13 @@ public final class YM2612 {
         }
     }
 
-    private final void Env_Release_Next(cSlot SL) {
+    private static void Env_Release_Next(cSlot SL) {
         SL.Ecnt = ENV_END;
         SL.Einc = 0;
         SL.Ecmp = ENV_END + 1;
     }
 
-    private final void ENV_NEXT_EVENT(int which, cSlot SL) {
+    private void ENV_NEXT_EVENT(int which, cSlot SL) {
         switch (which) {
             case 0:
                 Env_Attack_Next(SL);
@@ -922,11 +921,13 @@ public final class YM2612 {
             case 3:
                 Env_Release_Next(SL);
                 return;
-            //default: Env_NULL_Next(SL);		return;
+//            default:
+//                Env_NULL_Next(SL);
+//                return;
         }
     }
 
-    private final void calcChannel(int ALGO, cChannel CH) {
+    private void calcChannel(int ALGO, cChannel CH) {
         // DO_FEEDBACK
         in0 += (CH.S0_OUT[0] + CH.S0_OUT[1]) >> CH.FB;
         CH.S0_OUT[1] = CH.S0_OUT[0];
@@ -985,7 +986,7 @@ public final class YM2612 {
         else if (CH.OUTd < -LIMIT_CH_OUT) CH.OUTd = -LIMIT_CH_OUT;
     }
 
-    private final void processChannel(cChannel CH, int[] buf_lr, int OFFSET, int END, int ALGO) {
+    private void processChannel(cChannel CH, int[] buf_lr, int OFFSET, int END, int ALGO) {
         if (ALGO < 4) {
             if (CH.SLOT[S3].Ecnt == ENV_END)
                 return;
@@ -1051,7 +1052,7 @@ public final class YM2612 {
         while (OFFSET < END);
     }
 
-    private final void processChannel_LFO(cChannel CH, int[] buf_lr, int OFFSET, int END, int ALGO) {
+    private void processChannel_LFO(cChannel CH, int[] buf_lr, int OFFSET, int END, int ALGO) {
         if (ALGO < 4) {
             if (CH.SLOT[S3].Ecnt == ENV_END)
                 return;
@@ -1068,7 +1069,7 @@ public final class YM2612 {
         }
 
         do {
-            final int i = OFFSET >> 1;
+            int i = OFFSET >> 1;
 
             // GET_CURRENT_PHASE
             in0 = CH.SLOT[S0].Fcnt;
@@ -1133,7 +1134,7 @@ public final class YM2612 {
         while (OFFSET < END);
     }
 
-    private final void updateChannel(int ALGO, cChannel CH, int[] buf_lr, int OFFSET, int END) {
+    private void updateChannel(int ALGO, cChannel CH, int[] buf_lr, int OFFSET, int END) {
         if (ALGO < 8) {
             processChannel(CH, buf_lr, OFFSET, END, ALGO);
         } else {

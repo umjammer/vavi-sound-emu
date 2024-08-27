@@ -16,7 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.gbs;
+
+import libvgm.BlipBuffer;
+
 
 public final class GbWave extends GbOsc {
 
@@ -40,6 +43,7 @@ public final class GbWave extends GbOsc {
         return addr;
     }
 
+    @Override
     void reset() {
         wave_pos = 0;
         sample_buf_high = 0;
@@ -48,6 +52,7 @@ public final class GbWave extends GbOsc {
         super.reset();
     }
 
+    @Override
     boolean write_register(int frame_phase, int reg, int old_data, int data) {
         final int max_len = 256;
 
@@ -111,14 +116,14 @@ public final class GbWave extends GbOsc {
         time += delay;
         if (time < end_time) {
             int wave_pos = (this.wave_pos + 1) & (wave_size - 1);
-            final int period = this.period();
+            int period = this.period();
             if (playing == 0) {
                 // maintain phase
                 int count = (end_time - time + period - 1) / period;
                 wave_pos += count; // will be masked below
                 time += count * period;
             } else {
-                final BlipBuffer output = this.output;
+                BlipBuffer output = this.output;
                 int last_amp = this.last_amp + dac_bias;
                 do {
                     int amp = wave[wave_pos] >> volume_shift;

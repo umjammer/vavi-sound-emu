@@ -21,7 +21,7 @@ public class Main extends PApplet {
     ButtonToolbar mediaButtons;
     Button buttonHelp;
 
-    final int TIME = 120;
+    static final int TIME = 120;
 
     public void settings() {
         size(300, 180);
@@ -135,12 +135,15 @@ public class Main extends PApplet {
                 me.setPressed(!me.pressed);
                 currMidPressed = null;
             } else if (buttonHelp.collided()) {
-                ui.showWarningDialog("Thanks for using P3synthVG.\n\n" +
-                        "" +
-                        "Further development of this program has been cancelled,\n" +
-                        "so this remains as a proof of concept.\n\n" +
-                        "" +
-                        "vlcoo.net  |  github.com/vlcoo/P3synthVG", "Message");
+                ui.showWarningDialog("""
+                        Thanks for using P3synthVG.
+                        
+                        \
+                        Further development of this program has been cancelled,
+                        so this remains as a proof of concept.
+                        
+                        \
+                        vlcoo.net  |  github.com/vlcoo/P3synthVG""", "Message");
             }
 
             if (currMidPressed != null) {
@@ -150,7 +153,7 @@ public class Main extends PApplet {
         }
     }
 
-    String shrinkString(String original) {
+    static String shrinkString(String original) {
         if (original.length() > 68) original = original.substring(0, 68 - 3) + "...";
         return original;
     }

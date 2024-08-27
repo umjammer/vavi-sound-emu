@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.gbs;
 
 public class GbEnv extends GbOsc {
 
@@ -27,6 +27,7 @@ public class GbEnv extends GbOsc {
         return regs[2] & 0xF8;
     }
 
+    @Override
     void reset() {
         env_delay = 0;
         volume = 0;
@@ -47,6 +48,7 @@ public class GbEnv extends GbOsc {
         }
     }
 
+    @Override
     boolean write_register(int frame_phase, int reg, int old_data, int data) {
         final int max_len = 64;
 

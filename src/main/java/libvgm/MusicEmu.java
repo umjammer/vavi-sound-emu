@@ -18,14 +18,21 @@
 
 package libvgm;
 
-// Music emulator interface
-// http://www.slack.net/~ant/
-public class MusicEmu {
+import java.lang.System.Logger;
 
-    // enables performance-intensive assertions
-    protected static final boolean debug = false;
+import static java.lang.System.getLogger;
 
-    public MusicEmu() {
+
+/**
+ * Music emulator interface
+ *
+ * @see "https://www.slack.net/~ant"
+ */
+public abstract class MusicEmu {
+
+    protected static final Logger logger = getLogger(MusicEmu.class.getName());
+
+    protected MusicEmu() {
         trackCount_ = 0;
         trackEnded_ = true;
         currentTrack_ = 0;
@@ -56,12 +63,12 @@ public class MusicEmu {
     // Starts track, where 0 is first track
     public void startTrack(int track) {
         if (track < 0 || track > trackCount_)
-            error("Invalid track");
+            throw new IllegalArgumentException("Invalid track");
 
         trackEnded_ = false;
         currentTrack_ = track;
         currentTime_ = 0;
-        fadeStart = 0x40000000; // far into the future
+        fadeStart = 0x4000_0000; // far into the future
         fadeStep = 1;
     }
 
@@ -106,7 +113,7 @@ public class MusicEmu {
         return 0;
     }
 
-// protected
+    // protected
 
     // must be defined in derived class
     protected int setSampleRate_(int rate) {
@@ -121,31 +128,18 @@ public class MusicEmu {
         return 0;
     }
 
-    // Reports error string as exception
-    protected void error(String str) {
-        throw new Error(str);
-    }
-
-    // Sets end of track flag and stops emulating file
+    /** Sets end of track flag and stops emulating file */
     protected void setTrackEnded() {
         trackEnded_ = true;
     }
 
-    // Stops track and notes emulation error
-    protected void logError() {
-        if (!trackEnded_) {
-            trackEnded_ = true;
-            System.out.println("emulation error");
-        }
-    }
-
-    // Reads 16 bit little endian int starting at in [pos]
+    /** Reads 16 bit little endian int starting at in [pos] */
     protected static int getLE16(byte[] in, int pos) {
         return (in[pos] & 0xFF) |
                 (in[pos + 1] & 0xFF) << 8;
     }
 
-    // Reads 32 bit little endian int starting at in [pos]
+    /** Reads 32 bit little endian int starting at in [pos] */
     protected static int getLE32(byte[] in, int pos) {
         return (in[pos] & 0xFF) |
                 (in[pos + 1] & 0xFF) << 8 |
@@ -153,7 +147,7 @@ public class MusicEmu {
                 (in[pos + 3] & 0xFF) << 24;
     }
 
-    // True if first bytes of file match expected string
+    /** True if first bytes of file match expected string */
     protected static boolean isHeader(byte[] header, String expected) {
         for (int i = expected.length(); --i >= 0; ) {
             if ((byte) expected.charAt(i) != header[i])
@@ -162,7 +156,7 @@ public class MusicEmu {
         return true;
     }
 
-// private
+    // private
 
     int sampleRate_;
     int trackCount_;
@@ -175,7 +169,7 @@ public class MusicEmu {
     static final int fadeBlockSize = 512;
     static final int fadeShift = 8; // fade ends with gain at 1.0 / (1 << fadeShift)
 
-    // unit / pow( 2.0, (double) x / step )
+    /** unit / pow( 2.0, (double) x / step ) */
     static int int_log(int x, int step, int unit) {
         int shift = x / step;
         int fraction = (x - shift * step) * unit / step;
@@ -185,7 +179,7 @@ public class MusicEmu {
     static final int gainShift = 14;
     static final int gainUnit = 1 << gainShift;
 
-    // Scales count big-endian 16-bit samples from io [pos*2] by gain/gainUnit
+    /** Scales count big-endian 16-bit samples from io [pos*2] by gain/gainUnit */
     static void scaleSamples(byte[] io, int pos, int count, int gain) {
         pos <<= 1;
         count = (count << 1) + pos;

@@ -18,14 +18,22 @@
 
 package libvgm;
 
+import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
+
+import static java.lang.System.getLogger;
 
 
 public class EmuPlayer implements Runnable {
+
+    private static final Logger logger = getLogger(EmuPlayer.class.getName());
 
     public String emuName = "";
 
@@ -34,9 +42,11 @@ public class EmuPlayer implements Runnable {
         return emu.trackCount();
     }
 
-    // Starts new track playing, where 0 is the first track.
-    // After time seconds, the track starts fading.
-    public void startTrack(int track, int time) throws Exception {
+    /**
+     * Starts new track playing, where 0 is the first track.
+     * After time seconds, the track starts fading.
+     */
+    public void startTrack(int track, int time) throws IOException {
         if (playing_) pause();
         if (line != null)
             line.flush();
@@ -46,18 +56,20 @@ public class EmuPlayer implements Runnable {
         play();
     }
 
-    // Currently playing track
+    /** Currently playing track */
     public int getCurrentTrack() {
         return emu.currentTrack();
     }
 
-    // Number of seconds played since last startTrack() call
+    /** Number of seconds played since last startTrack() call */
     public int getCurrentTime() {
         return (emu == null ? 0 : emu.currentTime());
     }
 
-    // Sets playback volume, where 1.0 is normal, 2.0 is twice as loud.
-    // Can be changed while track is playing.
+    /**
+     * Sets playback volume, where 1.0 is normal, 2.0 is twice as loud.
+     * Can be changed while track is playing.
+     */
     public void setVolume(double v) {
         volume_ = v;
 
@@ -68,7 +80,7 @@ public class EmuPlayer implements Runnable {
         }
     }
 
-    // Current playback volume
+    /** Current playback volume */
     public double getVolume() {
         return volume_;
     }
@@ -89,34 +101,42 @@ public class EmuPlayer implements Runnable {
         this.emuName = emu.getClass().getName().replace("Emu", "").replace("libvgm.", "").toUpperCase();
     }
 
-    // Pauses if track was playing.
-    public void pause() throws Exception {
+    /** Pauses if track was playing. */
+    public void pause() {
         if (thread != null) {
             playing_ = false;
-            thread.join();
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+            }
             thread = null;
         }
     }
 
-    // True if track is currently playing
+    /** True if track is currently playing */
     public boolean isPlaying() {
         return playing_;
     }
 
-    // Resumes playback where it was paused
-    public void play() throws Exception {
-        if (line == null) {
-            line = (SourceDataLine) AudioSystem.getLine(lineInfo);
-            line.open(audioFormat);
-            setVolume(volume_);
+    /** Resumes playback where it was paused */
+    public void play() throws IOException {
+        try {
+            if (line == null) {
+                line = (SourceDataLine) AudioSystem.getLine(lineInfo);
+                line.open(audioFormat);
+                setVolume(volume_);
+            }
+            thread = new Thread(this);
+            playing_ = true;
+            thread.start();
+logger.log(Level.DEBUG, "PLAY");
+        } catch (LineUnavailableException e) {
+            throw new IOException(e);
         }
-        thread = new Thread(this);
-        playing_ = true;
-        thread.start();
     }
 
-    // Stops playback and closes audio
-    public void stop() throws Exception {
+    /** Stops playback and closes audio */
+    public void stop() {
         pause();
 
         if (line != null) {
@@ -125,14 +145,15 @@ public class EmuPlayer implements Runnable {
         }
     }
 
-    // Called periodically when a track is playing
+    /** Called periodically when a track is playing */
     protected void idle() {
+        // TODO document why this method is empty
     }
 
-// private
+    // private
 
-    // Sets music emulator to get samples from
-    void setEmu(MusicEmu emu, int sampleRate) throws Exception {
+    /** Sets music emulator to get samples from */
+    void setEmu(MusicEmu emu, int sampleRate) {
         stop();
         this.emu = emu;
         if (emu != null && line == null && this.sampleRate != sampleRate) {
@@ -153,18 +174,22 @@ public class EmuPlayer implements Runnable {
     double volume_ = 1.0;
     float playRateFactor = 1;
 
+    @Override
     public void run() {
         line.start();
+logger.log(Level.DEBUG, "START: " + playing_ + ", " + emu.trackEnded());
 
         // play track until stop signal
         byte[] buf = new byte[8192];
         while (playing_ && !emu.trackEnded()) {
             int count = emu.play(buf, buf.length / 2);
+logger.log(Level.TRACE, "count: " + count + ", playing: " + playing_);
             line.write(buf, 0, count * 2);
             this.idle();
         }
 
         playing_ = false;
         line.stop();
+logger.log(Level.DEBUG, "STOP");
     }
 }

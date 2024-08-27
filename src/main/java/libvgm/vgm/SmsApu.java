@@ -16,12 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.vgm;
 
-// Sega Master System SN76489 PSG sound chip emulator
-// http://www.slack.net/~ant/
+import libvgm.BlipBuffer;
 
 
+/**
+ * Sega Master System SN76489 PSG sound chip emulator
+ *
+ * @see "https://www.slack.net/~ant"
+ */
 public final class SmsApu {
 
     int lastTime;

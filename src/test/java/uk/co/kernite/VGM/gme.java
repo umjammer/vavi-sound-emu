@@ -1,25 +1,33 @@
-package uk.co.kernite.VGM;/* Simple front-end for VGMPlayer
+package uk.co.kernite.VGM;
 
-/* Simple front-end for VGMPlayer
-To build gme.jar:
-
-	javac -source 1.4 *.java
-	jar cf gme.jar *.class
-*/
-
-import java.applet.Applet;
 import java.awt.Button;
 import java.awt.Checkbox;
+import java.awt.Dimension;
 import java.awt.Label;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Objects;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.WindowConstants;
+
+import vavi.util.Debug;
 
 
-public final class gme extends Applet implements ActionListener {
+/**
+ * Simple front-end for VGMPlayer
+ */
+public final class gme {
 
-    // Plays file at given URL (HTTP only). If it's an archive (.zip)
-    // then path specifies the file within the archive. Track ranges
-    // from 1 to number of tracks in file.
+    JFrame frame = new JFrame("gme");
+    JPanel panel = new JPanel();
+
+    /**
+     * Plays file at given URL (HTTP only). If it's an archive (.zip)
+     * then path specifies the file within the archive. Track ranges
+     * from 1 to number of tracks in file.
+     */
     public void playFile(String url, String path, int track, String title, int time) {
         try {
             player.add(url, path, track, title, time, !playlistEnabled.getState() || !player.isPlaying());
@@ -36,7 +44,7 @@ public final class gme extends Applet implements ActionListener {
         playFile(url, path, track, "");
     }
 
-    // Stops currently playing file, if any
+    /** Stops currently playing file, if any */
     public void stopFile() {
         try {
             player.stop();
@@ -45,7 +53,7 @@ public final class gme extends Applet implements ActionListener {
         }
     }
 
-// Applet
+    // Applet
 
     PlayerWithUpdate player;
     boolean backgroundPlayback;
@@ -54,56 +62,58 @@ public final class gme extends Applet implements ActionListener {
     private Button newBut(String name) {
         Button b = new Button(name);
         b.setActionCommand(name);
-        b.addActionListener(this);
-        add(b);
+        b.addActionListener(al);
+        panel.add(b);
         return b;
     }
 
     void createGUI() {
-        add(player.time = new Label("          "));
-        add(player.trackLabel = new Label("          "));
+Debug.println("here");
+        panel.add(player.time = new Label("          "));
+        panel.add(player.trackLabel = new Label("          "));
 
         newBut("Prev");
         newBut("Next");
         newBut("Stop");
 
-        add(player.titleLabel = new Label("                                                  "));
+        panel.add(player.titleLabel = new Label("                                                  "));
 
         playlistEnabled = new Checkbox("Playlist");
-        add(playlistEnabled);
+        panel.add(playlistEnabled);
     }
 
     // Returns integer parameter passed to applet, or defaultValue if missing
-    int getIntParameter(String name, int defaultValue) {
-        String p = getParameter(name);
+    static int getIntParameter(String name, int defaultValue) {
+        String p = System.getProperty(name);
         return (p != null ? Integer.parseInt(p) : defaultValue);
     }
 
     // Returns string parameter passed to applet, or defaultValue if missing
-    String getStringParameter(String name, String defaultValue) {
-        String p = getParameter(name);
+    static String getStringParameter(String name, String defaultValue) {
+        String p = System.getProperty(name);
         return (p != null ? p : defaultValue);
     }
 
     // Called when applet is first loaded
     public void init() {
-        try {
-            // Setup player and sample rate
-            int sampleRate = getIntParameter("SAMPLERATE", 44100);
-            player = new PlayerWithUpdate(sampleRate);
-            player.setVolume(1.0);
+        // Setup player and sample rate
+        int sampleRate = getIntParameter("SAMPLERATE", 44100);
+        player = new PlayerWithUpdate(sampleRate);
+        player.setVolume(0.02);
 
-            backgroundPlayback = getIntParameter("BACKGROUND", 0) != 0;
-            if (getIntParameter("NOGUI", 0) == 0)
-                createGUI();
+        backgroundPlayback = getIntParameter("BACKGROUND", 0) != 0;
+        int ip = getIntParameter("NOGUI", 0);
+Debug.print("NOGUI: " + ip);
+        if (ip == 0)
+            createGUI();
 
-            // Optionally start playing file immediately
-            String url = getParameter("PLAYURL");
-            if (url != null)
-                playFile(url, getStringParameter("PLAYPATH", ""),
-                        getIntParameter("PLAYTRACK", 1));
-        } catch (Exception e) {
-            e.printStackTrace();
+        // Optionally start playing file immediately
+        String url = System.getProperty("PLAYURL");
+Debug.print("url: " + url);
+        if (url != null) {
+Debug.print("playFile: " + getStringParameter("PLAYPATH", ""));
+            playFile(url, getStringParameter("PLAYPATH", ""),
+                    getIntParameter("PLAYTRACK", 1));
         }
     }
 
@@ -112,10 +122,10 @@ public final class gme extends Applet implements ActionListener {
     }
 
     // Called when button is clicked
-    public void actionPerformed(ActionEvent e) {
+    final ActionListener al = e -> {
         try {
             String cmd = e.getActionCommand();
-            if (cmd == "Stop") {
+            if (Objects.equals(cmd, "Stop")) {
                 if (player.isPlaying())
                     player.pause();
                 else
@@ -123,18 +133,37 @@ public final class gme extends Applet implements ActionListener {
                 return;
             }
 
-            if (cmd == "Prev") {
+            if (Objects.equals(cmd, "Prev")) {
                 player.prev();
                 return;
             }
 
-            if (cmd == "Next") {
+            if (Objects.equals(cmd, "Next")) {
                 player.next();
                 return;
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    };
+
+    public static void main(String[] args) {
+        System.setProperty("PLAYPATH", args[0]);
+        System.setProperty("NOGUI", "0");
+        gme app = new gme();
+        app.panel.setPreferredSize(new Dimension( 640, 480));
+        app.frame.getContentPane().add(app.panel);
+        app.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        app.frame.pack();
+        app.frame.setVisible(true);
+        app.frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                app.stop();
+                app.destroy();
+            }
+        });
+        app.init();
     }
 
     // Called when applet's page isn't active

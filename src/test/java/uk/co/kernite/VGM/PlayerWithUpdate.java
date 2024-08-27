@@ -14,22 +14,20 @@ public final class PlayerWithUpdate extends PlayerList {
     char[] str = new char[5];
     int last = -1;
 
+    @Override
     protected void idle() {
         try {
             super.idle();
-            /*
-               if ( !isPlaying() )
-               {
-                   next();
-                   last = -1;
-               }
-               */
+//            if (!isPlaying()) {
+//                next();
+//                last = -1;
+//            }
             int secs = getCurrentTime();
             if (last != secs) {
                 last = secs;
                 str[4] = (char) ('0' + secs % 10);
                 str[3] = (char) ('0' + secs / 10 % 6);
-                str[2] = (char) (':');
+                str[2] = ':';
                 str[1] = (char) ('0' + secs / 60 % 10);
                 str[0] = (char) ((secs >= 600 ? '0' + secs / 600 : ' '));
 

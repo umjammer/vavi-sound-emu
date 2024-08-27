@@ -16,7 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.vgm;
+
+import libvgm.BlipBuffer;
+
 
 public class SmsOsc {
 

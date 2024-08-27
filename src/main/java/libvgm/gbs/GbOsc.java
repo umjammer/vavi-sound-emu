@@ -1,4 +1,7 @@
-package libvgm;
+package libvgm.gbs;
+
+import libvgm.BlipBuffer;
+
 
 public class GbOsc {
 

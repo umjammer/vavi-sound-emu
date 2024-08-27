@@ -16,12 +16,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.nsf;
 
-// Nintendo NSF music file emulator
-// http://www.slack.net/~ant/
+import java.lang.System.Logger.Level;
+
+import libvgm.MemPager;
 
 
+/**
+ * Nintendo NSF music file emulator
+ *
+ * @see "https://www.slack.net/~ant"
+ */
 public final class NsfEmu extends NesCpu {
 
     // header offsets
@@ -61,16 +67,17 @@ public final class NsfEmu extends NesCpu {
     int nextPlay;
     double clockRate;
 
+    @Override
     protected int loadFile_(byte[] in) {
         if (!isHeader(in, "NESM"))
-            error("Not an NSF file");
+            throw new IllegalArgumentException("Not an NSF file");
 
         // Load ROM data
-        final int loadAddr = getLE16(in, loadAddrOff);
+        int loadAddr = getLE16(in, loadAddrOff);
         ram = rom.load(in, header, loadAddr % bankSize, 0xF2);
 
         if (header[chipFlagsOff] != 0)
-            error("Extra sound chips not supported");
+            throw new IllegalArgumentException("Extra sound chips not supported");
 
         // Copy initial banks
         int nonZero = 0;
@@ -127,6 +134,7 @@ public final class NsfEmu extends NesCpu {
         s = (s - 2) & 0xFF;
     }
 
+    @Override
     public void startTrack(int track) {
         super.startTrack(track);
 
@@ -157,12 +165,14 @@ public final class NsfEmu extends NesCpu {
         cpuCall(getLE16(header, initAddrOff));
     }
 
+    @Override
     public float setPlaybackRateFactor(float factor) {
         int cr = (int) ((int) (clockRate + 0.5) * factor);
         setClockRate(cr);
         return (float) (cr / clockRate);
     }
 
+    @Override
     protected int runClocks(int clockCount) {
         endTime = clockCount;
         time = -endTime;
@@ -173,7 +183,8 @@ public final class NsfEmu extends NesCpu {
                 break;
 
             if (pc != idleAddr) {
-                logError();
+                setTrackEnded();
+                logger.log(Level.ERROR, "emulation error");
                 return endTime;
             }
 
@@ -200,6 +211,7 @@ public final class NsfEmu extends NesCpu {
         return endTime;
     }
 
+    @Override
     protected final int cpuRead(int addr) {
         if (addr <= 0x7FF) // 90%
             return ram[addr] & 0xFF;
@@ -217,9 +229,10 @@ public final class NsfEmu extends NesCpu {
         return ram[addr - 0x10000] & 0xFF;
     }
 
-    protected final void cpuWrite(int addr, int data) {
-        if (debug) assert 0 <= data && data < 0x100;
-        if (debug) assert 0 <= addr && addr < 0x10100;
+    @Override
+    protected void cpuWrite(int addr, int data) {
+        assert 0 <= data && data < 0x100;
+        assert 0 <= addr && addr < 0x10100;
 
         // SRAM
         int offset;
@@ -243,10 +256,8 @@ public final class NsfEmu extends NesCpu {
         }
 
         // RAM
-        if ((addr & 0xF800) == 0) // addr <= 0x7FF || addr >= 0x10000
-        {
+        if ((addr & 0xF800) == 0) { // addr <= 0x7FF || addr >= 0x10000
             ram[addr & 0x7FF] = (byte) data;
-            return;
         }
     }
 }

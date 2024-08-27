@@ -16,12 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.gbs;
+
+import libvgm.BlipBuffer;
+
 
 public final class GbNoise extends GbEnv {
 
     int bits;
 
+    @Override
     boolean write_register(int frame_phase, int reg, int old_data, int data) {
         if (reg == 3) {
             int p = period();
@@ -74,7 +78,7 @@ public final class GbNoise extends GbEnv {
 
         time += delay;
         if (time < end_time) {
-            final int period = this.period();
+            int period = this.period();
             if (period == 0) {
                 time = end_time;
             } else {
@@ -93,7 +97,7 @@ public final class GbNoise extends GbEnv {
                     while (--count > 0);
                     bits &= ~(feedback << 1);
                 } else {
-                    final BlipBuffer output = this.output;
+                    BlipBuffer output = this.output;
                     // TODO: eliminate ugly +dac_bias -dac_bias adjustments
                     int delta = ((amp + dac_bias) * 2 - volume) * vol_unit;
 

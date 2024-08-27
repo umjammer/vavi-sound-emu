@@ -21,20 +21,23 @@ package libvgm;
 /**
  * Common aspects of emulators which use BlipBuffer for sound output
  *
- * @see "http://www.slack.net/~ant/"
+ * @see "https://www.slack.net/~ant/"
  */
-public class ClassicEmu extends MusicEmu {
+public abstract class ClassicEmu extends MusicEmu {
 
+    @Override
     protected int setSampleRate_(int rate) {
         buf.setSampleRate(rate, 1000 / bufLength);
         return rate;
     }
 
+    @Override
     public void startTrack(int track) {
         super.startTrack(track);
         buf.clear();
     }
 
+    @Override
     protected int play_(byte[] out, int count) {
         int pos = 0;
         while (true) {
@@ -65,7 +68,7 @@ public class ClassicEmu extends MusicEmu {
         // derived class can override and mix its own samples here
     }
 
-// internal
+    // internal
 
     static final int bufLength = 32;
     protected StereoBuffer buf = new StereoBuffer();
@@ -74,13 +77,15 @@ public class ClassicEmu extends MusicEmu {
         buf.setClockRate(rate);
     }
 
-    // Subclass should run here for at most clockCount and return actual
-    // number of clocks emulated (can be less)
+    /**
+     * Subclass should run here for at most clockCount and return actual
+     * number of clocks emulated (can be less)
+     */
     protected int runClocks(int clockCount) {
         return 0;
     }
 
-    // Subclass can also get number of msec to run, and return number of clocks emulated
+    /** Subclass can also get number of msec to run, and return number of clocks emulated */
     protected int runMsec(int msec) {
         assert bufLength == 32;
         return runClocks(buf.clockRate() >> 5);

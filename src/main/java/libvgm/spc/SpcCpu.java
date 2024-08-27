@@ -16,19 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package libvgm;
+package libvgm.spc;
 
-// Nintendo SNES SPC-700 CPU emulator
-// http://www.slack.net/~ant/
+import libvgm.MusicEmu;
+
+
+/**
+ * Nintendo SNES SPC-700 CPU emulator
+ *
+ * @see "https://www.slack.net/~ant"
+ */
 public class SpcCpu extends MusicEmu {
 
     // Registers. NOT kept updated during runCpu()
     public int a, x, y, psw, sp, pc;
 
-    // Current time
+    // Current time */
     public int time;
 
-    // Memory read and write handlers
+    // Memory read and write handlers */
     protected int cpuRead(int addr) {
         return 0;
     }
@@ -36,7 +42,7 @@ public class SpcCpu extends MusicEmu {
     protected void cpuWrite(int addr, int data) {
     }
 
-    // Resets registers and uses supplied physical memory
+    // Resets registers and uses supplied physical memory */
     public final void reset(byte[] mem) {
         this.mem = mem;
         a = 0;
@@ -55,8 +61,8 @@ public class SpcCpu extends MusicEmu {
 
     private byte[] mem;
 
-    static final int[] instrTimes =
-            {// 0 1 2 3 4 5 6 7 8 9 A B C D E F
+    static final int[] instrTimes = {
+                  // 0 1 2 3 4 5 6 7 8 9 A B C D E F
                     2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 5, 4, 5, 4, 6, 8, // 0
                     2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 6, 5, 2, 2, 4, 6, // 1
                     2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 5, 4, 5, 4, 5, 2, // 2
@@ -77,6 +83,7 @@ public class SpcCpu extends MusicEmu {
 
     // Hex value in name to clarify code and bit shifting.
     // Flag stored in indicated variable during emulation
+
     static final int n80 = 0x80; // (nz & 0x880) != 0
     static final int v40 = 0x40; // psw
     static final int p20 = 0x20; // psw, dp == 0x100
@@ -89,7 +96,7 @@ public class SpcCpu extends MusicEmu {
     // Runs until time >= 0
     public final void runCpu() {
         // locals are faster, and first three are more efficient to access
-        final byte[] mem = this.mem;
+        byte[] mem = this.mem;
         int nz;
         int pc = this.pc;
 
@@ -99,7 +106,7 @@ public class SpcCpu extends MusicEmu {
         int psw = this.psw;
         int sp = (this.sp + 1) | 0x100;
         int time = this.time;
-        final int[] instrTimes = this.instrTimes;
+        int[] instrTimes = this.instrTimes;
 
         // unpack psw
         int c, dp;
@@ -112,14 +119,12 @@ public class SpcCpu extends MusicEmu {
 
 loop:
         while (time < 0) {
-            if (debug) {
-                assert 0 <= a && a < 0x100;
-                assert 0 <= x && x < 0x100;
-                assert 0 <= y && y < 0x100;
-                assert 0 <= pc && pc < 0x10000;
-                assert 0x100 <= sp && sp < 0x200;
-                assert dp == 0 || dp == 0x100;
-            }
+            assert 0 <= a && a < 0x100;
+            assert 0 <= x && x < 0x100;
+            assert 0 <= y && y < 0x100;
+            assert 0 <= pc && pc < 0x10000;
+            assert 0x100 <= sp && sp < 0x200;
+            assert dp == 0 || dp == 0x100;
 
             int opcode;
             this.time = (time += instrTimes[opcode = mem[pc] & 0xFF]);
