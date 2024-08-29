@@ -1,15 +1,17 @@
 package p3;
 
+import java.awt.Graphics;
 import java.util.HashMap;
+import java.util.Map;
 
-import processing.core.PApplet;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
-
-public class ButtonToolbar extends PApplet {
+public class ButtonToolbar extends JPanel {
 
     int x, y;
     double xSep, ySep;
-    HashMap<String, Button> buttons = new HashMap<>();
+    Map<String, JButton> buttons = new HashMap<>();
 
     ButtonToolbar(int x, int y, double xSep, double ySep, Button[] buttons) {
         this.xSep = xSep;
@@ -27,16 +29,16 @@ public class ButtonToolbar extends PApplet {
         }
     }
 
-    public Button getButton(String filename) {
+    public JButton getButton(String filename) {
         return this.buttons.get(filename);
     }
 
-    public void redraw() {
-        for (Button b : buttons.values()) b.redraw();
+    public void repaint(Graphics g) {
+        for (JButton b : buttons.values()) b.repaint(g);
     }
 
     boolean collided(String bName) {
-        Button b = this.buttons.get(bName);
+        JButton b = this.buttons.get(bName);
         if (b == null) return false;
         return b.collided();
     }

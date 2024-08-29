@@ -1,6 +1,7 @@
 package p3;
 
-import processing.core.PImage;
+import java.awt.Graphics;
+import javax.swing.ImageIcon;
 
 
 public class Button {
@@ -8,8 +9,8 @@ public class Button {
     Main window;
     int x, y, width, height;
     String iconFilename, label;
-    PImage textureUp;
-    PImage textureDown;
+    ImageIcon textureUp;
+    ImageIcon textureDown;
     boolean pressed = false;
     boolean showLabel = true;
 
@@ -32,18 +33,18 @@ public class Button {
     }
 
     private void loadTexture() {
-        textureUp = window.loadImage("data/buttons/" + iconFilename + "Up.png");
-        textureDown = window.loadImage("data/buttons/" + iconFilename + "Down.png");
+        textureUp = new ImageIcon(Button.class.getResource("/data/buttons/" + iconFilename + "Up.png"));
+        textureDown = new ImageIcon(Button.class.getResource("/data/buttons/" + iconFilename + "Down.png"));
     }
 
     public void setPressed(boolean how) {
         this.pressed = how;
 
-        this.width = textureUp.width;
-        this.height = textureUp.height;
+        this.width = textureUp.getIconWidth();
+        this.height = textureUp.getIconHeight();
     }
 
-    public void redraw() {
+    public void paintComponent(Graphics g) {
         window.image(pressed ? textureDown : textureUp, x, y);
         window.fill(window.t.theme[0]);
         window.textAlign(window.CENTER);

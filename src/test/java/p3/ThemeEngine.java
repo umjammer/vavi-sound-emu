@@ -2,12 +2,13 @@ package p3;
 
 import java.awt.Color;
 import java.util.HashMap;
+import java.util.Map;
 
 
 public class ThemeEngine {
 
-    HashMap<String, int[]> availableThemes = new HashMap<>();
-    int[] theme;
+    Map<String, Color[]> availableThemes = new HashMap<>();
+    Color[] theme;
 
     ThemeEngine() {
         loadThemes();
@@ -19,9 +20,9 @@ public class ThemeEngine {
 
     private void loadThemes() {
         // theme is an array of ints (colors in hex) in order: darker, dark, neutral, light, lightest
-        int[] theme_01 = {Color.decode("#000000").getRGB(), Color.decode("#5151cf").getRGB(),
-                Color.decode("#809fff").getRGB(), Color.decode("#bfcfff").getRGB(),
-                Color.decode("#ffffff").getRGB()};
+        Color[] theme_01 = {Color.decode("#000000"), Color.decode("#5151cf"),
+                Color.decode("#809fff"), Color.decode("#bfcfff"),
+                Color.decode("#ffffff")};
         availableThemes.put("Fresh Blue", theme_01);
     }
 }

@@ -4,7 +4,7 @@ import java.awt.Label;
 import java.util.ArrayList;
 import java.util.List;
 
-import libvgm.VGMPlayer;
+import libgme.VGMPlayer;
 
 
 public class PlayerList extends VGMPlayer {
