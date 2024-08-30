@@ -87,7 +87,7 @@ public final class SpcEmu extends SpcCpu {
     }
 
     @Override
-    protected int loadFile_(byte[] in) {
+    protected int parseHeader(byte[] in) {
         if (!isHeader(in, "SNES-SPC700 Sound File Data"))
             throw new IllegalArgumentException("Not an SPC file");
 

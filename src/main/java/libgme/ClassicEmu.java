@@ -67,9 +67,8 @@ public abstract class ClassicEmu extends MusicEmu {
         return buf.countSamples(time);
     }
 
-    protected void mixSamples(byte[] out, int offset, int count) {
-        // derived class can override and mix its own samples here
-    }
+    // derived class can override and mix its own samples here
+    protected abstract void mixSamples(byte[] out, int offset, int count);
 
     // internal
 
@@ -92,5 +91,9 @@ public abstract class ClassicEmu extends MusicEmu {
     protected int runMsec(int msec) {
         assert bufLength == 32;
         return runClocks(buf.clockRate() >> 5);
+    }
+
+    public StereoBuffer getBuf() {
+        return buf;
     }
 }

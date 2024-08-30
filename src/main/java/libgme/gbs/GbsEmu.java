@@ -58,7 +58,7 @@ public final class GbsEmu extends GbCpu {
     GbApu apu = new GbApu();
 
     @Override
-    protected int loadFile_(byte[] in) {
+    protected int parseHeader(byte[] in) {
         if (!isHeader(in, "GBS\u0001"))
             throw new IllegalArgumentException("Not a GBS file");
 
@@ -137,6 +137,10 @@ public final class GbsEmu extends GbCpu {
         pc = idleAddr;
         sp = getLE16(header, stackPtrOff);
         cpuCall(getLE16(header, initAddrOff));
+    }
+
+    @Override
+    protected void mixSamples(byte[] out, int offset, int count) {
     }
 
     @Override

@@ -68,7 +68,7 @@ public final class NsfEmu extends NesCpu {
     double clockRate;
 
     @Override
-    protected int loadFile_(byte[] in) {
+    protected int parseHeader(byte[] in) {
         if (!isHeader(in, "NESM"))
             throw new IllegalArgumentException("Not an NSF file");
 
@@ -163,6 +163,10 @@ public final class NsfEmu extends NesCpu {
         s = 0xFF;
         pc = idleAddr;
         cpuCall(getLE16(header, initAddrOff));
+    }
+
+    @Override
+    protected void mixSamples(byte[] out, int offset, int count) {
     }
 
     @Override

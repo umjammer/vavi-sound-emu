@@ -21,6 +21,7 @@ package libgme;
 import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.time.Duration;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
@@ -40,6 +41,14 @@ public class EmuPlayer implements Runnable {
     // Number of tracks
     public int getTrackCount() {
         return emu.trackCount();
+    }
+
+    public void startTrack(int track) throws Exception {
+        if (playing) pause();
+        if (line != null)
+            line.flush();
+        emu.startTrack(track);
+        play();
     }
 
     /**
@@ -132,6 +141,8 @@ public class EmuPlayer implements Runnable {
                 setVolume(volume);
             }
             thread = new Thread(this);
+            thread.setName("simplevgm");
+            thread.setPriority(Thread.MAX_PRIORITY - 1);
             playing = true;
             thread.start();
 logger.log(Level.DEBUG, "PLAY");
@@ -150,15 +161,17 @@ logger.log(Level.DEBUG, "PLAY");
         }
     }
 
+    final static long SLEEP_NS = (ClassicEmu.bufLength / 3) * Duration.ofMillis(1).toNanos();
+
     /** Called periodically when a track is playing */
     protected void idle() {
-        // TODO document why this method is empty
+//        LockSupport.parkNanos(SLEEP_NS);
     }
 
     // private
 
     /** Sets music emulator to get samples from */
-    void setEmu(MusicEmu emu, int sampleRate) {
+    protected void setEmu(MusicEmu emu, int sampleRate) {
         stop();
         this.emu = emu;
         if (emu != null && line == null && this.sampleRate != sampleRate) {
@@ -169,10 +182,14 @@ logger.log(Level.DEBUG, "PLAY");
         }
     }
 
+    public MusicEmu getEmu() {
+        return emu;
+    }
+
     private int sampleRate = 0;
     AudioFormat audioFormat;
     DataLine.Info lineInfo;
-    MusicEmu emu;
+    protected MusicEmu emu;
     Thread thread;
     volatile boolean playing;
     SourceDataLine line;

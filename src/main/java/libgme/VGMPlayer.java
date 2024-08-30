@@ -116,9 +116,11 @@ public class VGMPlayer extends EmuPlayer {
     String archiveUrl = ""; // URL of (ZIP) file cached in archiveData
     byte[] archiveData;
 
+    private static ServiceLoader<MusicEmu> serviceLoader = ServiceLoader.load(MusicEmu.class);
+
     /** Creates appropriate emulator for given filename */
     static MusicEmu createEmu(String name) {
-        for (MusicEmu musicEmu : ServiceLoader.load(MusicEmu.class)) {
+        for (MusicEmu musicEmu : serviceLoader) {
 logger.log(Level.TRACE, musicEmu + ", " + name);
             if (musicEmu.isSupportedByName(name)) {
                 return musicEmu;
@@ -129,7 +131,7 @@ logger.log(Level.TRACE, musicEmu + ", " + name);
     }
 
     static boolean isGunzipNeeded(String name) {
-        for (MusicEmu musicEmu : ServiceLoader.load(MusicEmu.class)) {
+        for (MusicEmu musicEmu : serviceLoader) {
             if (musicEmu.isGunzipNeeded(name)) {
                 return true;
             }

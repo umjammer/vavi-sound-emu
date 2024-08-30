@@ -20,12 +20,17 @@ package libgme.util;
 
 /**
  * Band-limited sound synthesis buffer
- *
+ * <p>
+ * system property
+ * <ul>
+ * <li>libgme.BlipBuffer.muchFaster ... speeds synthesis at a cost of quality. default {@code false}</li>
+ * </ul>
  * @see "https://www.slack.net/~ant/"
  */
 public final class BlipBuffer {
 
-    static final boolean muchFaster = false; // speeds synthesis at a cost of quality
+    /** speeds synthesis at a cost of quality */
+    static final boolean muchFaster = Boolean.parseBoolean(System.getProperty("libgme.BlipBuffer.muchFaster", "false"));
 
     public BlipBuffer() {
         setVolume(1.0);
@@ -88,22 +93,36 @@ public final class BlipBuffer {
         }
     }
 
+    public void addDeltaFast(int time, int delta) {
+        int[] buf = this.buf;
+        time = time * factor + offset;
+        int phase = (time) >>
+                (timeBits - phaseBits) & (phaseCount - 1);
+        time >>= timeBits;
+        delta *= volume;
+        int right = (delta >> phaseBits) * phase;
+        buf[time] += delta - right;
+        buf[time + 1] += right;
+    }
+
     // Adds delta at given time
     public void addDelta(int time, int delta) {
         int[] buf = this.buf;
-        int phase = (time = time * factor + offset) >>
+        time = time * factor + offset;
+        int phase = (time) >>
                 (timeBits - phaseBits) & (phaseCount - 1);
-
+        time >>= timeBits;
         if (muchFaster) {
-            int right = ((delta *= volume) >> phaseBits) * phase;
-            buf[time >>= timeBits] += delta - right;
+            delta *= volume;
+            int right = (delta >> phaseBits) * phase;
+            buf[time] += delta - right;
             buf[time + 1] += right;
         } else {
             // TODO: use smaller kernel
 
             // left half
             int[] k = kernel[phase];
-            buf[time >>= timeBits] += k[0] * delta;
+            buf[time] += k[0] * delta;
             buf[time + 1] += k[1] * delta;
             buf[time + 2] += k[2] * delta;
             buf[time + 3] += k[3] * delta;
@@ -158,7 +177,8 @@ public final class BlipBuffer {
             pos <<= 1;
             int i = 0;
             do {
-                int s = (accum += buf[i] - (accum >> 9)) >> 15;
+                accum += buf[i] - (accum >> 9);
+                int s = accum >> 15;
 
                 // clamp to 16 bits
                 if ((short) s != s)
@@ -168,6 +188,35 @@ public final class BlipBuffer {
                 out[pos] = (byte) (s >> 8);
                 out[pos + 1] = (byte) s;
                 pos += 2;
+            }
+            while (++i < count);
+            this.accum = accum;
+
+            removeSamples(count);
+        }
+        return count;
+    }
+
+    public int readSamples8bit(byte[] out, int pos, int count) {
+        int avail = samplesAvail();
+        if (count > avail)
+            count = avail;
+
+        if (count > 0) {
+            // Integrate
+            int[] buf = this.buf;
+            int accum = this.accum;
+            pos <<= 1;
+            int i = 0;
+            do {
+                accum += buf[i] - (accum >> 9);
+                int s = accum >> 15;
+                byte val = (byte) s;
+                if (val != s) {
+                    val = s > Byte.MAX_VALUE ? Byte.MAX_VALUE : (byte) (s < Byte.MIN_VALUE ? Byte.MIN_VALUE : s);
+//                    System.out.println(s + "->" + val);
+                }
+                out[pos++] = val;
             }
             while (++i < count);
             this.accum = accum;

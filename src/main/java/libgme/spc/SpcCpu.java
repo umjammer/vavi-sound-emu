@@ -26,7 +26,7 @@ import libgme.MusicEmu;
  *
  * @see "https://www.slack.net/~ant"
  */
-public class SpcCpu extends MusicEmu {
+public abstract class SpcCpu extends MusicEmu {
 
     // Registers. NOT kept updated during runCpu()
     public int a, x, y, psw, sp, pc;

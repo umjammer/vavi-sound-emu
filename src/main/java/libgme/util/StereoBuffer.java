@@ -21,7 +21,13 @@ package libgme.util;
 
 public final class StereoBuffer {
 
+    public interface Observer {
+        void observe(byte[] out, int start, int end);
+    }
+
     private final BlipBuffer[] bufs = new BlipBuffer[3];
+
+    private Observer observer;
 
     // Same behavior as in BlipBuffer unless noted
 
@@ -29,6 +35,10 @@ public final class StereoBuffer {
         for (int i = bufs.length; --i >= 0; ) {
             bufs[i] = new BlipBuffer();
         }
+    }
+
+    public void setObserver(Observer observer) {
+        this.observer = observer;
     }
 
     public void setSampleRate(int rate, int msec) {
@@ -111,12 +121,13 @@ public final class StereoBuffer {
                 bufs[2].accum = accum;
             }
 
+            int pos = 0;
             // calculate left and right
             for (int ch = 2; --ch >= 0; ) {
                 // add right and output
                 int[] buf = bufs[ch].buf;
                 int accum = bufs[ch].accum;
-                int pos = (start + ch) << 1;
+                pos = (start + ch) << 1;
                 int i = 0;
                 do {
                     int s = ((accum += buf[i] - (accum >> 9)) + mono[i]) >> 15;
@@ -133,7 +144,8 @@ public final class StereoBuffer {
                 while (++i < count);
                 bufs[ch].accum = accum;
             }
-
+            if (observer != null)
+                observer.observe(out, start * 2, pos);
             for (int i = bufs.length; --i >= 0; ) {
                 bufs[i].removeSamples(count);
             }

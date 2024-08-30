@@ -52,7 +52,7 @@ public abstract class MusicEmu {
         trackEnded = true;
         currentTrack = 0;
         currentTime = 0;
-        trackCount = loadFile_(data);
+        trackCount = parseHeader(data);
     }
 
     // Number of tracks
@@ -93,7 +93,7 @@ public abstract class MusicEmu {
 
     // Sets fade start and length, in seconds. Must be set after call to startTrack().
     public final void setFade(int start, int length) {
-        fadeStart = sampleRate * start;
+        fadeStart = sampleRate * Math.max(0, start);
         fadeStep = sampleRate * length / (fadeBlockSize * fadeShift);
         if (fadeStep < 1)
             fadeStep = 1;
@@ -116,17 +116,11 @@ public abstract class MusicEmu {
     // protected
 
     // must be defined in derived class
-    protected int setSampleRate_(int rate) {
-        return rate;
-    }
+    protected abstract int setSampleRate_(int rate);
 
-    protected int loadFile_(byte[] in) {
-        return 0;
-    }
+    protected abstract int parseHeader(byte[] in);
 
-    protected int play_(byte[] out, int count) {
-        return 0;
-    }
+    protected abstract int play_(byte[] out, int count);
 
     /** Sets end of track flag and stops emulating file */
     protected void setTrackEnded() {
@@ -164,7 +158,7 @@ public abstract class MusicEmu {
     int currentTime;
     int fadeStart;
     int fadeStep;
-    boolean trackEnded;
+    protected boolean trackEnded;
 
     static final int fadeBlockSize = 512;
     static final int fadeShift = 8; // fade ends with gain at 1.0 / (1 << fadeShift)

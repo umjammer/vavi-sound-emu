@@ -32,7 +32,7 @@ import libgme.util.DataReader;
 public final class VgmEmu extends ClassicEmu {
 
     @Override
-    protected int loadFile_(byte[] data) {
+    protected int parseHeader(byte[] data) {
         if (!isHeader(data, "Vgm "))
             throw new IllegalArgumentException("Not a VGM file");
 
