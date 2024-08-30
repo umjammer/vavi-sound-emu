@@ -11,6 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import libgme.VGMPlayer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import uk.co.kernite.VGM.gme;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
@@ -24,6 +25,7 @@ import vavi.util.properties.annotation.PropsEntity;
  * @version 0.00 2024-08-26 nsano initial version <br>
  */
 @PropsEntity(url = "file:local.properties")
+@EnabledIf("localPropertiesExists")
 class TestCase {
 
     static boolean localPropertiesExists() {
