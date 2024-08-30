@@ -45,10 +45,10 @@ public class Button {
     }
 
     public void paintComponent(Graphics g) {
-        window.image(pressed ? textureDown : textureUp, x, y);
-        window.fill(window.t.theme[0]);
-        window.textAlign(window.CENTER);
-        window.textFont(window.fonts[0]);
+        g.image(pressed ? textureDown : textureUp, x, y);
+        g.fill(window.t.theme[0]);
+        g.textAlign(window.CENTER);
+        g.setFont(window.fonts[0]);
         if (showLabel) window.text(label, (float) (x + this.width / 2.0), y - 2);
     }
 
