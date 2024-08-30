@@ -24,6 +24,8 @@ java port game music emu. mavenized and spi-zed also.
 ## TODO
 
  * ~~make those using service loader~~
+ * javax sound spi
+ * vgm after 1.50
 
 ---
 
