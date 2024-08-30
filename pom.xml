@@ -3,9 +3,9 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.github.vlcoo</groupId>
-  <artifactId>P3synthVG</artifactId>
   <version>1.0.0v-SNAPSHOT</version>
+  <groupId>vavi</groupId>
+  <artifactId>vavi-sound-emu</artifactId>
 
   <build>
     <plugins>
@@ -72,8 +72,8 @@
 
     <dependency>
       <groupId>com.github.umjammer</groupId>
-      <artifactId>vavi-sound</artifactId>
-      <version>1.0.19</version>
+      <artifactId>vavi-commons</artifactId>
+      <version>1.1.13</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
