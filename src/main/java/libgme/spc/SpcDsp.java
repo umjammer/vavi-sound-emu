@@ -131,8 +131,8 @@ public final class SpcDsp {
         Voice[] voices = this.voices;
         int flg = regs[r_flg];
 
-        int dir = (regs[r_dir] & 0xFF) << 8;
-        int slow_gaussian = ((regs[r_pmon] & 0xFF) >> 1) | regs[r_non];
+        int dir = (regs[r_dir] & 0xff) << 8;
+        int slow_gaussian = ((regs[r_pmon] & 0xff) >> 1) | regs[r_non];
         Rate noise_rate = rates[flg & 0x1F];
 
         // Global volumes
@@ -187,7 +187,7 @@ public final class SpcDsp {
                 int v_regs = voice << 4;
 
                 // Pitch
-                int pitch = (regs[v_regs + v_pitchh] & 0x3F) << 8 | (regs[v_regs + v_pitchl] & 0xFF);
+                int pitch = (regs[v_regs + v_pitchh] & 0x3F) << 8 | (regs[v_regs + v_pitchl] & 0xff);
                 if ((regs[r_pmon] & vbit) != 0)
                     pitch += ((pmon_input >> 5) * pitch) >> 10;
 
@@ -202,8 +202,8 @@ public final class SpcDsp {
 
                     // Get ready to start BRR decoding on next sample
                     if (kon_delay == 4) {
-                        int addr = dir + ((regs[v_regs + v_srcn] & 0xFF) << 2);
-                        v.brr_addr = (ram[addr + 1] & 0xFF) << 8 | (ram[addr] & 0xFF);
+                        int addr = dir + ((regs[v_regs + v_srcn] & 0xff) << 2);
+                        v.brr_addr = (ram[addr + 1] & 0xff) << 8 | (ram[addr] & 0xff);
                         v.brr_offset = 1;
                         v.buf_pos = 0;
                         brr_header = 0; // header is ignored on this sample
@@ -292,7 +292,7 @@ public final class SpcDsp {
                     } else do // 3%
                     {
                         int rate;
-                        int env_data = regs[v_regs + v_adsr1] & 0xFF;
+                        int env_data = regs[v_regs + v_adsr1] & 0xff;
                         int adsr0;
                         if ((adsr0 = regs[v_regs + v_adsr0]) < 0) // 97% ADSR
                         {
@@ -315,7 +315,7 @@ public final class SpcDsp {
                         } else // GAIN
                         {
                             int mode;
-                            env_data = regs[v_regs + v_gain] & 0xFF;
+                            env_data = regs[v_regs + v_gain] & 0xff;
                             mode = env_data >> 5;
                             if (mode < 4) // direct
                             {
@@ -369,17 +369,17 @@ public final class SpcDsp {
                     // Arrange the four input nybbles in 0xABCD order for easy decoding
                     int brr_addr = v.brr_addr;
                     int brr_offset = v.brr_offset;
-                    int nybbles = ram[brr_addr + brr_offset] << 8 | (ram[brr_addr + brr_offset + 1] & 0xFF);
+                    int nybbles = ram[brr_addr + brr_offset] << 8 | (ram[brr_addr + brr_offset + 1] & 0xff);
 
                     // Advance read position
                     final int brr_block_size = 9;
                     if ((brr_offset += 2) >= brr_block_size) {
                         // Next BRR block
-                        brr_addr = (brr_addr + brr_block_size) & 0xFFFF;
+                        brr_addr = (brr_addr + brr_block_size) & 0xffFF;
                         //assert brr_offset == brr_block_size;
                         if ((brr_header & 1) != 0) {
-                            int addr = dir + ((regs[v_regs + v_srcn] & 0xFF) << 2);
-                            brr_addr = (ram[addr + 3] & 0xFF) << 8 | (ram[addr + 2] & 0xFF);
+                            int addr = dir + ((regs[v_regs + v_srcn] & 0xff) << 2);
+                            brr_addr = (ram[addr + 3] & 0xff) << 8 | (ram[addr + 2] & 0xff);
                             if (v.kon_delay == 0)
                                 regs[r_endx] |= vbit;
                         }
@@ -434,7 +434,7 @@ public final class SpcDsp {
 
             // Echo position
             int echo_offset;
-            int echo_ptr = ((regs[r_esa] << 8) + (echo_offset = this.echo_offset)) & 0xFFFF;
+            int echo_ptr = ((regs[r_esa] << 8) + (echo_offset = this.echo_offset)) & 0xffFF;
             if (echo_offset == 0)
                 echo_length = (regs[r_edl] & 0x0F) << 11;
             if ((echo_offset += 4) >= echo_length)
@@ -445,10 +445,10 @@ public final class SpcDsp {
             int echo_hist_pos;
             this.echo_hist_pos = echo_hist_pos = (this.echo_hist_pos + 2) & (echo_hist_half - 1);
 
-            int echo_in_l = ram[echo_ptr + 1] << 8 | (ram[echo_ptr] & 0xFF);
+            int echo_in_l = ram[echo_ptr + 1] << 8 | (ram[echo_ptr] & 0xff);
             echo_hist[echo_hist_pos] = echo_hist[echo_hist_pos + echo_hist_half] = echo_in_l;
 
-            int echo_in_r = ram[echo_ptr + 3] << 8 | (ram[echo_ptr + 2] & 0xFF);
+            int echo_in_r = ram[echo_ptr + 3] << 8 | (ram[echo_ptr + 2] & 0xff);
             echo_hist[echo_hist_pos + 1] = echo_hist[echo_hist_pos + echo_hist_half + 1] = echo_in_r;
 
             echo_in_l = regs[r_fir + 0x70] * echo_in_l +

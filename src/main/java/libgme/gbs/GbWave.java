@@ -39,7 +39,7 @@ public final class GbWave extends GbOsc {
 
     int access(int addr) {
         if (enabled != 0)
-            addr = 0xFF30 + (wave_pos >> 1);
+            addr = 0xff30 + (wave_pos >> 1);
         return addr;
     }
 

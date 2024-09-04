@@ -42,7 +42,7 @@ public final class GbsEmu extends GbCpu {
     // memory addresses
     static final int idleAddr = 0xF00D;
     static final int ramAddr = 0xA000;
-    static final int hiPage = 0xFF00 - ramAddr;
+    static final int hiPage = 0xff00 - ramAddr;
 
     static final int ramSize = 0x4000 + 0x2000;
     static final int bankSize = 0x4000;
@@ -63,15 +63,15 @@ public final class GbsEmu extends GbCpu {
             throw new IllegalArgumentException("Not a GBS file");
 
         rstBase = getLE16(in, loadAddrOff);
-        ram = rom.load(in, header, rstBase, 0xFF);
+        ram = rom.load(in, header, rstBase, 0xff);
 
         setClockRate(4194304);
         apu.setOutput(buf.center(), buf.left(), buf.right());
 
-        return header[trackCountOff] & 0xFF;
+        return header[trackCountOff] & 0xff;
     }
 
-    final void setBank(int n) {
+    void setBank(int n) {
         int addr = rom.maskAddr(n * bankSize);
         if (addr == 0 && rom.size() > bankSize)
             n = 1;
@@ -84,16 +84,16 @@ public final class GbsEmu extends GbCpu {
         playPeriod = 70224; // 59.73 Hz
         if ((header[timerModeOff] & 0x04) != 0) {
             int shift = rates[ram[hiPage + 7] & 3] - (header[timerModeOff] >> 7 & 1);
-            playPeriod = (256 - (ram[hiPage + 6] & 0xFF)) << shift;
+            playPeriod = (256 - (ram[hiPage + 6] & 0xff)) << shift;
         }
     }
 
     static final int[] sound_data = {
             0x80, 0xBF, 0x00, 0x00, 0xBF, // square 1
             0x00, 0x3F, 0x00, 0x00, 0xBF, // square 2
-            0x7F, 0xFF, 0x9F, 0x00, 0xBF, // wave
-            0x00, 0xFF, 0x00, 0x00, 0xBF, // noise
-            0x77, 0xFF, 0x80, // vin/volume, status, power mode
+            0x7F, 0xff, 0x9F, 0x00, 0xBF, // wave
+            0x00, 0xff, 0x00, 0x00, 0xBF, // noise
+            0x77, 0xff, 0x80, // vin/volume, status, power mode
             0, 0, 0, 0, 0, 0, 0, 0, 0, // unused
             0xAC, 0xDD, 0xDA, 0x48, 0x36, 0x02, 0xCF, 0x16,    // waveform data
             0x2C, 0x04, 0xE5, 0x2C, 0xAC, 0xDD, 0xDA, 0x48
@@ -103,7 +103,7 @@ public final class GbsEmu extends GbCpu {
         assert sp == getLE16(header, stackPtrOff);
         pc = addr;
         cpuWrite(--sp, idleAddr >> 8);
-        cpuWrite(--sp, idleAddr & 0xFF);
+        cpuWrite(--sp, idleAddr & 0xff);
     }
 
     @Override
@@ -111,7 +111,7 @@ public final class GbsEmu extends GbCpu {
         super.startTrack(track);
 
         apu.reset();
-        apu.write(0, 0xFF26, 0x80); // power on
+        apu.write(0, 0xff26, 0x80); // power on
         for (int i = 0; i < sound_data.length; i++) {
             apu.write(0, i + apu.startAddr, sound_data[i]);
         }
@@ -122,7 +122,7 @@ public final class GbsEmu extends GbCpu {
         setBank(1);
 
         java.util.Arrays.fill(ram, 0, 0x4000, (byte) 0);
-        java.util.Arrays.fill(ram, 0x4000, 0x5F80, (byte) 0xFF);
+        java.util.Arrays.fill(ram, 0x4000, 0x5F80, (byte) 0xff);
         java.util.Arrays.fill(ram, 0x5F80, ramSize, (byte) 0);
 
         ram[hiPage] = 0; // joypad reads back as 0
@@ -155,7 +155,7 @@ public final class GbsEmu extends GbCpu {
 
             if (pc != idleAddr) {
                 // TODO: PC overflow handling
-                pc = (pc + 1) & 0xFFFF;
+                pc = (pc + 1) & 0xffFF;
                 setTrackEnded();
                 logger.log(Level.ERROR, "emulation error");
                 return endTime;
@@ -191,7 +191,7 @@ public final class GbsEmu extends GbCpu {
         if (apu.startAddr <= addr && addr <= apu.endAddr)
             return apu.read(time + endTime, addr);
 
-        return ram[mapAddr(addr)] & 0xFF;
+        return ram[mapAddr(addr)] & 0xff;
     }
 
     @Override
@@ -202,15 +202,15 @@ public final class GbsEmu extends GbCpu {
         int offset = addr - ramAddr;
         if (offset >= 0) {
             ram[offset] = (byte) data;
-            if (addr < 0xFF80 && addr >= 0xFF00) {
+            if (addr < 0xff80 && addr >= 0xff00) {
                 if (apu.startAddr <= addr && addr <= apu.endAddr) {
                     apu.write(time + endTime, addr, data);
-                } else if ((addr ^ 0xFF06) < 2) {
+                } else if ((addr ^ 0xff06) < 2) {
                     updateTimer();
-                } else if (addr == 0xFF00) {
+                } else if (addr == 0xff00) {
                     ram[offset] = 0; // keep joypad return value 0
                 } else {
-                    ram[offset] = (byte) 0xFF;
+                    ram[offset] = (byte) 0xff;
                 }
             }
         } else if ((addr ^ 0x2000) <= 0x2000 - 1) {

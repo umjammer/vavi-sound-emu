@@ -37,7 +37,7 @@ public class NesOsc {
     }
 
     int period() {
-        return (regs[3] & 7) * 0x100 + (regs[2] & 0xFF);
+        return (regs[3] & 7) * 0x100 + (regs[2] & 0xff);
     }
 
     void reset() {

@@ -116,7 +116,7 @@ public class VGMPlayer extends EmuPlayer {
     String archiveUrl = ""; // URL of (ZIP) file cached in archiveData
     byte[] archiveData;
 
-    private static ServiceLoader<MusicEmu> serviceLoader = ServiceLoader.load(MusicEmu.class);
+    private static final ServiceLoader<MusicEmu> serviceLoader = ServiceLoader.load(MusicEmu.class);
 
     /** Creates appropriate emulator for given filename */
     static MusicEmu createEmu(String name) {

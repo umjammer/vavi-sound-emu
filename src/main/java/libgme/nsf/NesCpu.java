@@ -34,7 +34,7 @@ public abstract class NesCpu extends ClassicEmu {
         a = 0;
         x = 0;
         y = 0;
-        s = 0xFF;
+        s = 0xff;
         pc = 0;
         p = 0x04;
         c = 0;
@@ -156,7 +156,7 @@ loop:
             int opcode;
             this.time =
                     (time += instrTimes[opcode =
-                            0xFF & mem[instr =
+                            0xff & mem[instr =
                                     pages[pc >> pageShift] + pc]]);
             instr++;
 
@@ -189,30 +189,30 @@ loop:
                 case 0xBD: {// LDA a,X
                     pc += 3;
                     int lsb;
-                    time += (lsb = (mem[instr] & 0xFF) + x) >> 8;
-                    a = nz = cpuRead(((mem[instr + 1] & 0xFF) << 8) + lsb);
+                    time += (lsb = (mem[instr] & 0xff) + x) >> 8;
+                    a = nz = cpuRead(((mem[instr + 1] & 0xff) << 8) + lsb);
                     continue;
                 }
 
                 case 0xC8: // INY
                     pc++;
-                    y = (nz = y + 1) & 0xFF;
+                    y = (nz = y + 1) & 0xff;
                     continue;
 
                 case 0x85: // STA z
                     pc += 2;
-                    mem[mem[instr] & 0xFF] = (byte) a;
+                    mem[mem[instr] & 0xff] = (byte) a;
                     continue;
 
                 case 0xC9: // CMP #n
                     pc += 2;
-                    c = ~(nz = a - (mem[instr] & 0xFF));
+                    c = ~(nz = a - (mem[instr] & 0xff));
                     nz = (byte) nz;
                     continue;
 
                 case 0x20: {// JSR a
                     int t = pc + 2;
-                    pc = (mem[instr + 1] & 0xFF) << 8 | (mem[instr] & 0xFF);
+                    pc = (mem[instr + 1] & 0xff) << 8 | (mem[instr] & 0xff);
                     mem[(sp - 1) | 0x100] = (byte) (t >> 8);
                     mem[sp = (sp - 2) | 0x100] = (byte) t;
                     continue;
@@ -258,7 +258,7 @@ loop:
 
                 case 0xBA: // TSX
                     pc++;
-                    x = (nz = sp - 1) & 0xFF;
+                    x = (nz = sp - 1) & 0xff;
                     continue;
 
                 case 0x9A: // TXS
@@ -313,7 +313,7 @@ loop:
                 case 0x7C:
                 case 0xDC:
                 case 0xFC:
-                    time += ((mem[instr] & 0xFF) + x) >> 8;
+                    time += ((mem[instr] & 0xff) + x) >> 8;
                 case 0x0C:
                     pc += 3;
                     continue;
@@ -349,9 +349,9 @@ loop:
 
                     // Illegal
                 case 0xF2:
-                    if (pc > 0xFFFF) {
+                    if (pc > 0xffFF) {
                         // handle wrap-around (assumes caller has put 0xF2 at 0x1000-0x10FF)
-                        pc &= 0xFFFF;
+                        pc &= 0xffFF;
                         break;
                     }
                 case 0x02:
@@ -385,12 +385,12 @@ loop:
 //                case 0xC3: case 0xC7: case 0xCB: case 0xCF:
 //                case 0xD3: case 0xD7: case 0xDB: case 0xDF:
 //                case 0xE3: case 0xE7:            case 0xEF:
-//                case 0xF3: case 0xF7: case 0xFB: case 0xFF:
+//                case 0xF3: case 0xF7: case 0xFB: case 0xff:
 //                case 0x9C: case 0x9E:
                     if ((opcode >> 4) == 0x0B) {
-                        int t = mem[instr] & 0xFF;
+                        int t = mem[instr] & 0xff;
                         if (opcode == 0xB3)
-                            t = mem[t] & 0xFF;
+                            t = mem[t] & 0xff;
                         if (opcode != 0xB7)
                             time += (t + y) >> 8;
                     }
@@ -422,13 +422,13 @@ loop:
                 case 0xE9: // SBC #n
                 case 0xEB: // SBC #n (unofficial)
                     pc += 2;
-                    nz = mem[instr] & 0xFF;
+                    nz = mem[instr] & 0xff;
                     break;
 
                 case 0x84: // STY z
                 case 0x86: // STX z
                     pc += 2;
-                    addr = mem[instr] & 0xFF;
+                    addr = mem[instr] & 0xff;
                     break;
 
                 case 0x06: // ASL z
@@ -438,7 +438,7 @@ loop:
                 case 0xC6: // DEC z
                 case 0x46: // LSR z
                     pc += 2;
-                    nz = mem[addr = mem[instr] & 0xFF] & 0xFF;
+                    nz = mem[addr = mem[instr] & 0xff] & 0xff;
                     break;
 
                 case 0x05: // ORA z
@@ -454,7 +454,7 @@ loop:
                 case 0xE4: // CPX z
                 case 0xE5: // SBC z
                     pc += 2;
-                    nz = mem[mem[instr] & 0xFF] & 0xFF;
+                    nz = mem[mem[instr] & 0xff] & 0xff;
                     break;
 
                 case 0x11: // ORA (z),Y
@@ -467,8 +467,8 @@ loop:
                 case 0x91: {// STA (z),Y
                     pc += 2;
                     int z = mem[instr];
-                    int lsb = (mem[z & 0xFF] & 0xFF) + y;
-                    addr = ((mem[(z + 1) & 0xFF] & 0xFF) << 8) + lsb;
+                    int lsb = (mem[z & 0xff] & 0xff) + y;
+                    addr = ((mem[(z + 1) & 0xff] & 0xff) << 8) + lsb;
                     if (opcode != 0x91) {
                         time += lsb >> 8;
                         nz = cpuRead(addr);
@@ -486,7 +486,7 @@ loop:
                 case 0x81: {// STA (z,X)
                     pc += 2;
                     int z = mem[instr] + x;
-                    addr = (mem[(z + 1) & 0xFF] & 0xFF) << 8 | (mem[z & 0xFF] & 0xFF);
+                    addr = (mem[(z + 1) & 0xff] & 0xff) << 8 | (mem[z & 0xff] & 0xff);
                     if (opcode != 0x81)
                         nz = cpuRead(addr);
                     break;
@@ -498,7 +498,7 @@ loop:
                 case 0x8E: // STX a
                 case 0x4C: // JMP a
                     pc += 3;
-                    addr = (mem[instr + 1] & 0xFF) << 8 | (mem[instr] & 0xFF);
+                    addr = (mem[instr + 1] & 0xff) << 8 | (mem[instr] & 0xff);
                     break;
 
                 case 0x0D: // ORA a
@@ -520,7 +520,7 @@ loop:
                 case 0xED: // SBC a
                 case 0xEE: // INC a
                     pc += 3;
-                    nz = cpuRead(addr = (mem[instr + 1] & 0xFF) << 8 | (mem[instr] & 0xFF));
+                    nz = cpuRead(addr = (mem[instr + 1] & 0xff) << 8 | (mem[instr] & 0xff));
                     break;
 
                 case 0x1E: // ASL a,X
@@ -530,7 +530,7 @@ loop:
                 case 0xDE: // DEC a,X
                 case 0xFE: // INC a,X
                     pc += 3;
-                    nz = cpuRead(addr = ((mem[instr + 1] & 0xFF) << 8 | (mem[instr] & 0xFF)) + x);
+                    nz = cpuRead(addr = ((mem[instr + 1] & 0xff) << 8 | (mem[instr] & 0xff)) + x);
                     // RMW instructions have no extra clock for page crossing
                     break;
 
@@ -543,8 +543,8 @@ loop:
                 case 0xFD: // SBC a,X
                 case 0x9D: {// STA a,X
                     pc += 3;
-                    int lsb = (mem[instr] & 0xFF) + x;
-                    addr = ((mem[instr + 1] & 0xFF) << 8) + lsb;
+                    int lsb = (mem[instr] & 0xff) + x;
+                    addr = ((mem[instr + 1] & 0xff) << 8) + lsb;
                     if (opcode != 0x9D) {
                         time += lsb >> 8;
                         nz = cpuRead(addr);
@@ -562,8 +562,8 @@ loop:
                 case 0xF9: // SBC a,Y
                 case 0x99: {// STA a,Y
                     pc += 3;
-                    int lsb = (mem[instr] & 0xFF) + y;
-                    addr = ((mem[instr + 1] & 0xFF) << 8) + lsb;
+                    int lsb = (mem[instr] & 0xff) + y;
+                    addr = ((mem[instr + 1] & 0xff) << 8) + lsb;
                     if (opcode != 0x99) {
                         time += lsb >> 8;
                         nz = cpuRead(addr);
@@ -586,21 +586,21 @@ loop:
                 case 0xF5: // SBC z,X
                 case 0xF6: // INC z,X
                     pc += 2;
-                    nz = mem[addr = (mem[instr] + x) & 0xFF] & 0xFF;
+                    nz = mem[addr = (mem[instr] + x) & 0xff] & 0xff;
                     break;
 
                 case 0x94: // STY z,X
                 case 0x95: // STA z,X
                     pc += 2;
-                    addr = (mem[instr] + x) & 0xFF;
+                    addr = (mem[instr] + x) & 0xff;
                     break;
 
                 case 0xB6: // LDX z,Y
                 case 0x96: // STX z,Y
                     pc += 2;
-                    addr = (mem[instr] + y) & 0xFF;
+                    addr = (mem[instr] + y) & 0xff;
                     if (opcode != 0x96)
-                        nz = mem[addr] & 0xFF;
+                        nz = mem[addr] & 0xff;
                     break;
 
                 case 0xAA: // TAX
@@ -625,15 +625,15 @@ loop:
                 case 0x28: // PLP
                 case 0x68: // PLA
                     pc++;
-                    nz = mem[sp] & 0xFF;
-                    sp = (sp - 0xFF) | 0x100;
+                    nz = mem[sp] & 0xff;
+                    sp = (sp - 0xff) | 0x100;
                     break;
 
                 case 0x40: // RTI
-                    nz = mem[sp] & 0xFF;
-                    sp = (sp - 0xFF) | 0x100;
+                    nz = mem[sp] & 0xff;
+                    sp = (sp - 0xff) | 0x100;
                 case 0x60: // RTS
-                    pc = ((mem[(sp - 0xFF) | 0x100] & 0xFF) << 8 | (mem[sp] & 0xFF)) + 1;
+                    pc = ((mem[(sp - 0xff) | 0x100] & 0xff) << 8 | (mem[sp] & 0xff)) + 1;
                     sp = (sp - 0xFE) | 0x100;
                     break;
 
@@ -725,7 +725,7 @@ loop:
                 case 0xF5: // SBC z,X
                 case 0xE9: // SBC #n
                 case 0xEB: // SBC #n (unofficial)
-                    nz ^= 0xFF;
+                    nz ^= 0xff;
                 case 0x71: // ADC (z),Y
                 case 0x61: // ADC (z,X)
                 case 0x6D: // ADC a
@@ -736,7 +736,7 @@ loop:
                 case 0x69: {// ADC #n
                     int t = nz ^ a;
                     c = (nz += (c >> 8 & 1) + a);
-                    a = nz & 0xFF;
+                    a = nz & 0xff;
                     p = (p & ~V40) | (((t ^ nz) + 0x80) >> 2 & V40);
                     continue;
                 }
@@ -782,7 +782,7 @@ loop:
                     continue;
 
                 case 0x6C: // JMP (a)
-                    pc = cpuRead(addr + 1 - (((addr & 0xFF) + 1) & 0x100)) << 8 | cpuRead(addr);
+                    pc = cpuRead(addr + 1 - (((addr & 0xff) + 1) & 0x100)) << 8 | cpuRead(addr);
                     continue;
 
                 case 0x4C: // JMP a
@@ -798,7 +798,7 @@ loop:
 
                 case 0x00: {// BRK #n
                     int t = pc + 2;
-                    pc = cpuRead(0xFFFF) << 8 | cpuRead(0xFFFE);
+                    pc = cpuRead(0xffFF) << 8 | cpuRead(0xffFE);
                     mem[(sp - 1) | 0x100] = (byte) (t >> 8);
                     mem[sp = (sp - 2) | 0x100] = (byte) t;
                     break;
@@ -818,7 +818,7 @@ loop:
                 case 0x06: // ASL z
                 case 0x16: // ASL z,X
                 case 0x0A: // ASL
-                    nz = (c = nz << 1) & 0xFF;
+                    nz = (c = nz << 1) & 0xff;
                     break;
 
                 case 0x6E: // ROR a
@@ -838,7 +838,7 @@ loop:
                 case 0x36: // ROL z,X
                 case 0x2A: {// ROL
                     int t = c >> 8 & 1;
-                    nz = ((c = nz << 1) & 0xFF) | t;
+                    nz = ((c = nz << 1) & 0xff) | t;
                     break;
                 }
 
@@ -848,7 +848,7 @@ loop:
                 case 0xDE: // DEC a,X
                 case 0xC6: // DEC z
                 case 0xD6: // DEC z,X
-                    nz = (nz - 1) & 0xFF;
+                    nz = (nz - 1) & 0xff;
                     break;
 
                 case 0xE8: // INX
@@ -856,7 +856,7 @@ loop:
                 case 0xFE: // INC a,X
                 case 0xE6: // INC z
                 case 0xF6: // INC z,X
-                    nz = (nz + 1) & 0xFF;
+                    nz = (nz + 1) & 0xff;
                     break;
             }
 
@@ -949,7 +949,7 @@ stop:
         this.a = a;
         this.x = x;
         this.y = y;
-        this.s = (sp - 1) & 0xFF;
+        this.s = (sp - 1) & 0xff;
         this.pc = pc;
         this.p = p;
         this.c = c;

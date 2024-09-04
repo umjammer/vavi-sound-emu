@@ -205,7 +205,7 @@ public final class YM2612 {
     private int int_cnt;
 
     // Emultaion State
-    private final boolean EnableSSGEG = false;
+    private static final boolean EnableSSGEG = false;
 
     private static final int MAIN_SHIFT = FINAL_SHFT;
 
@@ -246,7 +246,7 @@ public final class YM2612 {
         return Math.log(x) / Math.log(10.0);
     }
 
-    public final int init(int Clock, int Rate) {
+    public int init(int Clock, int Rate) {
         int i, j;
         double x;
 
@@ -411,7 +411,7 @@ public final class YM2612 {
         return 0;
     }
 
-    public final int reset() {
+    public int reset() {
         int i, j;
 
         YM2612_LFOcnt = 0;
@@ -430,8 +430,8 @@ public final class YM2612 {
         for (i = 0; i < 6; i++) {
             YM2612_CHANNEL[i].Old_OUTd = 0;
             YM2612_CHANNEL[i].OUTd = 0;
-            YM2612_CHANNEL[i].LEFT = 0xFFFFFFFF;
-            YM2612_CHANNEL[i].RIGHT = 0xFFFFFFFF;
+            YM2612_CHANNEL[i].LEFT = 0xffff_ffff;
+            YM2612_CHANNEL[i].RIGHT = 0xffff_ffff;
             YM2612_CHANNEL[i].ALGO = 0;
             YM2612_CHANNEL[i].FB = 31;
             YM2612_CHANNEL[i].FMS = 0;
@@ -475,11 +475,11 @@ public final class YM2612 {
     }
 
 
-    public final int read() {
+    public int read() {
         return (YM2612_Status);
     }
 
-    public final void write0(int addr, int data) {
+    public void write0(int addr, int data) {
         if (addr < 0x30) {
             YM2612_REG[0][addr] = data;
             setYM(addr, data);
@@ -493,7 +493,7 @@ public final class YM2612 {
         }
     }
 
-    public final void write1(int addr, int data) {
+    public void write1(int addr, int data) {
         if (addr >= 0x30 && YM2612_REG[1][addr] != data) {
             YM2612_REG[1][addr] = data;
 
@@ -504,7 +504,7 @@ public final class YM2612 {
         }
     }
 
-    public final void update(int[] buf_lr, int offset, int end) {
+    public void update(int[] buf_lr, int offset, int end) {
         offset *= 2;
         end = end * 2 + offset;
 
@@ -552,13 +552,13 @@ public final class YM2612 {
         YM2612_Inter_Cnt = int_cnt;
     }
 
-    public final void synchronizeTimers(int length) {
+    public void synchronizeTimers(int length) {
         int i;
 
         i = YM2612_TimerBase * length;
 
         if ((YM2612_Mode & 1) != 0) {
-//			  if((YM2612_TimerAcnt -= 14073) <= 0){	   // 13879=NTSC (old: 14475=NTSC  14586=PAL)
+//			  if((YM2612_TimerAcnt -= 14073) <= 0) {	   // 13879=NTSC (old: 14475=NTSC  14586=PAL)
             if ((YM2612_TimerAcnt -= i) <= 0) {
                 YM2612_Status |= (YM2612_Mode & 0x04) >> 2;
                 YM2612_TimerAcnt += YM2612_TimerAL;
@@ -567,7 +567,7 @@ public final class YM2612 {
             }
         }
         if ((YM2612_Mode & 2) != 0) {
-//			  if((YM2612_TimerBcnt -= 14073) <= 0){	   // 13879=NTSC (old: 14475=NTSC  14586=PAL)
+//			  if((YM2612_TimerBcnt -= 14073) <= 0) {	   // 13879=NTSC (old: 14475=NTSC  14586=PAL)
             if ((YM2612_TimerBcnt -= i) <= 0) {
                 YM2612_Status |= (YM2612_Mode & 0x08) >> 2;
                 YM2612_TimerBcnt += YM2612_TimerBL;
@@ -618,7 +618,7 @@ public final class YM2612 {
             SL.Fcnt = 0;
             // Fix Ecco 2 splash sound
             SL.Ecnt = (DECAY_TO_ATTACK[ENV_TAB[SL.Ecnt >> ENV_LBITS]] + ENV_ATTACK) & SL.ChgEnM;
-            SL.ChgEnM = 0xFFFFFFFF;
+            SL.ChgEnM = 0xffFFFFFF;
             SL.Einc = SL.EincA;
             SL.Ecmp = ENV_DECAY;
             SL.Ecurp = ATTACK;
@@ -645,7 +645,7 @@ public final class YM2612 {
     }
 
     private int setSlot(int address, int data) {  // INT, UCHAR
-        data &= 0xFF;    // unsign
+        data &= 0xff;    // unsign
         cChannel CH;
         cSlot SL;
         int nch, nsl;
@@ -713,7 +713,7 @@ public final class YM2612 {
     }
 
     private int setChannel(int address, int data) {   // INT,UCHAR
-        data &= 0xFF;        // unsign
+        data &= 0xff;        // unsign
         cChannel CH;
         int num;
 
@@ -769,9 +769,9 @@ public final class YM2612 {
             case 0xB4:
                 if ((address & 0x100) != 0) num += 3;
                 CH = YM2612_CHANNEL[num];
-                if ((data & 0x80) != 0) CH.LEFT = 0xFFFF_FFFF;
+                if ((data & 0x80) != 0) CH.LEFT = 0xffFF_FFFF;
                 else CH.LEFT = 0;
-                if ((data & 0x40) != 0) CH.RIGHT = 0xFFFF_FFFF;
+                if ((data & 0x40) != 0) CH.RIGHT = 0xffFF_FFFF;
                 else CH.RIGHT = 0;
                 CH.AMS = LFO_AMS_TAB[(data >> 4) & 3];
                 CH.FMS = LFO_FMS_TAB[data & 7];
@@ -875,7 +875,7 @@ public final class YM2612 {
         SL.Ecurp = SUSTAIN;
     }
 
-    private void Env_Sustain_Next(cSlot SL) {
+    private static void Env_Sustain_Next(cSlot SL) {
         if (EnableSSGEG) {
             if ((SL.SEG & 8) != 0) {
                 if ((SL.SEG & 1) != 0) {
@@ -907,7 +907,7 @@ public final class YM2612 {
         SL.Ecmp = ENV_END + 1;
     }
 
-    private void ENV_NEXT_EVENT(int which, cSlot SL) {
+    private static void ENV_NEXT_EVENT(int which, cSlot SL) {
         switch (which) {
             case 0:
                 Env_Attack_Next(SL);

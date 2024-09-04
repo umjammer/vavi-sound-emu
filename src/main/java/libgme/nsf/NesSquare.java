@@ -52,7 +52,7 @@ public final class NesSquare extends NesEnvelope {
                 if (period + offset < 0x800) {
                     period += offset;
                     // rewrite period
-                    regs[2] = period & 0xFF;
+                    regs[2] = period & 0xff;
                     regs[3] = (regs[3] & ~7) | ((period >> 8) & 7);
                 }
             }

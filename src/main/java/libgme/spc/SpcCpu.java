@@ -48,7 +48,7 @@ public abstract class SpcCpu extends MusicEmu {
         a = 0;
         x = 0;
         y = 0;
-        sp = 0xFF;
+        sp = 0xff;
         pc = 0;
         psw = 0x04;
 
@@ -127,28 +127,28 @@ loop:
             assert dp == 0 || dp == 0x100;
 
             int opcode;
-            this.time = (time += instrTimes[opcode = mem[pc] & 0xFF]);
+            this.time = (time += instrTimes[opcode = mem[pc] & 0xff]);
             switch (opcode) {
 
                 //////// Often used
 
                 case 0xE4: // MOV   A, d
-                    a = nz = cpuRead(mem[pc + 1] & 0xFF | dp);
+                    a = nz = cpuRead(mem[pc + 1] & 0xff | dp);
                     pc += 2;
                     continue;
 
                 case 0xF5: // MOV   A, !a+X
-                    a = nz = cpuRead(((mem[pc + 2] & 0xFF) << 8 | (mem[pc + 1] & 0xFF)) + x);
+                    a = nz = cpuRead(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + x);
                     pc += 3;
                     continue;
 
                 case 0xF4: // MOV   A, d+X
-                    a = nz = cpuRead((mem[pc + 1] + x) & 0xFF | dp);
+                    a = nz = cpuRead((mem[pc + 1] + x) & 0xff | dp);
                     pc += 2;
                     continue;
 
                 case 0xEB: // MOV   Y, d
-                    y = nz = cpuRead(mem[pc + 1] & 0xFF | dp);
+                    y = nz = cpuRead(mem[pc + 1] & 0xff | dp);
                     pc += 2;
                     continue;
 
@@ -224,42 +224,42 @@ loop:
 
                 case 0xFE: // DBNZ  Y, r
                     pc += 2;
-                    if ((y = (y - 1) & 0xFF) != 0)
+                    if ((y = (y - 1) & 0xff) != 0)
                         break;
                     continue;
 
                 case 0xEF: // SLEEP
-                case 0xFF: // STOP
+                case 0xff: // STOP
                     break loop;
 
                 case 0x9C: // DEC   A
                     pc++;
-                    a = (nz = a - 1) & 0xFF;
+                    a = (nz = a - 1) & 0xff;
                     continue;
 
                 case 0xBC: // INC   A
                     pc++;
-                    a = (nz = a + 1) & 0xFF;
+                    a = (nz = a + 1) & 0xff;
                     continue;
 
                 case 0x1D: // DEC   X
                     pc++;
-                    x = (nz = x - 1) & 0xFF;
+                    x = (nz = x - 1) & 0xff;
                     continue;
 
                 case 0x3D: // INC   X
                     pc++;
-                    x = (nz = x + 1) & 0xFF;
+                    x = (nz = x + 1) & 0xff;
                     continue;
 
                 case 0xDC: // DEC   Y
                     pc++;
-                    y = (nz = y - 1) & 0xFF;
+                    y = (nz = y - 1) & 0xff;
                     continue;
 
                 case 0xFC: // INC   Y
                     pc++;
-                    y = (nz = y + 1) & 0xFF;
+                    y = (nz = y + 1) & 0xff;
                     continue;
 
                 case 0x1C: // ASL   A
@@ -267,7 +267,7 @@ loop:
                 case 0x3C: {// ROL   A
                     int t = c >> 8 & 1;
                     c = a << 1;
-                    a = (nz = c | t) & 0xFF;
+                    a = (nz = c | t) & 0xff;
                     pc++;
                     continue;
                 }
@@ -296,7 +296,7 @@ loop:
                     if ((a & 0x0F) > 9 || (psw & h08) != 0)
                         a += 0x06;
 
-                    nz = (a &= 0xFF);
+                    nz = (a &= 0xff);
                     continue;
 
                 case 0xBE: // DAS   A
@@ -309,7 +309,7 @@ loop:
                     if ((a & 0x0F) > 9 || (psw & h08) == 0)
                         a -= 0x06;
 
-                    nz = (a &= 0xFF);
+                    nz = (a &= 0xff);
                     continue;
 
                 case 0x9E: {// DIV   YA, X
@@ -332,14 +332,14 @@ loop:
                         y = x + (ya - (x << 9)) % (256 - x);
                     }
 
-                    nz = (a &= 0xFF);
+                    nz = (a &= 0xff);
                     continue;
                 }
 
                 case 0xCF: {// MUL   YA
                     pc++;
                     int t = y * a;
-                    a = t & 0xFF;
+                    a = t & 0xff;
                     nz = (t >> 1 | t) & 0x7F;
                     nz |= (y = t >> 8);
                     continue;
@@ -411,7 +411,7 @@ loop:
 
                 case 0x9D: // MOV   X, SP
                     pc++;
-                    x = nz = (sp - 1) & 0xFF;
+                    x = nz = (sp - 1) & 0xff;
                     continue;
 
                 case 0xBD: // MOV   SP, X
@@ -422,39 +422,39 @@ loop:
                 case 0xBF: // MOV   A, (X)+
                     pc++;
                     a = nz = cpuRead(x + dp);
-                    x = (x + 1) & 0xFF;
+                    x = (x + 1) & 0xff;
                     continue;
 
                 case 0xD9: // MOV   d+Y, X
-                    cpuWrite((mem[pc + 1] + y) & 0xFF | dp, x);
+                    cpuWrite((mem[pc + 1] + y) & 0xff | dp, x);
                     pc += 2;
                     continue;
 
                 case 0xD6: // MOV   !a+Y, A
-                    cpuWrite(((mem[pc + 2] & 0xFF) << 8 | (mem[pc + 1] & 0xFF)) + y, a);
+                    cpuWrite(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + y, a);
                     pc += 3;
                     continue;
 
                 case 0xD5: // MOV   !a+X, A
-                    cpuWrite(((mem[pc + 2] & 0xFF) << 8 | (mem[pc + 1] & 0xFF)) + x, a);
+                    cpuWrite(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + x, a);
                     pc += 3;
                     continue;
 
                 case 0xF9: // MOV   X, d+Y
-                    x = nz = cpuRead((mem[pc + 1] + y) & 0xFF | dp);
+                    x = nz = cpuRead((mem[pc + 1] + y) & 0xff | dp);
                     pc += 2;
                     continue;
 
                 case 0xD7: {// MOV   [d]+Y, A
                     int t = mem[pc + 1];
-                    cpuWrite(((mem[(t + 1) & 0xFF | dp] & 0xFF) << 8 | (mem[t & 0xFF | dp] & 0xFF)) + y, a);
+                    cpuWrite(((mem[(t + 1) & 0xff | dp] & 0xff) << 8 | (mem[t & 0xff | dp] & 0xff)) + y, a);
                     pc += 2;
                     continue;
                 }
 
                 case 0xC7: {// MOV   [d+X], A
                     int t = mem[pc + 1] + x;
-                    cpuWrite((mem[(t + 1) & 0xFF | dp] & 0xFF) << 8 | (mem[t & 0xFF | dp] & 0xFF), a);
+                    cpuWrite((mem[(t + 1) & 0xff | dp] & 0xff) << 8 | (mem[t & 0xff | dp] & 0xff), a);
                     pc += 2;
                     continue;
                 }
@@ -467,22 +467,22 @@ loop:
                 case 0xAF: // MOV   (X)+, A
                     pc++;
                     cpuWrite(x + dp, a);
-                    x = (x + 1) & 0xFF;
+                    x = (x + 1) & 0xff;
                     continue;
 
                 case 0x8F: // MOV   d, #i
-                    cpuWrite(mem[pc + 2] & 0xFF | dp, mem[pc + 1]);
+                    cpuWrite(mem[pc + 2] & 0xff | dp, mem[pc + 1]);
                     pc += 3;
                     continue;
 
                 case 0xFA: // MOV   dd, ds
-                    cpuWrite(mem[pc + 2] & 0xFF | dp, cpuRead(mem[pc + 1] & 0xFF | dp));
+                    cpuWrite(mem[pc + 2] & 0xff | dp, cpuRead(mem[pc + 1] & 0xff | dp));
                     pc += 3;
                     continue;
 
                 case 0xCA: // MOV1  m.b, C
                     data = mem[pc + 2];
-                    addr = (data & 0x1F) << 8 | (mem[pc + 1] & 0xFF);
+                    addr = (data & 0x1F) << 8 | (mem[pc + 1] & 0xff);
                     data = data >> 5 & 7;
                     cpuWrite(addr, cpuRead(addr) & ~(1 << data) | ((c & 0x100) >> (8 - data)));
                     pc += 3;
@@ -490,7 +490,7 @@ loop:
 
                 case 0xEA: // NOT1  m.b
                     data = mem[pc + 2];
-                    addr = (data & 0x1F) << 8 | (mem[pc + 1] & 0xFF);
+                    addr = (data & 0x1F) << 8 | (mem[pc + 1] & 0xff);
                     cpuWrite(addr, cpuRead(addr) ^ (1 << (data >> 5 & 7)));
                     pc += 3;
                     continue;
@@ -502,7 +502,7 @@ loop:
                 case 0x2A: // OR1   C, /m.b
                 case 0x8A: // EOR1  C, m.b
                     data = mem[pc + 2];
-                    data = cpuRead((data & 0x1F) << 8 | (mem[pc + 1] & 0xFF)) << (8 - (data >> 5 & 7));
+                    data = cpuRead((data & 0x1F) << 8 | (mem[pc + 1] & 0xff)) << (8 - (data >> 5 & 7));
                     pc += 3;
                     switch (opcode) {
                         case 0x4A: // AND1  C, m.b
@@ -547,7 +547,7 @@ loop:
                 case 0xB2: // CLR1  d.5
                 case 0xD2: // CLR1  d.6
                 case 0xF2: {// CLR1  d.7
-                    data = cpuRead(addr = mem[pc + 1] & 0xFF | dp);
+                    data = cpuRead(addr = mem[pc + 1] & 0xff | dp);
                     int t = 1 << (opcode >> 5);
                     data |= t;
                     if ((opcode & 0x10) != 0)
@@ -586,7 +586,7 @@ loop:
                     {
                         mem[(sp - 1) | 0x100] = (byte) (pc >> 8);
                         mem[sp = (sp - 2) | 0x100] = (byte) pc;
-                        pc = (mem[0xFFDF] & 0xFF) << 8 | (mem[0xFFDE] & 0xFF);
+                        pc = (mem[0xffDF] & 0xff) << 8 | (mem[0xffDE] & 0xff);
                         psw = (psw | b10) & ~i04;
                     }
                     mem[sp = (sp - 1) | 0x100] = (byte) t;
@@ -595,19 +595,19 @@ loop:
 
                 case 0xAE: // POP   A
                     pc++;
-                    a = mem[sp] & 0xFF;
+                    a = mem[sp] & 0xff;
                     sp = (sp + 1) | 0x100;
                     continue;
 
                 case 0xCE: // POP   X
                     pc++;
-                    x = mem[sp] & 0xFF;
+                    x = mem[sp] & 0xff;
                     sp = (sp + 1) | 0x100;
                     continue;
 
                 case 0xEE: // POP   Y
                     pc++;
-                    y = mem[sp] & 0xFF;
+                    y = mem[sp] & 0xff;
                     sp = (sp + 1) | 0x100;
                     continue;
 
@@ -615,11 +615,11 @@ loop:
                 case 0x7F: // RET1
                     pc++;
                     psw = mem[sp];
-                    sp = (sp - 0xFF) | 0x100;
+                    sp = (sp - 0xff) | 0x100;
 
                     if (opcode == 0x7F) // RET1
                     {
-                        pc = (mem[(sp - 0xFF) | 0x100] & 0xFF) << 8 | (mem[sp] & 0xFF);
+                        pc = (mem[(sp - 0xff) | 0x100] & 0xff) << 8 | (mem[sp] & 0xff);
                         sp = (sp - 0xFE) | 0x100;
                     }
 
@@ -630,14 +630,14 @@ loop:
                     continue;
 
                 case 0x6F: // RET
-                    pc = (mem[(sp - 0xFF) | 0x100] & 0xFF) << 8 | (mem[sp] & 0xFF);
+                    pc = (mem[(sp - 0xff) | 0x100] & 0xff) << 8 | (mem[sp] & 0xff);
                     sp = (sp - 0xFE) | 0x100;
                     continue;
 
                 case 0xDA: {// MOVW  d, YA
                     int t = mem[pc + 1];
-                    cpuWrite(t & 0xFF | dp, a);
-                    cpuWrite((t + 1) & 0xFF | dp, y);
+                    cpuWrite(t & 0xff | dp, a);
+                    cpuWrite((t + 1) & 0xff | dp, y);
                     pc += 2;
                     continue;
                 }
@@ -648,11 +648,11 @@ loop:
                 case 0x7A: // ADDW  YA, d
                 case 0x9A: // SUBW  YA, d
                 case 0xBA: {// MOVW  YA, d
-                    addr = mem[pc + 1] & 0xFF | dp;
-                    data = (mem[addr + 1] & 0xFF) << 8 | (mem[addr] & 0xFF);
+                    addr = mem[pc + 1] & 0xff | dp;
+                    data = (mem[addr + 1] & 0xff) << 8 | (mem[addr] & 0xff);
 
-                    // addr >= 0xEF || addr <= 0xFF
-                    if ((addr ^ 0xFF) <= 0x11) // 1%
+                    // addr >= 0xEF || addr <= 0xff
+                    if ((addr ^ 0xff) <= 0x11) // 1%
                         data = cpuRead(addr + 1) << 8 | cpuRead(addr);
 
                     pc += 2;
@@ -666,8 +666,8 @@ loop:
                             mem[addr] = (byte) data;
                             mem[addr + 1] = (byte) (data >> 8);
 
-                            // addr >= 0xEF || addr <= 0xFF
-                            if ((addr ^ 0xFF) <= 0x11) // 1%
+                            // addr >= 0xEF || addr <= 0xff
+                            if ((addr ^ 0xff) <= 0x11) // 1%
                             {
                                 cpuWrite(addr, data);
                                 cpuWrite(addr + 1, data >> 8);
@@ -675,7 +675,7 @@ loop:
                             continue;
 
                         case 0xBA: // MOVW  YA, d
-                            nz = 0x7F & (a = data & 0xFF);
+                            nz = 0x7F & (a = data & 0xff);
                             nz |= (a >> 1) | (y = data >> 8);
                             continue;
 
@@ -687,13 +687,13 @@ loop:
                             continue;
 
                         case 0x9A: // SUBW  YA, d
-                            data = -data & 0xFFFF;
+                            data = -data & 0xffFF;
                         default: {
                             //case 0x7A: // ADDW  YA, d
                             int t = (data >> 8) ^ y;
-                            a = 0xFF & (data += y << 8 | a);
+                            a = 0xff & (data += y << 8 | a);
                             t ^= (c = data >> 8);
-                            nz = (a & 0x7F) | (a >> 1) | (y = c & 0xFF);
+                            nz = (a & 0x7F) | (a >> 1) | (y = c & 0xff);
                             psw = (psw & ~(v40 | h08)) |
                                     (t >> 1 & h08) |
                                     ((t + 0x80) >> 2 & v40);
@@ -722,12 +722,12 @@ loop:
                 case 0xE3: // BBS   d.7, r
                 case 0x6E: // DBNZ  d, r
                 case 0x2E: // CBNE  d, r
-                    data = cpuRead((addr = mem[pc + 1] & 0xFF | dp));
+                    data = cpuRead((addr = mem[pc + 1] & 0xff | dp));
                     pc += 3;
                     break;
 
                 case 0xDE: // CBNE  d+X, r
-                    data = cpuRead((addr = (mem[pc + 1] + x) & 0xFF | dp));
+                    data = cpuRead((addr = (mem[pc + 1] + x) & 0xff | dp));
                     pc += 3;
                     break;
 
@@ -737,12 +737,12 @@ loop:
                 case 0xC5: // MOV   !a, A
                 case 0xC9: // MOV   !a, X
                 case 0xCC: // MOV   !a, Y
-                    addr = (mem[pc + 2] & 0xFF) << 8 | (mem[pc + 1] & 0xFF);
+                    addr = (mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff);
                     pc += 3;
                     break;
 
                 case 0x4F: // PCALL u
-                    addr = 0xFF00 | (mem[pc + 1] & 0xFF);
+                    addr = 0xff00 | (mem[pc + 1] & 0xff);
                     pc += 2;
                     break;
 
@@ -754,8 +754,8 @@ loop:
                 case 0x98: // ADC   d, #i
                 case 0xB8: // SBC   d, #i
                 case 0x18: // OR    d, #i
-                    nz = mem[pc + 1] & 0xFF;
-                    data = cpuRead(addr = mem[pc + 2] & 0xFF | dp);
+                    nz = mem[pc + 1] & 0xff;
+                    data = cpuRead(addr = mem[pc + 2] & 0xff | dp);
                     pc += 3;
                     break;
 
@@ -776,8 +776,8 @@ loop:
                 case 0x89: // ADC   dd, ds
                 case 0xA9: // SBC   dd, ds
                 case 0x09: // OR    dd, ds
-                    nz = cpuRead(mem[pc + 1] & 0xFF | dp);
-                    data = cpuRead(addr = mem[pc + 2] & 0xFF | dp);
+                    nz = cpuRead(mem[pc + 1] & 0xff | dp);
+                    data = cpuRead(addr = mem[pc + 2] & 0xff | dp);
                     pc += 3;
                     break;
 
@@ -802,7 +802,7 @@ loop:
                 case 0xE9: // MOV   X, !a
                 case 0x5E: // CMP   Y, !a
                 case 0xEC: // MOV   Y, !a
-                    nz = cpuRead(addr = (mem[pc + 2] & 0xFF) << 8 | (mem[pc + 1] & 0xFF));
+                    nz = cpuRead(addr = (mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff));
                     pc += 3;
                     break;
 
@@ -812,7 +812,7 @@ loop:
                 case 0x95: // ADC   A, !a+X
                 case 0xB5: // SBC   A, !a+X
                 case 0x15: // OR    A, !a+X
-                    nz = cpuRead(((mem[pc + 2] & 0xFF) << 8 | (mem[pc + 1] & 0xFF)) + x);
+                    nz = cpuRead(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + x);
                     pc += 3;
                     break;
 
@@ -823,7 +823,7 @@ loop:
                 case 0xB6: // SBC   A, !a+Y
                 case 0x16: // OR    A, !a+Y
                 case 0xF6: // MOV   A, !a+Y
-                    nz = cpuRead(((mem[pc + 2] & 0xFF) << 8 | (mem[pc + 1] & 0xFF)) + y);
+                    nz = cpuRead(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + y);
                     pc += 3;
                     break;
 
@@ -853,7 +853,7 @@ loop:
                 case 0x3E: // CMP   X, d
                 case 0xF8: // MOV   X, d
                 case 0x7E: // CMP   Y, d
-                    nz = cpuRead(addr = mem[pc + 1] & 0xFF | dp);
+                    nz = cpuRead(addr = mem[pc + 1] & 0xff | dp);
                     pc += 2;
                     break;
 
@@ -870,7 +870,7 @@ loop:
                 case 0x9B: // DEC   d+X
                 case 0xBB: // INC   d+X
                 case 0xFB: // MOV   Y, d+X
-                    nz = cpuRead(addr = (mem[pc + 1] + x) & 0xFF | dp);
+                    nz = cpuRead(addr = (mem[pc + 1] + x) & 0xff | dp);
                     pc += 2;
                     break;
 
@@ -882,7 +882,7 @@ loop:
                 case 0x17: // OR    A, [d]+Y
                 case 0xF7: {// MOV   A, [d]+Y
                     int t = mem[pc + 1];
-                    nz = cpuRead(((mem[(t + 1) & 0xFF | dp] & 0xFF) << 8 | (mem[t & 0xFF | dp] & 0xFF)) + y);
+                    nz = cpuRead(((mem[(t + 1) & 0xff | dp] & 0xff) << 8 | (mem[t & 0xff | dp] & 0xff)) + y);
                     pc += 2;
                     break;
                 }
@@ -895,7 +895,7 @@ loop:
                 case 0x07: // OR    A, [d+X]
                 case 0xE7: {// MOV   A, [d+X]
                     int t = mem[pc + 1] + x;
-                    nz = cpuRead((mem[(t + 1) & 0xFF | dp] & 0xFF) << 8 | (mem[t & 0xFF | dp] & 0xFF));
+                    nz = cpuRead((mem[(t + 1) & 0xff | dp] & 0xff) << 8 | (mem[t & 0xff | dp] & 0xff));
                     pc += 2;
                     break;
                 }
@@ -911,20 +911,20 @@ loop:
                 case 0xCD: // MOV   X, #i
                 case 0x8D: // MOV   Y, #i
                 case 0xAD: // CMP   Y, #i
-                    nz = mem[pc + 1] & 0xFF;
+                    nz = mem[pc + 1] & 0xff;
                     pc += 2;
                     break;
 
                 case 0xC4: // MOV   d, A
                 case 0xD8: // MOV   d, X
                 case 0xCB: // MOV   d, Y
-                    addr = mem[pc + 1] & 0xFF | dp;
+                    addr = mem[pc + 1] & 0xff | dp;
                     pc += 2;
                     break;
 
                 case 0xD4: // MOV   d+X, A
                 case 0xDB: // MOV   d+X, Y
-                    addr = (mem[pc + 1] + x) & 0xFF | dp;
+                    addr = (mem[pc + 1] + x) & 0xff | dp;
                     pc += 2;
                     break;
             }
@@ -937,7 +937,7 @@ loop:
 
                 case 0x1F: // JMP   [!a+X]
                     addr += x;
-                    pc = (mem[addr + 1] & 0xFF) << 8 | (mem[addr] & 0xFF);
+                    pc = (mem[addr + 1] & 0xff) << 8 | (mem[addr] & 0xff);
                     continue;
 
                 case 0x13: // BBC   d.0, r
@@ -995,8 +995,8 @@ loop:
                 case 0xD1: // TCALL 13
                 case 0xE1: // TCALL 14
                 case 0xF1: // TCALL 15
-                    addr = 0xFFDE - (opcode >> 3);
-                    addr = (mem[addr + 1] & 0xFF) << 8 | (mem[addr] & 0xFF);
+                    addr = 0xffDE - (opcode >> 3);
+                    addr = (mem[addr + 1] & 0xff) << 8 | (mem[addr] & 0xff);
                 case 0x4F: // PCALL u
                 case 0x3F: // CALL  !a
                     mem[(sp - 1) | 0x100] = (byte) (pc >> 8);
@@ -1047,7 +1047,7 @@ loop:
                 case 0xB7: // SBC   A, [d]+Y
                 case 0xA4: // SBC   A, d
                 case 0xB4: // SBC   A, d+X
-                    nz ^= 0xFF;
+                    nz ^= 0xff;
                 case 0x85: // ADC   A, !a
                 case 0x95: // ADC   A, !a+X
                 case 0x96: // ADC   A, !a+Y
@@ -1062,14 +1062,14 @@ loop:
                     psw = (psw & ~(v40 | h08)) |
                             (flags >> 1 & h08) |
                             ((flags + 0x80) >> 2 & v40);
-                    a = nz & 0xFF;
+                    a = nz & 0xff;
                     continue;
                 }
 
                 case 0xB9: // SBC   (X), (Y)
                 case 0xB8: // SBC   d, #i
                 case 0xA9: // SBC   dd, ds
-                    nz ^= 0xFF;
+                    nz ^= 0xff;
                 case 0x99: // ADC   (X), (Y)
                 case 0x98: // ADC   d, #i
                 case 0x89: {// ADC   dd, ds
@@ -1246,7 +1246,7 @@ loop:
         this.x = x;
         this.y = y;
         this.psw = psw;
-        this.sp = (sp - 1) & 0xFF;
+        this.sp = (sp - 1) & 0xff;
         this.time = time;
     }
 

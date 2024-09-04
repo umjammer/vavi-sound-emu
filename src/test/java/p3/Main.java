@@ -86,6 +86,7 @@ public class Main extends JFrame {
         logoIcon = new ImageIcon(Main.class.getResource("/graphics/logo.png"));
     }
 
+    @Override
     public void paint(Graphics g) {
         g.setColor(t.theme[2]);
 
@@ -96,6 +97,7 @@ public class Main extends JFrame {
     }
 
     KeyListener kl = new KeyAdapter() {
+        @Override
         public void keyPressed(KeyEvent event) {
             if (event.getKeyCode() == KeyEvent.VK_UP) {
                 player.setPlaybackRateFactor((float) (player.getPlaybackRateFactor() + 0.1));
@@ -106,6 +108,7 @@ public class Main extends JFrame {
     };
 
     MouseListener ml = new MouseAdapter() {
+        @Override
         public void mousePressed(MouseEvent event) {
             // messy... but it works
             if (event.getButton() == MouseEvent.BUTTON1) {
@@ -120,8 +123,9 @@ public class Main extends JFrame {
             }
         }
 
-        JFileChooser fc = new JFileChooser();
+        final JFileChooser fc = new JFileChooser();
 
+        @Override
         public void mouseReleased(MouseEvent event) {
             if (event.getButton() == MouseEvent.BUTTON1) {
                 if (player.isPlaying()) {
