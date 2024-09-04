@@ -82,7 +82,7 @@ public final class NsfEmu extends NesCpu {
         // Copy initial banks
         int nonZero = 0;
         for (int i = 0; i < bankCount; i++) {
-            int bank = header[banksOff + i] & 0xFF;
+            int bank = header[banksOff + i] & 0xff;
             initialBanks[i] = bank;
             nonZero |= bank;
         }
@@ -123,15 +123,15 @@ public final class NsfEmu extends NesCpu {
 
         apu.setOutput(buf.center());
 
-        return (header[trackCountOff] & 0xFF) - 1;
+        return (header[trackCountOff] & 0xff) - 1;
     }
 
     private void cpuCall(int addr) {
         pc = addr;
         p |= 0x04;
         ram[s | 0x100] = (byte) ((idleAddr - 1) >> 8);
-        ram[(s + 0xFF) | 0x100] = (byte) (idleAddr - 1);
-        s = (s - 2) & 0xFF;
+        ram[(s + 0xff) | 0x100] = (byte) (idleAddr - 1);
+        s = (s - 2) & 0xff;
     }
 
     @Override
@@ -160,7 +160,7 @@ public final class NsfEmu extends NesCpu {
         x = palOnly;
         y = 0;
         p = 0;
-        s = 0xFF;
+        s = 0xff;
         pc = idleAddr;
         cpuCall(getLE16(header, initAddrOff));
     }
@@ -216,9 +216,9 @@ public final class NsfEmu extends NesCpu {
     }
 
     @Override
-    protected final int cpuRead(int addr) {
+    protected int cpuRead(int addr) {
         if (addr <= 0x7FF) // 90%
-            return ram[addr] & 0xFF;
+            return ram[addr] & 0xff;
 
         // APU
         if (addr == 0x4015)
@@ -227,10 +227,10 @@ public final class NsfEmu extends NesCpu {
         // TODO: return addr >> 8 for unmapped areas?
 
         if (addr < 0x10000)
-            return ram[mapAddr(addr)] & 0xFF;
+            return ram[mapAddr(addr)] & 0xff;
 
         // address wrapped around
-        return ram[addr - 0x10000] & 0xFF;
+        return ram[addr - 0x10000] & 0xff;
     }
 
     @Override

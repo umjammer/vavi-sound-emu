@@ -133,9 +133,9 @@ public final class SmsApu {
         } else if (index < 3) {
             SmsSquare sq = squares[index];
             if ((data & 0x80) != 0)
-                sq.period = (sq.period & 0xFF00) | (data << 4 & 0x00FF);
+                sq.period = (sq.period & 0xff00) | (data << 4 & 0x00ff);
             else
-                sq.period = (sq.period & 0x00FF) | (data << 8 & 0x3F00);
+                sq.period = (sq.period & 0x00ff) | (data << 8 & 0x3f00);
         } else {
             noise.select = data & 3;
             noise.feedback = ((data & 0x04) != 0) ? noiseFeedback : loopedFeedback;

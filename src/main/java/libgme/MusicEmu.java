@@ -26,11 +26,17 @@ import static java.lang.System.getLogger;
 /**
  * Music emulator interface
  *
+ * system properties
+ * <ul>
+ *     <li>libgme.endless ... loop audio playing or not, default {@code true}</li>
+ * </ul>
  * @see "https://www.slack.net/~ant"
  */
 public abstract class MusicEmu {
 
     protected static final Logger logger = getLogger(MusicEmu.class.getName());
+
+    protected boolean endlessLoopFlag = Boolean.parseBoolean(System.getProperty("libgme.endless", "true"));
 
     protected MusicEmu() {
         trackCount = 0;
@@ -113,6 +119,14 @@ public abstract class MusicEmu {
         return 0;
     }
 
+    public boolean isEndlessLoopFlag() {
+        return endlessLoopFlag;
+    }
+
+    public void setEndlessLoopFlag(boolean endlessLoopFlag) {
+        this.endlessLoopFlag = endlessLoopFlag;
+    }
+
     // protected
 
     // must be defined in derived class
@@ -129,16 +143,16 @@ public abstract class MusicEmu {
 
     /** Reads 16 bit little endian int starting at in [pos] */
     protected static int getLE16(byte[] in, int pos) {
-        return (in[pos] & 0xFF) |
-                (in[pos + 1] & 0xFF) << 8;
+        return (in[pos] & 0xff) |
+                (in[pos + 1] & 0xff) << 8;
     }
 
     /** Reads 32 bit little endian int starting at in [pos] */
     protected static int getLE32(byte[] in, int pos) {
-        return (in[pos] & 0xFF) |
-                (in[pos + 1] & 0xFF) << 8 |
-                (in[pos + 2] & 0xFF) << 16 |
-                (in[pos + 3] & 0xFF) << 24;
+        return (in[pos] & 0xff) |
+                (in[pos + 1] & 0xff) << 8 |
+                (in[pos + 2] & 0xff) << 16 |
+                (in[pos + 3] & 0xff) << 24;
     }
 
     /** True if first bytes of file match expected string */
@@ -179,7 +193,7 @@ public abstract class MusicEmu {
         count = (count << 1) + pos;
         do {
             int s;
-            io[pos + 1] = (byte) (s = ((io[pos] << 8 | (io[pos + 1] & 0xFF)) * gain) >> gainShift);
+            io[pos + 1] = (byte) (s = ((io[pos] << 8 | (io[pos + 1] & 0xff)) * gain) >> gainShift);
             io[pos] = (byte) (s >> 8);
         }
         while ((pos += 2) < count);

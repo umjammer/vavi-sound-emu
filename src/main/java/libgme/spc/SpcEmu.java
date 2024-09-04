@@ -46,7 +46,7 @@ public final class SpcEmu extends SpcCpu {
     static final int ramOff = 0x100;
     static final int dspStateOff = 0x10100;
 
-    static final int romAddr = 0xFFC0;
+    static final int romAddr = 0xffC0;
 
     // SMP registers
     static final int testReg = 0x0;
@@ -95,7 +95,7 @@ public final class SpcEmu extends SpcCpu {
 
         // almost no SPC music rely on more than last two bytes of boot ROM
         java.util.Arrays.fill(rom, 0, romSize, (byte) 0);
-        rom[0x3E] = (byte) 0xFF;
+        rom[0x3E] = (byte) 0xff;
         rom[0x3F] = (byte) 0xC0;
 
         // TODO: use SPC file's copy of ROM, if present?
@@ -109,7 +109,7 @@ public final class SpcEmu extends SpcCpu {
         t.time += elapsed << t.prescaler;
 
         if (t.enabled != 0) {
-            int remain = ((t.period - t.divider - 1) & 0xFF) + 1;
+            int remain = ((t.period - t.divider - 1) & 0xff) + 1;
             int divider = t.divider + elapsed;
             int over;
             if ((over = elapsed - remain) >= 0) {
@@ -117,7 +117,7 @@ public final class SpcEmu extends SpcCpu {
                 t.counter = (t.counter + 1 + n) & 0x0F;
                 divider = over - n * t.period;
             }
-            t.divider = divider & 0xFF;
+            t.divider = divider & 0xff;
         }
     }
 
@@ -149,23 +149,23 @@ public final class SpcEmu extends SpcCpu {
         dspTime = 32;
 
         // RAM
-        java.util.Arrays.fill(ram, ramSize, ram.length, (byte) 0xFF);
+        java.util.Arrays.fill(ram, ramSize, ram.length, (byte) 0xff);
         System.arraycopy(spc, ramOff, ram, 0, ramSize);
 
         dsp.init(ram, spc, dspStateOff);
 
         // CPU
         reset(ram);
-        pc = (spc[cpuStateOff + 1] & 0xFF) << 8 | (spc[cpuStateOff] & 0xFF);
-        a = spc[cpuStateOff + 2] & 0xFF;
-        x = spc[cpuStateOff + 3] & 0xFF;
-        y = spc[cpuStateOff + 4] & 0xFF;
-        sp = spc[cpuStateOff + 6] & 0xFF;
-        setPsw(spc[cpuStateOff + 5] & 0xFF);
+        pc = (spc[cpuStateOff + 1] & 0xff) << 8 | (spc[cpuStateOff] & 0xff);
+        a = spc[cpuStateOff + 2] & 0xff;
+        x = spc[cpuStateOff + 3] & 0xff;
+        y = spc[cpuStateOff + 4] & 0xff;
+        sp = spc[cpuStateOff + 6] & 0xff;
+        setPsw(spc[cpuStateOff + 5] & 0xff);
 
         // SMP registers
         for (int i = 0; i < regCount; i++) {
-            regsIn[i] = regs[i] = ram[0xF0 + i] & 0xFF;
+            regsIn[i] = regs[i] = ram[0xF0 + i] & 0xff;
         }
 
         regsIn[testReg] = 0; // these always read back as 0
@@ -183,7 +183,7 @@ public final class SpcEmu extends SpcCpu {
             Timer t = timers[i] = new Timer();
             t.time = 1;
             t.divider = 0;
-            t.period = ((regs[t0targetReg + i] - 1) & 0xFF) + 1;
+            t.period = ((regs[t0targetReg + i] - 1) & 0xff) + 1;
             t.enabled = regs[controlReg] >> i & 1;
             t.counter = regsIn[t0outReg + i] & 0x0F;
         }
@@ -194,11 +194,11 @@ public final class SpcEmu extends SpcCpu {
 
         // Clear echo
         if ((dsp.regs[dsp.r_flg] & 0x20) == 0) {
-            int addr = (dsp.regs[dsp.r_esa] & 0xFF) << 8;
+            int addr = (dsp.regs[dsp.r_esa] & 0xff) << 8;
             int end = addr + ((dsp.regs[dsp.r_edl] & 0x0F) << 11);
             if (end > ramSize)
                 end = ramSize;
-            java.util.Arrays.fill(ram, addr, end, (byte) 0xFF);
+            java.util.Arrays.fill(ram, addr, end, (byte) 0xff);
         }
     }
 
@@ -247,7 +247,7 @@ public final class SpcEmu extends SpcCpu {
             case t1targetReg:
             case t2targetReg: {
                 Timer t = timers[addr - t0targetReg];
-                int period = ((data - 1) & 0xFF) + 1;
+                int period = ((data - 1) & 0xff) + 1;
                 if (t.period != period) {
                     runTimer(t, time);
                     t.period = period;
@@ -304,7 +304,7 @@ public final class SpcEmu extends SpcCpu {
     }
 
     @Override
-    public final void cpuWrite(int addr, int data) {
+    public void cpuWrite(int addr, int data) {
         // RAM
         ram[addr] = (byte) data;
         if ((addr -= 0xF0) >= 0) // 64%
@@ -312,7 +312,7 @@ public final class SpcEmu extends SpcCpu {
             // $F0-$FF
             if (addr < regCount) // 87%
             {
-                regs[addr] = (data &= 0xFF);
+                regs[addr] = (data &= 0xff);
 
                 // Ports
 
@@ -348,7 +348,7 @@ public final class SpcEmu extends SpcCpu {
                         ram[addr + romAddr] = rom[addr]; // restore overwritten ROM
                 } else {
                     assert ram[addr + romAddr] == (byte) data;
-                    ram[addr + romAddr] = (byte) 0xFF; // restore overwritten padding
+                    ram[addr + romAddr] = (byte) 0xff; // restore overwritten padding
                     cpuWrite(data, addr - (ramSize - romAddr));
                 }
             }
@@ -356,13 +356,13 @@ public final class SpcEmu extends SpcCpu {
     }
 
     @Override
-    public final int cpuRead(int addr) {
+    public int cpuRead(int addr) {
         // Low RAM
         if (addr < 0xF0) // 60%
-            return ram[addr] & 0xFF;
+            return ram[addr] & 0xff;
 
         // Timers
-        if ((addr ^= 0xFF) < timerCount) { // 68%
+        if ((addr ^= 0xff) < timerCount) { // 68%
             Timer t = timers[2 - addr]; // TODO: reorder timers to eliminate 2-
             if (time >= t.time)
                 runTimer_(t, time);
@@ -372,7 +372,7 @@ public final class SpcEmu extends SpcCpu {
         }
 
         // Other registers
-        if ((addr ^= 0xFF) <= 0xFF) { // 9%
+        if ((addr ^= 0xff) <= 0xff) { // 9%
             if (addr == dspaddrReg + 0xF0)
                 return regs[dspaddrReg];
 
@@ -388,15 +388,15 @@ public final class SpcEmu extends SpcCpu {
                     dsp.run(delta);
                 }
 
-                return dsp.regs[regs[dspaddrReg] & 0x7F] & 0xFF;
+                return dsp.regs[regs[dspaddrReg] & 0x7F] & 0xff;
             }
 
             return regsIn[addr - 0xF0];
         }
 
         // RAM
-        if (addr <= 0xFFFF) // 99%
-            return ram[addr] & 0xFF;
+        if (addr <= 0xffFF) // 99%
+            return ram[addr] & 0xff;
 
         // Address wrapped around
         return cpuRead(addr - 0x10000);

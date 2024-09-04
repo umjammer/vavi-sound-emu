@@ -161,8 +161,8 @@ public final class GbApu {
     }
 
     // Reads and writes at addr must satisfy start_addr <= addr <= end_addr
-    public static final int startAddr = 0xFF10;
-    public static final int endAddr = 0xFF3F;
+    public static final int startAddr = 0xff10;
+    public static final int endAddr = 0xff3F;
 
     public void write(int time, int addr, int data) {
         assert startAddr <= addr && addr <= endAddr;
@@ -221,12 +221,12 @@ public final class GbApu {
     }
 
     static final int[] masks = {
-            0x80, 0x3F, 0x00, 0xFF, 0xBF,
-            0xFF, 0x3F, 0x00, 0xFF, 0xBF,
-            0x7F, 0xFF, 0x9F, 0xFF, 0xBF,
-            0xFF, 0xFF, 0x00, 0x00, 0xBF,
+            0x80, 0x3F, 0x00, 0xff, 0xBF,
+            0xff, 0x3F, 0x00, 0xff, 0xBF,
+            0x7F, 0xff, 0x9F, 0xff, 0xBF,
+            0xff, 0xff, 0x00, 0x00, 0xBF,
             0x00, 0x00, 0x70,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
     };
 
     // Reads from address at specified time
@@ -254,10 +254,10 @@ public final class GbApu {
         return data;
     }
 
-    static final int vol_reg = 0xFF24;
-    static final int stereo_reg = 0xFF25;
-    static final int status_reg = 0xFF26;
-    static final int wave_ram = 0xFF30;
+    static final int vol_reg = 0xff24;
+    static final int stereo_reg = 0xff25;
+    static final int status_reg = 0xff26;
+    static final int wave_ram = 0xff30;
     static final int frame_period = 4194304 / 512; // 512 Hz
 
     static final int power_mask = 0x80;

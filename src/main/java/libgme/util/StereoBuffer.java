@@ -21,12 +21,14 @@ package libgme.util;
 
 public final class StereoBuffer {
 
+    /** for debug */
     public interface Observer {
         void observe(byte[] out, int start, int end);
     }
 
     private final BlipBuffer[] bufs = new BlipBuffer[3];
 
+    /** for debug */
     private Observer observer;
 
     // Same behavior as in BlipBuffer unless noted
@@ -76,6 +78,7 @@ public final class StereoBuffer {
     // The three channels that are mixed together
     // left output  = left  + center
     // right output = right + center
+
     public BlipBuffer center() {
         return bufs[2];
     }
@@ -98,7 +101,7 @@ public final class StereoBuffer {
         return bufs[2].samplesAvail() << 1;
     }
 
-    // Output is in stereo, so count must always be a multiple of 2
+    /** Output is in stereo, so count must always be a multiple of 2 */
     public int readSamples(byte[] out, int start, int count) {
         assert (count & 1) == 0;
 

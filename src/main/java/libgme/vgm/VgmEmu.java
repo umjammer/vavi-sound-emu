@@ -49,13 +49,13 @@ public final class VgmEmu extends ClassicEmu {
         }
 
         // PSG clock rate
-        int clockRate = getLE32(data, 0x0C);
+        int clockRate = getLE32(data, 0x0c);
         if (clockRate == 0)
             clockRate = 3579545;
         psgFactor = (int) ((float) psgTimeUnit / vgmRate * clockRate + 0.5);
 
         // FM clock rate
-        fm_clock_rate = getLE32(data, 0x2C);
+        fm_clock_rate = getLE32(data, 0x2c);
         fm = null;
         if (fm_clock_rate != 0) {
             fm = new YM2612();
@@ -113,8 +113,8 @@ public final class VgmEmu extends ClassicEmu {
     static final int cmd_data_block = 0x67;
     static final int cmd_short_delay = 0x70;
     static final int cmd_pcm_delay = 0x80;
-    static final int cmd_pcm_seek = 0xE0;
-    static final int ym2612_dac_port = 0x2A;
+    static final int cmd_pcm_seek = 0xe0;
+    static final int ym2612_dac_port = 0x2a;
     static final int pcm_block_type = 0x00;
 
     @Override
@@ -170,12 +170,15 @@ public final class VgmEmu extends ClassicEmu {
         fm_pos = 0;
 
         int time = delay;
-        while (time < duration) {
+        boolean endOfStream = false;
+        while (time < duration && !endOfStream) {
             int cmd = cmd_end;
             if (pos < data.length)
-                cmd = data[pos++] & 0xFF;
+                cmd = data[pos++] & 0xff;
             switch (cmd) {
                 case cmd_end:
+                    endOfStream = !endlessLoopFlag;
+logger.log(Level.TRACE, "LOOP: " + endlessLoopFlag);
                     pos = loopBegin;
                     break;
 
@@ -188,17 +191,17 @@ public final class VgmEmu extends ClassicEmu {
                     break;
 
                 case cmd_gg_stereo:
-                    apu.writeGG(toPSGTime(time), data[pos++] & 0xFF);
+                    apu.writeGG(toPSGTime(time), data[pos++] & 0xff);
                     break;
 
                 case cmd_psg:
-                    apu.writeData(toPSGTime(time), data[pos++] & 0xFF);
+                    apu.writeData(toPSGTime(time), data[pos++] & 0xff);
                     break;
 
                 case cmd_ym2612_port0:
                     if (fm != null) {
-                        int port = data[pos++] & 0xFF;
-                        int val = data[pos++] & 0xFF;
+                        int port = data[pos++] & 0xff;
+                        int val = data[pos++] & 0xff;
                         if (port == ym2612_dac_port) {
                             write_pcm(time, val);
                         } else {
@@ -215,13 +218,13 @@ public final class VgmEmu extends ClassicEmu {
                 case cmd_ym2612_port1:
                     if (fm != null) {
                         runFM(time);
-                        int port = data[pos++] & 0xFF;
-                        fm.write1(port, data[pos++] & 0xFF);
+                        int port = data[pos++] & 0xff;
+                        fm.write1(port, data[pos++] & 0xff);
                     }
                     break;
 
                 case cmd_delay:
-                    time += (data[pos + 1] & 0xFF) * 0x100 + (data[pos] & 0xFF);
+                    time += (data[pos + 1] & 0xff) * 0x100 + (data[pos] & 0xff);
                     pos += 2;
                     break;
 
@@ -246,7 +249,7 @@ public final class VgmEmu extends ClassicEmu {
                 default:
                     switch (cmd & 0xF0) {
                         case cmd_pcm_delay:
-                            write_pcm(time, data[pcm_pos++] & 0xFF);
+                            write_pcm(time, data[pcm_pos++] & 0xff);
                             time += cmd & 0x0F;
                             break;
 
@@ -272,7 +275,7 @@ public final class VgmEmu extends ClassicEmu {
         int endTime = toPSGTime(duration);
         delay = time - duration;
         apu.endFrame(endTime);
-        if (pos >= data.length) {
+        if (pos >= data.length || endOfStream) {
             setTrackEnded();
             if (pos > data.length) {
                 pos = data.length;
@@ -295,11 +298,11 @@ public final class VgmEmu extends ClassicEmu {
         int in_off = fm_pos;
 
         while (--count >= 0) {
-            int s = (out[out_off] << 8) + (out[out_off + 1] & 0xFF);
+            int s = (out[out_off] << 8) + (out[out_off + 1] & 0xff);
             s = (s >> 2) + fm_buf_lr[in_off];
             in_off++;
             if ((short) s != s)
-                s = (s >> 31) ^ 0x7FFF;
+                s = (s >> 31) ^ 0x7fff;
             out[out_off] = (byte) (s >> 8);
             out_off++;
             out[out_off] = (byte) s;

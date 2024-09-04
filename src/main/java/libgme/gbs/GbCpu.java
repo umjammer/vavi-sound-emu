@@ -48,7 +48,7 @@ public abstract class GbCpu extends ClassicEmu {
         de = 0;
         hl = 0;
         pc = 0;
-        sp = 0xFFFF;
+        sp = 0xffFF;
         ph = 0x100;
         cz = 1;
 
@@ -135,20 +135,20 @@ loop:
 
             int instr;
             int opcode;
-            if ((opcode = mem[instr = pages[pc >> pageShift] + pc] & 0xFF) == 0xCB) {
+            if ((opcode = mem[instr = pages[pc >> pageShift] + pc] & 0xff) == 0xCB) {
                 // CB
 
                 // Source
-                this.time = (time += cbTimes[opcode = mem[instr + 1] & 0xFF]);
+                this.time = (time += cbTimes[opcode = mem[instr + 1] & 0xff]);
                 pc += 2;
                 int operand;
                 data = switch ((operand = opcode & 7)) {
                     case 0 -> bc >> 8;
-                    case 1 -> bc & 0xFF;
+                    case 1 -> bc & 0xff;
                     case 2 -> de >> 8;
-                    case 3 -> de & 0xFF;
+                    case 3 -> de & 0xff;
                     case 4 -> hl >> 8;
-                    case 5 -> hl & 0xFF;
+                    case 5 -> hl & 0xff;
                     case 6 -> cpuRead(hl);
                     default -> a;
                 };
@@ -171,7 +171,7 @@ loop:
                     case 0x00: // RLC r
                         cz = (data << 1 & 0x100) | data; // Z=* C=*
                         ph = data | 0x100; // N=0 H=0
-                        data = (data << 1 & 0xFF) | (data >> 7);
+                        data = (data << 1 & 0xff) | (data >> 7);
                         break;
 
                     case 0x01: // RRC r
@@ -184,7 +184,7 @@ loop:
                         cz = 0;
                     case 0x02: // RL r
                         cz = (data << 1) | (cz >> 8 & 1); // Z=* C=*
-                        data = cz & 0xFF;
+                        data = cz & 0xff;
                         ph = cz | 0x100; // N=0 H=0
                         break;
 
@@ -200,7 +200,7 @@ loop:
                         break;
 
                     case 0x06: // SWAP
-                        data = (data >> 4) | (data << 4 & 0xFF);
+                        data = (data >> 4) | (data << 4 & 0xff);
                         cz = data;
                         ph = cz | 0x100;
                         break;
@@ -233,22 +233,22 @@ loop:
                 // Dest
                 switch (operand) {
                     case 0:
-                        bc = data << 8 | (bc & 0xFF);
+                        bc = data << 8 | (bc & 0xff);
                         continue;
                     case 1:
-                        bc = (bc & 0xFF00) | data;
+                        bc = (bc & 0xff00) | data;
                         continue;
                     case 2:
-                        de = data << 8 | (de & 0xFF);
+                        de = data << 8 | (de & 0xff);
                         continue;
                     case 3:
-                        de = (de & 0xFF00) | data;
+                        de = (de & 0xff00) | data;
                         continue;
                     case 4:
-                        hl = data << 8 | (hl & 0xFF);
+                        hl = data << 8 | (hl & 0xff);
                         continue;
                     case 5:
-                        hl = (hl & 0xFF00) | data;
+                        hl = (hl & 0xff00) | data;
                         continue;
                     case 6:
                         cpuWrite(hl, data);
@@ -308,8 +308,8 @@ loop:
                     continue;
 
                 case 0x2F: // CPL
-                    a ^= 0xFF;
-                    ph = ~cz & 0xFF; // N=1 H=1
+                    a ^= 0xff;
+                    ph = ~cz & 0xff; // N=1 H=1
                     continue;
 
                 case 0x27: {// DAA
@@ -324,7 +324,7 @@ loop:
                         if ((h & 0x10) != 0) {
                             a -= 6;
                             if ((cz & 0x100) == 0)
-                                a &= 0xFF;
+                                a &= 0xff;
                         }
 
                         if ((cz & 0x100) != 0)
@@ -332,7 +332,7 @@ loop:
                     }
 
                     cz = (cz & 0x100) | a;
-                    a &= 0xFF;
+                    a &= 0xff;
                     ph = (ph & 0x100) | a;
                     continue;
                 }
@@ -368,13 +368,13 @@ loop:
                 case 0x22: // LD   (HL+),A
                 case 0x2A: // LD   A,(HL+)
                     data = hl;
-                    hl = (hl + 1) & 0xFFFF;
+                    hl = (hl + 1) & 0xffFF;
                     break;
 
                 case 0x32: // LD   (HL-),A
                 case 0x3A: // LD   A,(HL-)
                     data = hl;
-                    hl = (hl - 1) & 0xFFFF;
+                    hl = (hl - 1) & 0xffFF;
                     break;
 
                 case 0x7E: // LD   A,(HL)
@@ -434,7 +434,7 @@ loop:
                 case 0x38: // JR   C,r
                 case 0xF8: // LD   HL,SPs
                 case 0xE8: // ADD  SP,s
-                    data = mem[instr + 1] & 0xFF;
+                    data = mem[instr + 1] & 0xff;
                     pc++;
                     break;
 
@@ -455,7 +455,7 @@ loop:
                 case 0xEA: // LD   (nn),A
                 case 0x08: // LD   (nn),SP
                 case 0xFA: // LD   A,(nn)
-                    data = (mem[instr + 2] & 0xFF) << 8 | (mem[instr + 1] & 0xFF);
+                    data = (mem[instr + 2] & 0xff) << 8 | (mem[instr + 1] & 0xff);
                     pc += 2;
                     break;
 
@@ -537,7 +537,7 @@ loop:
                 case 0xA9: // XOR  C
                 case 0xB1: // OR   C
                 case 0xB9: // CP   C
-                    data = bc & 0xFF;
+                    data = bc & 0xff;
                     break;
 
                 case 0x14: // INC  D
@@ -577,7 +577,7 @@ loop:
                 case 0xAB: // XOR  E
                 case 0xB3: // OR   E
                 case 0xBB: // CP   E
-                    data = de & 0xFF;
+                    data = de & 0xff;
                     break;
 
                 case 0x24: // INC  H
@@ -617,7 +617,7 @@ loop:
                 case 0xAD: // XOR  L
                 case 0xB5: // OR   L
                 case 0xBD: // CP   L
-                    data = hl & 0xFF;
+                    data = hl & 0xff;
                     break;
             }
 
@@ -629,9 +629,9 @@ loop:
                 case 0x39: // ADD  HL,SP
                     ph = hl ^ data;
                     data += hl;
-                    hl = data & 0xFFFF;
+                    hl = data & 0xffFF;
                     ph ^= data;
-                    cz = (cz & 0xFF) | (data >> 8 & 0x100); // C=* Z=-
+                    cz = (cz & 0xff) | (data >> 8 & 0x100); // C=* Z=-
                     ph = ((ph >> 8) ^ cz) | 0x100; // N=0 H=*
                     continue;
 
@@ -646,7 +646,7 @@ loop:
                 case 0xCE: // ADC  n
                     ph = 0x100 | (a ^ data); // N=0 H=*
                     cz = a + data + (cz >> 8 & 1); // C=* Z=*
-                    a = cz & 0xFF;
+                    a = cz & 0xff;
                     continue;
 
                 case 0x80: // ADD  B
@@ -660,7 +660,7 @@ loop:
                 case 0xC6: // ADD  n
                     ph = 0x100 | (a ^ data); // N=0 H=*
                     cz = a + data; // C=* Z=*
-                    a = cz & 0xFF;
+                    a = cz & 0xff;
                     continue;
 
                 case 0xB8: // CP   B
@@ -687,7 +687,7 @@ loop:
                 case 0xD6: // SUB  n
                     ph = a ^ data; // N=1 H=*
                     cz = a - data; // C=* Z=*
-                    a = cz & 0xFF;
+                    a = cz & 0xff;
                     continue;
 
                 case 0x98: // SBC  B
@@ -701,7 +701,7 @@ loop:
                 case 0xDE: // SBC  n
                     ph = a ^ data; // N=1 H=*
                     cz = a - data - (cz >> 8 & 1); // C=* Z=*
-                    a = cz & 0xFF;
+                    a = cz & 0xff;
                     continue;
 
                 case 0xA0: // AND  B
@@ -749,13 +749,13 @@ loop:
                 case 0x17: // RLA
                     cz = (a << 1) | (cz >> 8 & 1);
                     ph = cz | 0x100;
-                    a = cz & 0xFF;
+                    a = cz & 0xff;
                     cz |= 1;
                     continue;
 
                 case 0x07: // RLCA
                     cz = a << 1;
-                    a = (cz & 0xFF) | (a >> 7);
+                    a = (cz & 0xff) | (a >> 7);
                     ph = a | 0x100;
                     cz |= 1;
                     continue;
@@ -775,8 +775,8 @@ loop:
 
                 case 0xE8: // ADD  SP,s
                 case 0xF8: {// LD   HL,SPs
-                    int t = (sp + (byte) data) & 0xFFFF;
-                    cz = (((sp & 0xFF) + data) & 0x100) | 1; // Z=0 C=*
+                    int t = (sp + (byte) data) & 0xffFF;
+                    cz = (((sp & 0xff) + data) & 0x100) | 1; // Z=0 C=*
                     ph = (sp ^ data ^ t) | 0x100; // N=0 H=*
                     data = t;
                     break;
@@ -786,7 +786,7 @@ loop:
                 case 0x1B: // DEC  DE
                 case 0x2B: // DEC  HL
                 case 0x3B: // DEC  SP
-                    data = (data - 1) & 0xFFFF;
+                    data = (data - 1) & 0xffFF;
                     break;
 
                 case 0x05: // DEC  B
@@ -798,7 +798,7 @@ loop:
                 case 0x35: // DEC  (HL)
                 case 0x3D: // DEC  A
                     ph = data; // N=1 H=*
-                    data = (data - 1) & 0xFF;
+                    data = (data - 1) & 0xff;
                     cz = (cz & 0x100) | data; // C=- Z=*
                     break;
 
@@ -806,7 +806,7 @@ loop:
                 case 0x13: // INC  DE
                 case 0x23: // INC  HL
                 case 0x33: // INC  SP
-                    data = (data + 1) & 0xFFFF;
+                    data = (data + 1) & 0xffFF;
                     break;
 
                 case 0x04: // INC  B
@@ -818,7 +818,7 @@ loop:
                 case 0x34: // INC  (HL)
                 case 0x3C: // INC  A
                     ph = data | 0x100; // N=0 H=*
-                    data = (data + 1) & 0xFF;
+                    data = (data + 1) & 0xff;
                     cz = (cz & 0x100) | data; // C=- Z=*
                     break;
 
@@ -831,8 +831,8 @@ loop:
                     time += 12;
                 case 0xC9: {// RET
                     data = pages[sp >> pageShift] + sp;
-                    pc = (mem[data + 1] & 0xFF) << 8 | (mem[data] & 0xFF);
-                    sp = (sp + 2) & 0xFFFF;
+                    pc = (mem[data + 1] & 0xff) << 8 | (mem[data] & 0xff);
+                    sp = (sp + 2) & 0xffFF;
                     continue;
                 }
 
@@ -841,8 +841,8 @@ loop:
                 case 0xE1: // POP  HL
                 case 0xF1: {// POP  AF
                     data = pages[sp >> pageShift] + sp;
-                    data = (mem[data + 1] & 0xFF) << 8 | (mem[data] & 0xFF);
-                    sp = (sp + 2) & 0xFFFF;
+                    data = (mem[data + 1] & 0xff) << 8 | (mem[data] & 0xff);
+                    sp = (sp + 2) & 0xffFF;
                     break;
                 }
 
@@ -874,7 +874,7 @@ loop:
                         break;
                     continue;
 
-                case 0xFF: // RST  $38
+                case 0xff: // RST  $38
                 case 0xC7: // RST  $00
                 case 0xCF: // RST  $08
                 case 0xD7: // RST  $10
@@ -904,7 +904,7 @@ loop:
                 case 0x38: // JR   C,r
                     time += 4;
                 case 0x18: // JR   r
-                    pc = (pc + (byte) data) & 0xFFFF;
+                    pc = (pc + (byte) data) & 0xffFF;
                     continue;
 
                 case 0xC4: // CALL NZ,nn
@@ -919,7 +919,7 @@ loop:
                 case 0xE7: // RST  $20
                 case 0xEF: // RST  $28
                 case 0xF7: // RST  $30
-                case 0xFF: // RST  $38
+                case 0xff: // RST  $38
                 case 0xCD: {// CALL nn
                     int t = pc;
                     pc = data;
@@ -929,7 +929,7 @@ loop:
                 case 0xD5: // PUSH DE
                 case 0xE5: // PUSH HL
                 case 0xF5: {// PUSH AF
-                    sp = (sp - 2) & 0xFFFF;
+                    sp = (sp - 2) & 0xffFF;
                     int offset = pages[sp >> pageShift] + sp;
                     mem[offset + 1] = (byte) (data >> 8);
                     mem[offset] = (byte) data;
@@ -945,7 +945,7 @@ loop:
 
                 case 0xF0: // LDH  A,(n)
                 case 0xF2: // LDH  A,(C)
-                    data += 0xFF00;
+                    data += 0xff00;
                 case 0xFA: // LD   A,(nn)
                 case 0x0A: // LD   A,(BC)
                 case 0x1A: // LD   A,(DE)
@@ -957,7 +957,7 @@ loop:
 
                 case 0xE0: // LDH  (n),A
                 case 0xE2: // LDH  (C),A
-                    data += 0xFF00;
+                    data += 0xff00;
                 case 0xEA: // LD   (nn),A
                 case 0x02: // LD   (BC),A
                 case 0x12: // LD   (DE),A
@@ -967,8 +967,8 @@ loop:
                     continue;
 
                 case 0x08: // LD   (nn),SP
-                    cpuWrite(data, sp & 0xFF);
-                    cpuWrite((data + 1) & 0xFFFF, sp >> 8);
+                    cpuWrite(data, sp & 0xff);
+                    cpuWrite((data + 1) & 0xffFF, sp >> 8);
                     continue;
 
                 case 0x34: // INC  (HL)
@@ -1035,7 +1035,7 @@ loop:
                 case 0x45: // LD   B,L
                 case 0x46: // LD   B,(HL)
                 case 0x47: // LD   B,A
-                    bc = (data << 8) | (bc & 0xFF);
+                    bc = (data << 8) | (bc & 0xff);
                     continue;
 
                 case 0x14: // INC  D
@@ -1048,7 +1048,7 @@ loop:
                 case 0x55: // LD   D,L
                 case 0x56: // LD   D,(HL)
                 case 0x57: // LD   D,A
-                    de = (data << 8) | (de & 0xFF);
+                    de = (data << 8) | (de & 0xff);
                     continue;
 
                 case 0x24: // INC  H
@@ -1061,7 +1061,7 @@ loop:
                 case 0x65: // LD   H,L
                 case 0x66: // LD   H,(HL)
                 case 0x67: // LD   H,A
-                    hl = (data << 8) | (hl & 0xFF);
+                    hl = (data << 8) | (hl & 0xff);
                     continue;
 
                 case 0x0C: // INC  C
@@ -1074,7 +1074,7 @@ loop:
                 case 0x4D: // LD   C,L
                 case 0x4E: // LD   C,(HL)
                 case 0x4F: // LD   C,A
-                    bc = (bc & 0xFF00) | data;
+                    bc = (bc & 0xff00) | data;
                     continue;
 
                 case 0x1C: // INC  E
@@ -1087,7 +1087,7 @@ loop:
                 case 0x5D: // LD   E,L
                 case 0x5E: // LD   E,(HL)
                 case 0x5F: // LD   E,A
-                    de = (de & 0xFF00) | data;
+                    de = (de & 0xff00) | data;
                     continue;
 
                 case 0x2C: // INC  L
@@ -1100,7 +1100,7 @@ loop:
                 case 0x6C: // LD   L,H
                 case 0x6E: // LD   L,(HL)
                 case 0x6F: // LD   L,A
-                    hl = (hl & 0xFF00) | data;
+                    hl = (hl & 0xff00) | data;
                     continue;
             }
         }

@@ -14,10 +14,9 @@ public final class PlayerWithUpdate extends PlayerList {
     char[] str = new char[5];
     int last = -1;
 
-    @Override
     protected void idle() {
         try {
-            super.idle();
+//            super.idle();
 //            if (!isPlaying()) {
 //                next();
 //                last = -1;

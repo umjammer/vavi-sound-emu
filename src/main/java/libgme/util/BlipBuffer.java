@@ -78,7 +78,7 @@ public final class BlipBuffer {
             // must be even since center kernel uses same half twice
             int mul = volume;
 
-            final int pc = phaseCount;
+            int pc = phaseCount;
             for (int p = 17; --p >= 0; ) {
                 int remain = mul;
                 for (int i = 8; --i >= 0; ) {
@@ -230,9 +230,9 @@ public final class BlipBuffer {
 
     static final int timeBits = 16;
     static final int phaseBits = (muchFaster ? 8 : 5);
-    final int phaseCount = 1 << phaseBits;
+    static final int phaseCount = 1 << phaseBits;
     static final int halfWidth = 8;
-    final int stepWidth = halfWidth * 2;
+    static final int stepWidth = halfWidth * 2;
 
     int factor;
     int offset;

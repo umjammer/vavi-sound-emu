@@ -18,35 +18,180 @@
 
 package libgme;
 
-import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineListener;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
 import static java.lang.System.getLogger;
 
 
-public class EmuPlayer implements Runnable {
+public class EmuPlayer {
 
     private static final Logger logger = getLogger(EmuPlayer.class.getName());
 
+    public interface Engine extends Runnable {
+
+        void setEmu(MusicEmu emu);
+
+        void init();
+
+        void reset();
+
+        void setVolume(double v);
+
+        void setSampleRate(int sampleRate);
+
+        void stop();
+
+        boolean isPlaying();
+
+        void setPlaying(boolean playing);
+    }
+
+    public static class JavaEngine implements Engine {
+
+        SourceDataLine line;
+        AudioFormat audioFormat;
+        DataLine.Info lineInfo;
+        private int sampleRate = 0;
+        volatile boolean playing;
+        MusicEmu emu;
+
+        @Override
+        public void setEmu(MusicEmu emu) {
+            this.emu = emu;
+        }
+
+        /** @throws IllegalStateException line error */
+        @Override
+        public void init() {
+            if (line == null) {
+                try {
+                    line = (SourceDataLine) AudioSystem.getLine(lineInfo);
+                    line.open(audioFormat);
+                    listeners.forEach(line::addLineListener);
+                } catch (LineUnavailableException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        }
+
+        private final List<LineListener> listeners = new ArrayList<>();
+
+        public void addLineListener(LineListener listener) {
+            listeners.add(listener);
+        }
+
+        public void removeLineListener(LineListener listener) {
+            listeners.remove(listener);
+        }
+
+        @Override
+        public void reset() {
+            if (line != null)
+                line.flush();
+        }
+
+        @Override
+        public void setVolume(double v) {
+            if (line != null) {
+                FloatControl mg = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
+                if (mg != null)
+                    mg.setValue((float) (Math.log(v) / Math.log(10.0) * 20.0));
+            }
+        }
+
+        @Override
+        public void setSampleRate(int sampleRate) {
+            if (line == null && this.sampleRate != sampleRate) {
+                audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
+                        sampleRate, 16, 2, 4, sampleRate, true);
+                lineInfo = new DataLine.Info(SourceDataLine.class, audioFormat);
+                this.sampleRate = sampleRate;
+            }
+        }
+
+        @Override
+        public void stop() {
+            if (line != null) {
+                line.close();
+                line = null;
+            }
+        }
+
+        @Override
+        public boolean isPlaying() {
+            return playing;
+        }
+
+        @Override
+        public void setPlaying(boolean playing) {
+            this.playing = playing;
+        }
+
+        @Override
+        public void run() {
+            try {
+                line.start();
+                playing = true;
+logger.log(Level.DEBUG, "START: playing: " + playing + ", trackEnd: " + emu.trackEnded());
+
+                // play track until stop signal
+                byte[] buf = new byte[8192];
+                while (playing && !emu.trackEnded()) {
+                    int count = emu.play(buf, buf.length / 2);
+logger.log(Level.TRACE, "count: " + count + ", playing: " + playing);
+                    line.write(buf, 0, count * 2);
+                    this.idle();
+                }
+
+logger.log(Level.DEBUG, "STOP");
+            } catch (Exception e) {
+logger.log(Level.ERROR, e.getMessage(), e);
+            } finally {
+                playing = false;
+                line.stop();
+            }
+        }
+
+        final static long SLEEP_NS = (ClassicEmu.bufLength / 3) * Duration.ofMillis(1).toNanos();
+
+        /** Called periodically when a track is playing */
+        protected void idle() {
+//        LockSupport.parkNanos(SLEEP_NS);
+        }
+    }
+
+    private Engine engine;
+
     public String emuName = "";
+
+    ExecutorService es = Executors.newSingleThreadExecutor(runnable -> {
+        Thread thread = new Thread(runnable);
+        thread.setName("simplevgm");
+        thread.setPriority(Thread.MAX_PRIORITY - 1);
+        return thread;
+    });
 
     // Number of tracks
     public int getTrackCount() {
         return emu.trackCount();
     }
 
-    public void startTrack(int track) throws Exception {
-        if (playing) pause();
-        if (line != null)
-            line.flush();
+    public void startTrack(int track) {
+        if (engine.isPlaying()) pause();
+        engine.reset();
         emu.startTrack(track);
         play();
     }
@@ -55,17 +200,16 @@ public class EmuPlayer implements Runnable {
      * Starts new track playing, where 0 is the first track.
      * After time seconds, the track starts fading.
      */
-    public void startTrack(int track, int time) throws IOException {
-        if (playing) pause();
-        if (line != null)
-            line.flush();
+    public void startTrack(int track, int time) {
+        if (engine.isPlaying()) pause();
+        engine.reset();
         emu.startTrack(track);
         emu.setFade(time, 6);
         setEmuName();
         play();
     }
 
-    public void setTrack(int track) throws IOException {
+    public void setTrack(int track) {
         emu.startTrack(track);
         setEmuName();
     }
@@ -87,11 +231,8 @@ public class EmuPlayer implements Runnable {
     public void setVolume(double v) {
         volume = v;
 
-        if (line != null) {
-            FloatControl mg = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
-            if (mg != null)
-                mg.setValue((float) (Math.log(v) / Math.log(10.0) * 20.0));
-        }
+        if (engine != null)
+            engine.setVolume(volume);
     }
 
     /** Current playback volume */
@@ -117,55 +258,31 @@ public class EmuPlayer implements Runnable {
 
     /** Pauses if track was playing. */
     public void pause() {
-        if (thread != null) {
-            playing = false;
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-            }
-            thread = null;
+        if (engine != null) {
+            engine.setPlaying(false);
+//            es.shutdownNow();
         }
     }
 
     /** True if track is currently playing */
     public boolean isPlaying() {
-        return playing;
+        return engine.isPlaying();
     }
 
     /** Resumes playback where it was paused */
-    public void play() throws IOException {
-        try {
-            if (line == null) {
-                line = (SourceDataLine) AudioSystem.getLine(lineInfo);
-                line.open(audioFormat);
-                setVolume(volume);
-            }
-            thread = new Thread(this);
-            thread.setName("simplevgm");
-            thread.setPriority(Thread.MAX_PRIORITY - 1);
-            playing = true;
-            thread.start();
-logger.log(Level.DEBUG, "PLAY");
-        } catch (LineUnavailableException e) {
-            throw new IOException(e);
-        }
+    public void play() {
+        engine.init();
+        engine.setVolume(volume);
+logger.log(Level.DEBUG, "PLAY: endless: " + emu.isEndlessLoopFlag());
+        es.submit(engine);
     }
 
     /** Stops playback and closes audio */
     public void stop() {
         pause();
 
-        if (line != null) {
-            line.close();
-            line = null;
-        }
-    }
-
-    final static long SLEEP_NS = (ClassicEmu.bufLength / 3) * Duration.ofMillis(1).toNanos();
-
-    /** Called periodically when a track is playing */
-    protected void idle() {
-//        LockSupport.parkNanos(SLEEP_NS);
+        if (engine != null)
+            engine.stop();
     }
 
     // private
@@ -174,11 +291,9 @@ logger.log(Level.DEBUG, "PLAY");
     protected void setEmu(MusicEmu emu, int sampleRate) {
         stop();
         this.emu = emu;
-        if (emu != null && line == null && this.sampleRate != sampleRate) {
-            audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
-                    sampleRate, 16, 2, 4, sampleRate, true);
-            lineInfo = new DataLine.Info(SourceDataLine.class, audioFormat);
-            this.sampleRate = sampleRate;
+        if (emu != null) {
+            this.engine.setEmu(emu);
+            this.engine.setSampleRate(sampleRate);
         }
     }
 
@@ -186,32 +301,11 @@ logger.log(Level.DEBUG, "PLAY");
         return emu;
     }
 
-    private int sampleRate = 0;
-    AudioFormat audioFormat;
-    DataLine.Info lineInfo;
+    public void setEngine(Engine engine) {
+        this.engine = engine;
+    }
+
     protected MusicEmu emu;
-    Thread thread;
-    volatile boolean playing;
-    SourceDataLine line;
     double volume = 1.0;
     float playRateFactor = 1;
-
-    @Override
-    public void run() {
-        line.start();
-logger.log(Level.DEBUG, "START: " + playing + ", " + emu.trackEnded());
-
-        // play track until stop signal
-        byte[] buf = new byte[8192];
-        while (playing && !emu.trackEnded()) {
-            int count = emu.play(buf, buf.length / 2);
-logger.log(Level.TRACE, "count: " + count + ", playing: " + playing);
-            line.write(buf, 0, count * 2);
-            this.idle();
-        }
-
-        playing = false;
-        line.stop();
-logger.log(Level.DEBUG, "STOP");
-    }
 }

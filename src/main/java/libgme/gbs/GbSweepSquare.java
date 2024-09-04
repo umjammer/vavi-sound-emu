@@ -56,7 +56,7 @@ public final class GbSweepSquare extends GbSquare {
             enabled = 0;
         } else if (shift != 0 && update) {
             sweep_freq = freq;
-            regs[3] = freq & 0xFF;
+            regs[3] = freq & 0xff;
             regs[4] = (regs[4] & ~0x07) | (freq >> 8 & 0x07);
         }
     }
