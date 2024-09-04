@@ -26,11 +26,17 @@ import static java.lang.System.getLogger;
 /**
  * Music emulator interface
  *
+ * system properties
+ * <ul>
+ *     <li>libgme.endless ... loop audio playing or not, default {@code true}</li>
+ * </ul>
  * @see "https://www.slack.net/~ant"
  */
 public abstract class MusicEmu {
 
     protected static final Logger logger = getLogger(MusicEmu.class.getName());
+
+    protected boolean endlessLoopFlag = Boolean.parseBoolean(System.getProperty("libgme.endless", "true"));
 
     protected MusicEmu() {
         trackCount = 0;
@@ -111,6 +117,14 @@ public abstract class MusicEmu {
 
     public float setPlaybackRateFactor(float factor) {
         return 0;
+    }
+
+    public boolean isEndlessLoopFlag() {
+        return endlessLoopFlag;
+    }
+
+    public void setEndlessLoopFlag(boolean endlessLoopFlag) {
+        this.endlessLoopFlag = endlessLoopFlag;
     }
 
     // protected

@@ -170,12 +170,15 @@ public final class VgmEmu extends ClassicEmu {
         fm_pos = 0;
 
         int time = delay;
-        while (time < duration) {
+        boolean endOfStream = false;
+        while (time < duration && !endOfStream) {
             int cmd = cmd_end;
             if (pos < data.length)
                 cmd = data[pos++] & 0xff;
             switch (cmd) {
                 case cmd_end:
+                    endOfStream = !endlessLoopFlag;
+logger.log(Level.TRACE, "LOOP: " + endlessLoopFlag);
                     pos = loopBegin;
                     break;
 
@@ -272,7 +275,7 @@ public final class VgmEmu extends ClassicEmu {
         int endTime = toPSGTime(duration);
         delay = time - duration;
         apu.endFrame(endTime);
-        if (pos >= data.length) {
+        if (pos >= data.length || endOfStream) {
             setTrackEnded();
             if (pos > data.length) {
                 pos = data.length;
