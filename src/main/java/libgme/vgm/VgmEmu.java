@@ -212,6 +212,8 @@ logger.log(Level.TRACE, "LOOP: " + endlessLoopFlag);
                             runFM(time);
                             fm.write0(port, val);
                         }
+                    } else {
+                        pos += 2;
                     }
                     break;
 
@@ -220,6 +222,8 @@ logger.log(Level.TRACE, "LOOP: " + endlessLoopFlag);
                         runFM(time);
                         int port = data[pos++] & 0xff;
                         fm.write1(port, data[pos++] & 0xff);
+                    } else {
+                        pos += 2;
                     }
                     break;
 
