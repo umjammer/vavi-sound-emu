@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.ServiceLoader;
 
 import libgme.util.DataReader;
 
@@ -50,12 +49,7 @@ public class VGMPlayer extends EmuPlayer {
 
     private static final Logger logger = getLogger(VGMPlayer.class.getName());
 
-    int sampleRate;
-
-    static final String DEFAULT_STOPPED_MSG = "Player stopped";
-
-    public String currFilename = DEFAULT_STOPPED_MSG;
-    public String customInfoMsg = "";
+    private final int sampleRate;
 
     public VGMPlayer(int sampleRate) {
         this.sampleRate = sampleRate;
@@ -91,35 +85,26 @@ public class VGMPlayer extends EmuPlayer {
             // now that new emulator is ready, replace old one
             setEmu(emu, actualSampleRate);
             loadedPath = path;
-
-            currFilename = path;
-            customInfoMsg = "";
         }
     }
 
     /** Stops and closes current file and unloads things from memory */
-    void closeFile() {
+    private void closeFile() {
         stop();
         setEmu(null, 0);
-        archiveUrl = "";
-        archiveData = null;
-        loadedUrl = "";
+
         loadedPath = "";
-        currFilename = DEFAULT_STOPPED_MSG;
     }
 
     // private
 
-    String loadedUrl = ""; // URL and path of file loaded into emulator
-    String loadedPath = "";
+    private String loadedPath = "";
 
-    String archiveUrl = ""; // URL of (ZIP) file cached in archiveData
-    byte[] archiveData;
-
-    private static final ServiceLoader<MusicEmu> serviceLoader = ServiceLoader.load(MusicEmu.class);
-
-    /** Creates appropriate emulator for given filename */
-    static MusicEmu createEmu(String name) {
+    /**
+     * Creates appropriate emulator for given filename
+     * @return nullable
+     */
+    private static MusicEmu createEmu(String name) {
         for (MusicEmu musicEmu : serviceLoader) {
 logger.log(Level.TRACE, musicEmu + ", " + name);
             if (musicEmu.isSupportedByName(name)) {
@@ -130,7 +115,7 @@ logger.log(Level.TRACE, musicEmu + ", " + name);
         return null;
     }
 
-    static boolean isGunzipNeeded(String name) {
+    private static boolean isGunzipNeeded(String name) {
         for (MusicEmu musicEmu : serviceLoader) {
             if (musicEmu.isGunzipNeeded(name)) {
                 return true;
@@ -141,12 +126,12 @@ logger.log(Level.TRACE, musicEmu + ", " + name);
     }
 
     /** Loads given URL and file within archive, and caches archive for future access */
-    static byte[] readFile(String path) throws IOException {
+    private static byte[] readFile(String path) throws IOException {
 
         InputStream in = new FileInputStream(path);
 
         String name = path.toUpperCase();
-        //System.out.println( "Unzip " + url );
+//logger.log(Level.TRACE, "Unzip " + url);
 
         if (name.endsWith(".GZ") || isGunzipNeeded(name)) {
             in = DataReader.openGZIP(in);

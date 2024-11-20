@@ -18,7 +18,12 @@
 
 package libgme.vgm;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import libgme.util.BlipBuffer;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -27,6 +32,8 @@ import libgme.util.BlipBuffer;
  * @see "https://www.slack.net/~ant"
  */
 public final class SmsApu {
+
+    private static final Logger logger = getLogger(SmsApu.class.getName());
 
     int lastTime;
     int latch;
@@ -124,6 +131,7 @@ public final class SmsApu {
     public void writeData(int time, int data) {
         runUntil(time);
 
+logger.log(Level.TRACE, String.format("psg: %02x", data));
         if ((data & 0x80) != 0)
             latch = data;
 

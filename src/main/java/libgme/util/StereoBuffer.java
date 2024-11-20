@@ -137,7 +137,7 @@ public final class StereoBuffer {
 
                     // clamp to 16 bits
                     if ((short) s != s)
-                        s = (s >> 24) ^ 0x7FFF;
+                        s = (s >> 24) ^ 0x7fff;
 
                     // write as big endian
                     out[pos] = (byte) (s >> 8);

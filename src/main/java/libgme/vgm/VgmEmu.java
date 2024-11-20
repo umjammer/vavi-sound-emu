@@ -31,9 +31,11 @@ import libgme.util.DataReader;
  */
 public final class VgmEmu extends ClassicEmu {
 
+    public static final String MAGIC = "Vgm ";
+
     @Override
     protected int parseHeader(byte[] data) {
-        if (!isHeader(data, "Vgm "))
+        if (!isHeader(data, MAGIC))
             throw new IllegalArgumentException("Not a VGM file");
 
         // TODO use custom noise taps if present
@@ -69,6 +71,11 @@ public final class VgmEmu extends ClassicEmu {
         apu.setOutput(buf.center(), buf.left(), buf.right());
 
         return 1;
+    }
+
+    @Override
+    public String getMagic() {
+        return MAGIC;
     }
 
     @Override
@@ -212,6 +219,8 @@ logger.log(Level.TRACE, "LOOP: " + endlessLoopFlag);
                             runFM(time);
                             fm.write0(port, val);
                         }
+                    } else {
+                        pos += 2;
                     }
                     break;
 
@@ -220,6 +229,8 @@ logger.log(Level.TRACE, "LOOP: " + endlessLoopFlag);
                         runFM(time);
                         int port = data[pos++] & 0xff;
                         fm.write1(port, data[pos++] & 0xff);
+                    } else {
+                        pos += 2;
                     }
                     break;
 

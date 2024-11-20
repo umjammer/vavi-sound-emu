@@ -18,6 +18,9 @@
 
 package libgme;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.System.Logger;
 
 import static java.lang.System.getLogger;
@@ -44,7 +47,7 @@ public abstract class MusicEmu {
         currentTrack = 0;
     }
 
-    // Requests change of sample rate and returns sample rate used, which might be different
+    /** Requests change of sample rate and returns sample rate used, which might be different */
     public final int setSampleRate(int rate) {
         return sampleRate = setSampleRate_(rate);
     }
@@ -53,7 +56,7 @@ public abstract class MusicEmu {
         return sampleRate;
     }
 
-    // Loads music file into emulator. Might keep reference to data.
+    /** Loads music file into emulator. Might keep reference to data. */
     public void loadFile(byte[] data) {
         trackEnded = true;
         currentTrack = 0;
@@ -61,12 +64,12 @@ public abstract class MusicEmu {
         trackCount = parseHeader(data);
     }
 
-    // Number of tracks
+    /** Number of tracks */
     public final int trackCount() {
         return trackCount;
     }
 
-    // Starts track, where 0 is first track
+    /** Starts track, where 0 is first track */
     public void startTrack(int track) {
         if (track < 0 || track > trackCount)
             throw new IllegalArgumentException("Invalid track");
@@ -78,14 +81,16 @@ public abstract class MusicEmu {
         fadeStep = 1;
     }
 
-    // Currently started track
+    /** Currently started track */
     public final int currentTrack() {
         return currentTrack;
     }
 
-    // Generates at most count samples into out and returns
-    // number of samples written. If track has ended, fills
-    // buffer with silence.
+    /**
+     * Generates at most count samples into out and returns
+     * number of samples written. If track has ended, fills
+     * buffer with silence.
+     */
     public final int play(byte[] out, int count) {
         if (!trackEnded) {
             count = play_(out, count);
@@ -97,7 +102,7 @@ public abstract class MusicEmu {
         return count;
     }
 
-    // Sets fade start and length, in seconds. Must be set after call to startTrack().
+    /** Sets fade start and length, in seconds. Must be set after call to startTrack(). */
     public final void setFade(int start, int length) {
         fadeStart = sampleRate * Math.max(0, start);
         fadeStep = sampleRate * length / (fadeBlockSize * fadeShift);
@@ -105,12 +110,12 @@ public abstract class MusicEmu {
             fadeStep = 1;
     }
 
-    // Number of seconds current track has been played
+    /** Number of seconds current track has been played */
     public final int currentTime() {
         return currentTime / sampleRate;
     }
 
-    // True if track has reached end or setFade()'s fade has finished
+    /** True if track has reached end or setFade()'s fade has finished */
     public final boolean trackEnded() {
         return trackEnded;
     }
@@ -130,10 +135,24 @@ public abstract class MusicEmu {
     // protected
 
     // must be defined in derived class
+
+    /** @return real sampling rate define in the data */
     protected abstract int setSampleRate_(int rate);
 
+    /** @return the number of truck count stored in the data */
     protected abstract int parseHeader(byte[] in);
 
+    public abstract String getMagic();
+
+    public boolean isSupported(InputStream in) throws IOException {
+        String magic = getMagic();
+        DataInputStream dis = new DataInputStream(in);
+        byte[] buf = new byte[magic.length()];
+        dis.readFully(buf);
+        return isHeader(buf, magic);
+    }
+
+    /** @return real last data position in the data */
     protected abstract int play_(byte[] out, int count);
 
     /** Sets end of track flag and stops emulating file */

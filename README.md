@@ -7,14 +7,25 @@
 
 java port game music emu. mavenized and spi-zed also. 
 
-| name | description | status | comment |
-|------|-------------|--------|----|
-| gbs  | Game Boy    | TBD    | |
-| nsf  | NES         | TBD    | |
-| spc  | SNES        | TBD    | |
-| vgm  | Mega Drive  | ✅      | |
+| name | description | status  | comment                    |
+|------|-------------|---------|----------------------------|
+| gbs  | Game Boy    | TBD     | not tested but probably ok |
+| nsf  | NES         | ✅️      |                            |
+| spc  | SNES        | TBD     | not tested but probably ok |
+| vgm  | Mega Drive  | ✅       |                            |
 
+## Install
 
+ * [maven](https://jitpack.io/#umjammer/vavi-sound-emu)
+
+## Usage
+
+```java
+AudioInputStream ais = AudioSystem.getAudioInputStream(Paths.get(vgz).toFile());
+Clip clip = AudioSystem.getClip();
+clip.open(AudioSystem.getAudioInputStream(new AudioFormat(44100, 16, 2, true, true), ais));
+clip.loop(Clip.LOOP_CONTINUOUSLY);
+```
 
 ## References
 
@@ -24,22 +35,7 @@ java port game music emu. mavenized and spi-zed also.
 ## TODO
 
  * ~~make those using service loader~~
- * javax sound spi
+ * ~~javax sound spi~~
  * vgm after 1.50
-
----
-
-# [Original](https://github.com/vlcoo/P3synthVG)
-
-![P3synth](data/graphics/logo.png)
-
----
-
-A VGM player program created with *Processing*.
-Supports playback of VGM, NSF and other equivalent files.
-
-![Preview](data/graphics/Screenshot_20221018_034147.png)
-
-Due to many hiccups, development of P3synthVG has been prematurely finished.
-
-Instead of becoming a VGM visualizer and inspector, this program will remain as a simple proof of concept player.
+ * `vavi.sound.sampled.emu.TestCase#test5`
+ * spi properties for track # etc.

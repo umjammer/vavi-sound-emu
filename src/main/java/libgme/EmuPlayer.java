@@ -23,17 +23,18 @@ import java.lang.System.Logger.Level;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
-import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineListener;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
 import static java.lang.System.getLogger;
+import static vavi.sound.SoundUtil.volume;
 
 
 public class EmuPlayer {
@@ -67,6 +68,7 @@ public class EmuPlayer {
         private int sampleRate = 0;
         volatile boolean playing;
         MusicEmu emu;
+        double volume = 0.2;
 
         @Override
         public void setEmu(MusicEmu emu) {
@@ -105,11 +107,7 @@ public class EmuPlayer {
 
         @Override
         public void setVolume(double v) {
-            if (line != null) {
-                FloatControl mg = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
-                if (mg != null)
-                    mg.setValue((float) (Math.log(v) / Math.log(10.0) * 20.0));
-            }
+            this.volume = v;
         }
 
         @Override
@@ -144,6 +142,7 @@ public class EmuPlayer {
         public void run() {
             try {
                 line.start();
+                volume(line, volume);
                 playing = true;
 logger.log(Level.DEBUG, "START: playing: " + playing + ", trackEnd: " + emu.trackEnded());
 
@@ -175,8 +174,6 @@ logger.log(Level.ERROR, e.getMessage(), e);
 
     private Engine engine;
 
-    public String emuName = "";
-
     ExecutorService es = Executors.newSingleThreadExecutor(runnable -> {
         Thread thread = new Thread(runnable);
         thread.setName("simplevgm");
@@ -184,7 +181,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
         return thread;
     });
 
-    // Number of tracks
+    /** Number of tracks */
     public int getTrackCount() {
         return emu.trackCount();
     }
@@ -205,13 +202,11 @@ logger.log(Level.ERROR, e.getMessage(), e);
         engine.reset();
         emu.startTrack(track);
         emu.setFade(time, 6);
-        setEmuName();
         play();
     }
 
     public void setTrack(int track) {
         emu.startTrack(track);
-        setEmuName();
     }
 
     /** Currently playing track */
@@ -224,22 +219,6 @@ logger.log(Level.ERROR, e.getMessage(), e);
         return (emu == null ? 0 : emu.currentTime());
     }
 
-    /**
-     * Sets playback volume, where 1.0 is normal, 2.0 is twice as loud.
-     * Can be changed while track is playing.
-     */
-    public void setVolume(double v) {
-        volume = v;
-
-        if (engine != null)
-            engine.setVolume(volume);
-    }
-
-    /** Current playback volume */
-    public double getVolume() {
-        return volume;
-    }
-
     public void setPlaybackRateFactor(float factor) {
         if (factor < 0.0) factor = 0;
         if (factor > 2.0) factor = 2;
@@ -250,10 +229,6 @@ logger.log(Level.ERROR, e.getMessage(), e);
 
     public float getPlaybackRateFactor() {
         return playRateFactor;
-    }
-
-    private void setEmuName() {
-        this.emuName = emu.getClass().getName().replace("Emu", "").replace("libgme.", "").toUpperCase();
     }
 
     /** Pauses if track was playing. */
@@ -272,7 +247,6 @@ logger.log(Level.ERROR, e.getMessage(), e);
     /** Resumes playback where it was paused */
     public void play() {
         engine.init();
-        engine.setVolume(volume);
 logger.log(Level.DEBUG, "PLAY: endless: " + emu.isEndlessLoopFlag());
         es.submit(engine);
     }
@@ -291,7 +265,7 @@ logger.log(Level.DEBUG, "PLAY: endless: " + emu.isEndlessLoopFlag());
     protected void setEmu(MusicEmu emu, int sampleRate) {
         stop();
         this.emu = emu;
-        if (emu != null) {
+        if (this.engine != null && emu != null) {
             this.engine.setEmu(emu);
             this.engine.setSampleRate(sampleRate);
         }
@@ -306,6 +280,7 @@ logger.log(Level.DEBUG, "PLAY: endless: " + emu.isEndlessLoopFlag());
     }
 
     protected MusicEmu emu;
-    double volume = 1.0;
-    float playRateFactor = 1;
+    private float playRateFactor = 1;
+
+    protected static final ServiceLoader<MusicEmu> serviceLoader = ServiceLoader.load(MusicEmu.class);
 }
