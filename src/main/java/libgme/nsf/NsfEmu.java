@@ -67,9 +67,11 @@ public final class NsfEmu extends NesCpu {
     int nextPlay;
     double clockRate;
 
+    public static final String MAGIC = "NESM";
+
     @Override
     protected int parseHeader(byte[] in) {
-        if (!isHeader(in, "NESM"))
+        if (!isHeader(in, MAGIC))
             throw new IllegalArgumentException("Not an NSF file");
 
         // Load ROM data
@@ -124,6 +126,11 @@ public final class NsfEmu extends NesCpu {
         apu.setOutput(buf.center());
 
         return (header[trackCountOff] & 0xff) - 1;
+    }
+
+    @Override
+    public String getMagic() {
+        return MAGIC;
     }
 
     private void cpuCall(int addr) {

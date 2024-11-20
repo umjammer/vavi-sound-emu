@@ -57,9 +57,11 @@ public final class GbsEmu extends GbCpu {
 
     GbApu apu = new GbApu();
 
+    public static final String MAGIC = "GBS\u0001";
+
     @Override
     protected int parseHeader(byte[] in) {
-        if (!isHeader(in, "GBS\u0001"))
+        if (!isHeader(in, MAGIC))
             throw new IllegalArgumentException("Not a GBS file");
 
         rstBase = getLE16(in, loadAddrOff);
@@ -69,6 +71,11 @@ public final class GbsEmu extends GbCpu {
         apu.setOutput(buf.center(), buf.left(), buf.right());
 
         return header[trackCountOff] & 0xff;
+    }
+
+    @Override
+    public String getMagic() {
+        return MAGIC;
     }
 
     void setBank(int n) {

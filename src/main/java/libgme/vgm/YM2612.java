@@ -1,5 +1,11 @@
 package libgme.vgm;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
+import static java.lang.System.getLogger;
+
+
 /**
  * Test port of Gens YM2612 core.
  *
@@ -7,6 +13,8 @@ package libgme.vgm;
  * @version 2005
  */
 public final class YM2612 {
+
+    private static final Logger logger = getLogger(YM2612.class.getName());
 
     static final int NULL_RATE_SIZE = 32;
 
@@ -447,6 +455,7 @@ public final class YM2612 {
 
     /** opnA */
     public void write0(int addr, int data) {
+logger.log(Level.TRACE, String.format("fm0: a: %02x, d: %02x", addr, data));
         if (addr < 0x30) {
             regs[0][addr] = data;
             setYM(addr, data);
@@ -462,6 +471,7 @@ public final class YM2612 {
 
     /** opnB */
     public void write1(int addr, int data) {
+logger.log(Level.TRACE, String.format("fm1: a: %02x, d: %02x", addr, data));
         if (addr >= 0x30 && regs[1][addr] != data) {
             regs[1][addr] = data;
 

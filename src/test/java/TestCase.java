@@ -5,6 +5,7 @@
  */
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
 import javax.sound.sampled.LineEvent.Type;
@@ -15,10 +16,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
-import uk.co.kernite.VGM.gme;
+import vavi.sound.sampled.emu.EmuAudioManager;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
+
+import static vavix.util.DelayedWorker.later;
 
 
 /**
@@ -39,7 +42,7 @@ class TestCase {
     double volume = 0.2;
 
     @Property
-    String vgz;
+    String vgz = "src/test/resources/test.vgm";
 
     @BeforeEach
     void setup() throws Exception {
@@ -49,19 +52,14 @@ class TestCase {
 Debug.println("volume: " + volume);
     }
 
-    @Test
-    @DisplayName("gui")
-    void test() throws Exception {
-        gme.main(new String[] { vgz });
-
-        CountDownLatch cdl = new CountDownLatch(1);
-        cdl.await();
-    }
+    static boolean onIde = System.getProperty("vavi.test", "").equals("ide");
+    static long time = onIde ? 1000 * 1000 : 10 * 1000;
 
     @Test
-    @DisplayName("headless")
+    @DisplayName("file")
     void test1() throws Exception {
-        System.setProperty("libgme.endless", "true");
+        System.setProperty("libgme.endless", String.valueOf(onIde));
+Debug.print("libgme.endless: " + System.getProperty("libgme.endless"));
 
         VGMPlayer player = new VGMPlayer(44100);
 Debug.println(vgz);
@@ -69,13 +67,40 @@ Debug.println(vgz);
 
         JavaEngine engine = new JavaEngine();
         engine.addLineListener(e -> { if (e.getType() == Type.STOP) cdl.countDown(); });
+        engine.setVolume(volume);
 
-        player.setVolume(volume);
         player.setEngine(engine);
         player.loadFile(vgz);
         player.setTrack(1);
         player.play();
 
+        if (!onIde) later(time, cdl::countDown);
         cdl.await();
+
+        player.stop();
+    }
+
+    @Test
+    @DisplayName("stream")
+    void test2() throws Exception {
+        System.setProperty("libgme.endless", String.valueOf(onIde));
+
+        EmuAudioManager manager = new EmuAudioManager(44100);
+Debug.println(vgz);
+        CountDownLatch cdl = new CountDownLatch(1);
+
+        JavaEngine engine = new JavaEngine();
+        engine.addLineListener(e -> { if (e.getType() == Type.STOP) cdl.countDown(); });
+        engine.setVolume(volume);
+
+        manager.setEngine(engine);
+        manager.loadFile(Files.newInputStream(Path.of(vgz)));
+        manager.setTrack(1);
+        manager.play();
+
+        if (!onIde) later(time, cdl::countDown);
+        cdl.await();
+
+        manager.stop();
     }
 }

@@ -81,6 +81,8 @@ public final class SpcEmu extends SpcCpu {
     final SpcDsp dsp = new SpcDsp();
     final Timer[] timers = new Timer[timerCount];
 
+    public static final String MAGIC = "SNES-SPC700 Sound File Data";
+
     @Override
     protected int setSampleRate_(int rate) {
         return 32000;
@@ -88,19 +90,24 @@ public final class SpcEmu extends SpcCpu {
 
     @Override
     protected int parseHeader(byte[] in) {
-        if (!isHeader(in, "SNES-SPC700 Sound File Data"))
+        if (!isHeader(in, MAGIC))
             throw new IllegalArgumentException("Not an SPC file");
 
         spc = in;
 
         // almost no SPC music rely on more than last two bytes of boot ROM
         java.util.Arrays.fill(rom, 0, romSize, (byte) 0);
-        rom[0x3E] = (byte) 0xff;
-        rom[0x3F] = (byte) 0xC0;
+        rom[0x3e] = (byte) 0xff;
+        rom[0x3f] = (byte) 0xc0;
 
         // TODO: use SPC file's copy of ROM, if present?
 
         return 1;
+    }
+
+    @Override
+    public String getMagic() {
+        return MAGIC;
     }
 
     // Runs timer to present. Time must be >= t.time.
@@ -114,7 +121,7 @@ public final class SpcEmu extends SpcCpu {
             int over;
             if ((over = elapsed - remain) >= 0) {
                 int n = over / t.period;
-                t.counter = (t.counter + 1 + n) & 0x0F;
+                t.counter = (t.counter + 1 + n) & 0x0f;
                 divider = over - n * t.period;
             }
             t.divider = divider & 0xff;
