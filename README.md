@@ -27,6 +27,10 @@ clip.open(AudioSystem.getAudioInputStream(new AudioFormat(44100, 16, 2, true, tr
 clip.loop(Clip.LOOP_CONTINUOUSLY);
 ```
 
+### system properties
+
+ * `libgme.endless` ... loop audio playing or not, default `false`
+
 ## References
 
  * https://github.com/GeoffWilson/VGM

@@ -31,7 +31,7 @@ import static java.lang.System.getLogger;
  *
  * system properties
  * <ul>
- *     <li>libgme.endless ... loop audio playing or not, default {@code true}</li>
+ *  <li>libgme.endless ... loop audio playing or not, default {@code false}</li>
  * </ul>
  * @see "https://www.slack.net/~ant"
  */
@@ -39,7 +39,7 @@ public abstract class MusicEmu {
 
     protected static final Logger logger = getLogger(MusicEmu.class.getName());
 
-    protected boolean endlessLoopFlag = Boolean.parseBoolean(System.getProperty("libgme.endless", "true"));
+    protected boolean endlessLoopFlag = Boolean.parseBoolean(System.getProperty("libgme.endless", "false"));
 
     protected MusicEmu() {
         trackCount = 0;
