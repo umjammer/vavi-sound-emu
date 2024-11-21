@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.Map;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 
@@ -39,7 +40,12 @@ class Emu2PcmAudioInputStream extends AudioInputStream {
      * @param length the length in sample frames of the data in this stream.
      */
     public Emu2PcmAudioInputStream(AudioFormat sourceFormat, AudioFormat format, long length) throws IOException {
-        super(new OutputEngineInputStream(new EmuOutputEngine(sourceFormat)), format, length);
+        this(sourceFormat, format, length, format.properties());
+    }
+
+    /** */
+    public Emu2PcmAudioInputStream(AudioFormat sourceFormat, AudioFormat format, long length, Map<String, Object> props) throws IOException {
+        super(new OutputEngineInputStream(new EmuOutputEngine(sourceFormat, props)), format, length);
     }
 
     /** */
@@ -54,10 +60,18 @@ class Emu2PcmAudioInputStream extends AudioInputStream {
         byte[] buf = new byte[8192];
 
         /** */
-        public EmuOutputEngine(AudioFormat format) throws IOException {
+        public EmuOutputEngine(AudioFormat format, Map<String, Object> props) throws IOException {
             this.emu = (MusicEmu) format.getProperty("emu");
-logger.log(Level.INFO, emu);
-            emu.startTrack(1); // TODO props
+logger.log(Level.DEBUG, emu.getClass().getName());
+            int track = 1;
+            try {
+                track = (int) props.get("track");
+                if (track < 1 || track > emu.trackCount()) track = 1;
+            } catch (Exception e) {
+logger.log(Level.WARNING, "wrong props::track: " + e.toString());
+            }
+            emu.startTrack(track);
+logger.log(Level.DEBUG, "props: " + props  + ", track: " + track + " / " + emu.trackCount());
         }
 
         @Override

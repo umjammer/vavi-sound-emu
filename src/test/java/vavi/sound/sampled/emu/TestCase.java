@@ -13,6 +13,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -24,12 +26,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static vavi.sound.SoundUtil.volume;
 import static vavi.sound.sampled.emu.EmuEncoding.VGM;
 import static vavix.util.DelayedWorker.later;
@@ -41,7 +45,6 @@ import static vavix.util.DelayedWorker.later;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 241118 nsano initial version <br>
  */
-@EnabledIf("localPropertiesExists")
 @PropsEntity(url = "file:local.properties")
 class TestCase {
 
@@ -51,6 +54,9 @@ class TestCase {
 
     @Property(name = "vgz")
     String vgm = "src/test/resources/test.vgm";
+
+    @Property(name = "track")
+    int track = 1;
 
     @Property(name = "vavi.test.volume")
     double volume = 0.2;
@@ -75,12 +81,18 @@ Debug.println("volume: " + volume);
 
         AudioFormat inAudioFormat = sourceAis.getFormat();
 Debug.println("IN: " + inAudioFormat);
+
+        Map<String, Object> props = new HashMap<>();
+        props.put("track", track);
         AudioFormat outAudioFormat = new AudioFormat(
+                PCM_SIGNED,
                 inAudioFormat.getSampleRate(),
                 16,
                 inAudioFormat.getChannels(),
+                2 * inAudioFormat.getChannels(),
+                inAudioFormat.getSampleRate(),
                 true,
-                true);
+                props);
 Debug.println("OUT: " + outAudioFormat);
 
         assertTrue(AudioSystem.isConversionSupported(outAudioFormat, inAudioFormat));
@@ -116,12 +128,18 @@ Debug.println("OUT: " + outAudioFormat);
 
         AudioFormat inAudioFormat = sourceAis.getFormat();
 Debug.println("IN: " + inAudioFormat);
+
+        Map<String, Object> props = new HashMap<>();
+        props.put("track", track);
         AudioFormat outAudioFormat = new AudioFormat(
+                PCM_SIGNED,
                 inAudioFormat.getSampleRate(),
                 16,
                 inAudioFormat.getChannels(),
+                2 * inAudioFormat.getChannels(),
+                inAudioFormat.getSampleRate(),
                 true,
-                true);
+                props);
 Debug.println("OUT: " + outAudioFormat);
 
         assertTrue(AudioSystem.isConversionSupported(outAudioFormat, inAudioFormat));
