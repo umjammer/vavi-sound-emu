@@ -86,7 +86,6 @@ logger.log(DEBUG, "enter: available: " + bitStream.available());
         String emu;
         try {
             manager.loadFile(bitStream);
-            manager.setTrack(1);
 
             emu = manager.getEmu().getClass().getSimpleName().replace("Emu", "");
             encoding = EmuEncoding.valueOf(emu);

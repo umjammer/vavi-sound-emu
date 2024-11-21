@@ -13,6 +13,9 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.spi.FormatConversionProvider;
 
+import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
+import static javax.sound.sampled.AudioSystem.NOT_SPECIFIED;
+
 
 /**
  * EmuFormatConversionProvider.
@@ -29,7 +32,7 @@ public class EmuFormatConversionProvider extends FormatConversionProvider {
                 EmuEncoding.SPC,
                 EmuEncoding.GBS,
                 EmuEncoding.VGM,
-                Encoding.PCM_SIGNED,
+                PCM_SIGNED,
         };
     }
 
@@ -40,13 +43,13 @@ public class EmuFormatConversionProvider extends FormatConversionProvider {
                 EmuEncoding.SPC,
                 EmuEncoding.GBS,
                 EmuEncoding.VGM,
-                Encoding.PCM_SIGNED,
+                PCM_SIGNED,
         };
     }
 
     @Override
     public AudioFormat.Encoding[] getTargetEncodings(AudioFormat sourceFormat) {
-        if (sourceFormat.getEncoding().equals(Encoding.PCM_SIGNED)) {
+        if (sourceFormat.getEncoding().equals(PCM_SIGNED)) {
             return new AudioFormat.Encoding[] {
                     EmuEncoding.NSF,
                     EmuEncoding.SPC,
@@ -54,7 +57,7 @@ public class EmuFormatConversionProvider extends FormatConversionProvider {
                     EmuEncoding.VGM,
             };
         } else if (sourceFormat.getEncoding() instanceof EmuEncoding) {
-            return new AudioFormat.Encoding[] {Encoding.PCM_SIGNED};
+            return new AudioFormat.Encoding[] {PCM_SIGNED};
         } else {
             return new AudioFormat.Encoding[0];
         }
@@ -62,7 +65,7 @@ public class EmuFormatConversionProvider extends FormatConversionProvider {
 
     @Override
     public AudioFormat[] getTargetFormats(Encoding targetEncoding, AudioFormat sourceFormat) {
-        if (sourceFormat.getEncoding().equals(Encoding.PCM_SIGNED) &&
+        if (sourceFormat.getEncoding().equals(PCM_SIGNED) &&
                 targetEncoding instanceof EmuEncoding) {
             if (sourceFormat.getChannels() > 2 ||
                     sourceFormat.getChannels() <= 0 ||
@@ -72,20 +75,20 @@ public class EmuFormatConversionProvider extends FormatConversionProvider {
                 return new AudioFormat[] {
                         new AudioFormat(targetEncoding,
                                 sourceFormat.getSampleRate(),
-                                -1,     // sample size in bits
+                                -1,           // sample size in bits
                                 sourceFormat.getChannels(),
-                                -1,     // frame size
-                                -1,     // frame rate
-                                true)  // little endian
+                                -1,                // frame size
+                                -1,                          // frame rate
+                                true)                        // little endian
                 };
             }
-        } else if (sourceFormat.getEncoding() instanceof EmuEncoding && targetEncoding.equals(Encoding.PCM_SIGNED)) {
+        } else if (sourceFormat.getEncoding() instanceof EmuEncoding && targetEncoding.equals(PCM_SIGNED)) {
             return new AudioFormat[] {
                     new AudioFormat(sourceFormat.getSampleRate(),
-                            16,         // sample size in bits
+                            16,           // sample size in bits
                             sourceFormat.getChannels(),
-                            true,       // signed
-                            true)      // little endian (for PCM wav)
+                            true,                 // signed
+                            true)                        // little endian (for PCM wav)
             };
         } else {
             return new AudioFormat[0];
@@ -101,13 +104,13 @@ public class EmuFormatConversionProvider extends FormatConversionProvider {
                 AudioFormat targetFormat = formats[0];
                 if (sourceFormat.equals(targetFormat)) {
                     return sourceStream;
-                } else if (sourceFormat.getEncoding() instanceof EmuEncoding && targetFormat.getEncoding().equals(Encoding.PCM_SIGNED)) {
+                } else if (sourceFormat.getEncoding() instanceof EmuEncoding && targetFormat.getEncoding().equals(PCM_SIGNED)) {
                     try {
-                        return new Emu2PcmAudioInputStream(sourceFormat, targetFormat, AudioSystem.NOT_SPECIFIED);
+                        return new Emu2PcmAudioInputStream(sourceFormat, targetFormat, NOT_SPECIFIED, targetFormat.properties());
                     } catch (IOException e) {
                         throw new IllegalStateException(e);
                     }
-                } else if (sourceFormat.getEncoding().equals(Encoding.PCM_SIGNED) && targetFormat.getEncoding() instanceof EmuEncoding) {
+                } else if (sourceFormat.getEncoding().equals(PCM_SIGNED) && targetFormat.getEncoding() instanceof EmuEncoding) {
                     throw new IllegalArgumentException("unable to convert " + sourceFormat + " to " + targetFormat);
                 } else {
                     throw new IllegalArgumentException("unable to convert " + sourceFormat + " to " + targetFormat.toString());
@@ -129,13 +132,13 @@ public class EmuFormatConversionProvider extends FormatConversionProvider {
                 if (sourceFormat.equals(targetFormat)) {
                     return sourceStream;
                 } else if (sourceFormat.getEncoding() instanceof EmuEncoding &&
-                        targetFormat.getEncoding().equals(Encoding.PCM_SIGNED)) {
+                        targetFormat.getEncoding().equals(PCM_SIGNED)) {
                     try {
-                        return new Emu2PcmAudioInputStream(sourceFormat, targetFormat, AudioSystem.NOT_SPECIFIED);
+                        return new Emu2PcmAudioInputStream(sourceFormat, targetFormat, NOT_SPECIFIED, targetFormat.properties());
                     } catch (IOException e) {
                         throw new IllegalStateException(e);
                     }
-                } else if (sourceFormat.getEncoding().equals(Encoding.PCM_SIGNED) && targetFormat.getEncoding() instanceof EmuEncoding) {
+                } else if (sourceFormat.getEncoding().equals(PCM_SIGNED) && targetFormat.getEncoding() instanceof EmuEncoding) {
                     throw new IllegalArgumentException("unable to convert " + sourceFormat + " to " + targetFormat);
                 } else {
                     throw new IllegalArgumentException("unable to convert " + sourceFormat + " to " + targetFormat);

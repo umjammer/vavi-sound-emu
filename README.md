@@ -23,9 +23,17 @@ java port game music emu. mavenized and spi-zed also.
 ```java
 AudioInputStream ais = AudioSystem.getAudioInputStream(Paths.get(vgz).toFile());
 Clip clip = AudioSystem.getClip();
-clip.open(AudioSystem.getAudioInputStream(new AudioFormat(44100, 16, 2, true, true), ais));
+clip.open(AudioSystem.getAudioInputStream(new AudioFormat(Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, true, props), ais));
 clip.loop(Clip.LOOP_CONTINUOUSLY);
 ```
+
+### properties for target `AudioFormat`
+
+ * `track` ... specify track # in the file to play
+
+### system properties
+
+ * `libgme.endless` ... loop audio playing or not, default `false`
 
 ## References
 
@@ -38,4 +46,4 @@ clip.loop(Clip.LOOP_CONTINUOUSLY);
  * ~~javax sound spi~~
  * vgm after 1.50
  * `vavi.sound.sampled.emu.TestCase#test5`
- * spi properties for track # etc.
+ * ~~spi properties for track # etc.~~

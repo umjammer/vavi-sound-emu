@@ -15,7 +15,6 @@ import libgme.VGMPlayer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
 import vavi.sound.sampled.emu.EmuAudioManager;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
@@ -31,7 +30,6 @@ import static vavix.util.DelayedWorker.later;
  * @version 0.00 2024-08-26 nsano initial version <br>
  */
 @PropsEntity(url = "file:local.properties")
-@EnabledIf("localPropertiesExists")
 class TestCase {
 
     static boolean localPropertiesExists() {
@@ -43,6 +41,9 @@ class TestCase {
 
     @Property
     String vgz = "src/test/resources/test.vgm";
+
+    @Property(name = "track")
+    int track = 1;
 
     @BeforeEach
     void setup() throws Exception {
@@ -71,7 +72,7 @@ Debug.println(vgz);
 
         player.setEngine(engine);
         player.loadFile(vgz);
-        player.setTrack(1);
+        player.setTrack(track);
         player.play();
 
         if (!onIde) later(time, cdl::countDown);
@@ -95,7 +96,7 @@ Debug.println(vgz);
 
         manager.setEngine(engine);
         manager.loadFile(Files.newInputStream(Path.of(vgz)));
-        manager.setTrack(1);
+        manager.setTrack(track);
         manager.play();
 
         if (!onIde) later(time, cdl::countDown);
