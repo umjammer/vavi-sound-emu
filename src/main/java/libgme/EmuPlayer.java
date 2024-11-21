@@ -176,7 +176,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
 
     ExecutorService es = Executors.newSingleThreadExecutor(runnable -> {
         Thread thread = new Thread(runnable);
-        thread.setName("simplevgm");
+        thread.setName("vavi-sound-emu");
         thread.setPriority(Thread.MAX_PRIORITY - 1);
         return thread;
     });
