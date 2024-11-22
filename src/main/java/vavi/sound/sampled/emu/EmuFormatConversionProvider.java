@@ -7,14 +7,16 @@
 package vavi.sound.sampled.emu;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.stream.Stream;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioFormat.Encoding;
 import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.spi.FormatConversionProvider;
 
 import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
 import static javax.sound.sampled.AudioSystem.NOT_SPECIFIED;
+import static vavi.sound.sampled.emu.EmuEncoding.encodings;
 
 
 /**
@@ -27,35 +29,20 @@ public class EmuFormatConversionProvider extends FormatConversionProvider {
 
     @Override
     public AudioFormat.Encoding[] getSourceEncodings() {
-        return new AudioFormat.Encoding[] {
-                EmuEncoding.NSF,
-                EmuEncoding.SPC,
-                EmuEncoding.GBS,
-                EmuEncoding.VGM,
-                PCM_SIGNED,
-        };
+        return Stream.concat(Arrays.stream(encodings), Stream.of(PCM_SIGNED))
+                .toArray(Encoding[]::new);
     }
 
     @Override
     public AudioFormat.Encoding[] getTargetEncodings() {
-        return new AudioFormat.Encoding[] {
-                EmuEncoding.NSF,
-                EmuEncoding.SPC,
-                EmuEncoding.GBS,
-                EmuEncoding.VGM,
-                PCM_SIGNED,
-        };
+        return Stream.concat(Arrays.stream(encodings), Stream.of(PCM_SIGNED))
+                .toArray(Encoding[]::new);
     }
 
     @Override
     public AudioFormat.Encoding[] getTargetEncodings(AudioFormat sourceFormat) {
         if (sourceFormat.getEncoding().equals(PCM_SIGNED)) {
-            return new AudioFormat.Encoding[] {
-                    EmuEncoding.NSF,
-                    EmuEncoding.SPC,
-                    EmuEncoding.GBS,
-                    EmuEncoding.VGM,
-            };
+            return Arrays.stream(encodings).toArray(Encoding[]::new);
         } else if (sourceFormat.getEncoding() instanceof EmuEncoding) {
             return new AudioFormat.Encoding[] {PCM_SIGNED};
         } else {
