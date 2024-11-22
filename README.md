@@ -45,5 +45,5 @@ clip.loop(Clip.LOOP_CONTINUOUSLY);
  * ~~make those using service loader~~
  * ~~javax sound spi~~
  * vgm after 1.50
- * `vavi.sound.sampled.emu.TestCase#test5`
+ * ~~`vavi.sound.sampled.emu.TestCase#test5`~~
  * ~~spi properties for track # etc.~~
