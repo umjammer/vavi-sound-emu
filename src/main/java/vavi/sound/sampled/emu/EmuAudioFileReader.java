@@ -45,7 +45,7 @@ public class EmuAudioFileReader extends AudioFileReader {
 
     @Override
     public AudioFileFormat getAudioFileFormat(File file) throws UnsupportedAudioFileException, IOException {
-        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
+        try (InputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             uri = file.toURI();
             return getAudioFileFormat(inputStream, (int) file.length());
         }
@@ -53,7 +53,7 @@ public class EmuAudioFileReader extends AudioFileReader {
 
     @Override
     public AudioFileFormat getAudioFileFormat(URL url) throws UnsupportedAudioFileException, IOException {
-        try (InputStream inputStream = url.openStream()) {
+        try (InputStream inputStream = new BufferedInputStream(url.openStream())) {
             try {
                 uri = url.toURI();
             } catch (URISyntaxException ignore) {
@@ -62,6 +62,9 @@ public class EmuAudioFileReader extends AudioFileReader {
         }
     }
 
+    /**
+     * @param stream mark must be supported
+     */
     @Override
     public AudioFileFormat getAudioFileFormat(InputStream stream) throws UnsupportedAudioFileException, IOException {
         return getAudioFileFormat(stream, NOT_SPECIFIED);
@@ -78,7 +81,7 @@ public class EmuAudioFileReader extends AudioFileReader {
      *                                       valid audio file data recognized by the system.
      * @throws IOException                   if an I/O exception occurs.
      */
-    protected AudioFileFormat getAudioFileFormat(InputStream bitStream, int mediaLength) throws UnsupportedAudioFileException, IOException {
+    protected static AudioFileFormat getAudioFileFormat(InputStream bitStream, int mediaLength) throws UnsupportedAudioFileException, IOException {
 logger.log(DEBUG, "enter: available: " + bitStream.available());
         EmuAudioManager manager = new EmuAudioManager(44100);
         AudioFormat.Encoding encoding;
@@ -124,6 +127,9 @@ logger.log(TRACE, e.getMessage(), e);
         }
     }
 
+    /**
+     * @param stream mark must be supported
+     */
     @Override
     public AudioInputStream getAudioInputStream(InputStream stream) throws UnsupportedAudioFileException, IOException {
         return getAudioInputStream(stream, NOT_SPECIFIED);
@@ -142,7 +148,7 @@ logger.log(TRACE, e.getMessage(), e);
      *                                       valid audio file data recognized by the system.
      * @throws IOException                   if an I/O exception occurs.
      */
-    protected AudioInputStream getAudioInputStream(InputStream inputStream, int mediaLength) throws UnsupportedAudioFileException, IOException {
+    protected static AudioInputStream getAudioInputStream(InputStream inputStream, int mediaLength) throws UnsupportedAudioFileException, IOException {
         AudioFileFormat audioFileFormat = getAudioFileFormat(inputStream, mediaLength);
         return new AudioInputStream(inputStream, audioFileFormat.getFormat(), audioFileFormat.getFrameLength());
     }

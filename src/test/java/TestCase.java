@@ -4,6 +4,7 @@
  * Programmed by Naohide Sano
  */
 
+import java.io.BufferedInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,7 +96,7 @@ Debug.println(vgz);
         engine.setVolume(volume);
 
         manager.setEngine(engine);
-        manager.loadFile(Files.newInputStream(Path.of(vgz)));
+        manager.loadFile(new BufferedInputStream(Files.newInputStream(Path.of(vgz))));
         manager.setTrack(track);
         manager.play();
 

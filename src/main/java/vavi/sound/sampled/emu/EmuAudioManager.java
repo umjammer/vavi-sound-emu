@@ -49,13 +49,15 @@ public class EmuAudioManager extends EmuPlayer {
     }
 
     /**
+     * @param is mark must be supported
      * @throws IllegalArgumentException invalid file
      */
     public void loadFile(InputStream is) throws IOException {
 
+logger.log(Level.TRACE, "input stream B: " + is.getClass().getName() + ", " + is.available());
         InputStream in = Archives.getInputStream(is);
         loadedStream = in;
-logger.log(Level.TRACE, "input stream: " + in.getClass().getName());
+logger.log(Level.TRACE, "input stream A: " + is.getClass().getName() + ", " + is.available());
         if (!in.markSupported()) {
             in = new BufferedInputStream(in);
         }

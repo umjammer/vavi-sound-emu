@@ -6,7 +6,6 @@
 
 package vavi.sound.sampled.emu;
 
-
 import java.util.Arrays;
 import javax.sound.sampled.AudioFormat;
 
@@ -37,7 +36,7 @@ public class EmuEncoding extends AudioFormat.Encoding {
         super(name);
     }
 
-    private static final EmuEncoding[] encodings = {NSF, SPC, GBS, VGM};
+    static final EmuEncoding[] encodings = {NSF, SPC, GBS, VGM};
 
     public static EmuEncoding valueOf(String name) {
         return Arrays.stream(encodings).filter(e -> name.equalsIgnoreCase(e.toString())).findFirst().get();

@@ -77,7 +77,7 @@ Debug.println("volume: " + volume);
     void test0() throws Exception {
 
         Path path = Path.of(vgm);
-        AudioInputStream sourceAis = new EmuAudioFileReader().getAudioInputStream(Files.newInputStream(path));
+        AudioInputStream sourceAis = new EmuAudioFileReader().getAudioInputStream(new BufferedInputStream(Files.newInputStream(path)));
 
         AudioFormat inAudioFormat = sourceAis.getFormat();
 Debug.println("IN: " + inAudioFormat);
@@ -184,7 +184,6 @@ Debug.println("OUT: " + outAudioFormat);
 
     @Test
     @DisplayName("when unsupported file coming")
-    @Disabled("input stream in archives related???") // TODO
     void test5() throws Exception {
         InputStream is = TestCase.class.getResourceAsStream("/test.caf");
         int available = is.available();
