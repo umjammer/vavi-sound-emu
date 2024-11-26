@@ -32,7 +32,7 @@ public class EmuEncoding extends AudioFormat.Encoding {
      *
      * @param name Name of the emulator audio encoding.
      */
-    public EmuEncoding(String name) {
+    private EmuEncoding(String name) {
         super(name);
     }
 

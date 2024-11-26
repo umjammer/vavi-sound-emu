@@ -21,10 +21,19 @@ java port game music emu. mavenized and spi-zed also.
 ## Usage
 
 ```java
-AudioInputStream ais = AudioSystem.getAudioInputStream(Paths.get(vgz).toFile());
-Clip clip = AudioSystem.getClip();
-clip.open(AudioSystem.getAudioInputStream(new AudioFormat(Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, true, props), ais));
-clip.loop(Clip.LOOP_CONTINUOUSLY);
+  AudioInputStream vgmAis = AudioSystem.getAudioInputStream(Paths.get(vgz).toFile());
+  AudioFormat inFormat = sourceAis.getFormat();
+  AudioFormat outFormat = new AudioFormat(inFormat.getSampleRate(), 16, inFormat.getChannels(), true, true, props);
+  AudioInputStream pcmAis = AudioSystem.getAudioInputStream(outFormat, vgmAis);
+  SourceDataLine line = (SourceDataLine) AudioSystem.getLine(new DataLine.Info(SourceDataLine.class, pcmAis.getFormat()));
+  line.open(pcmAis.getFormat());
+  line.start();
+  byte[] buffer = new byte[line.getBufferSize()];
+  int bytesRead;
+  while ((bytesRead = pcmAis.read(buffer)) != -1) {
+    line.write(buffer, 0, bytesRead);
+  }
+  line.drain();
 ```
 
 ### properties for target `AudioFormat`

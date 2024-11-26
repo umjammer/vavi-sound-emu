@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 by Naohide Sano, All rights reserved.
+ * Copyright (c) 2024 by Naohide Sano, All rights reserved.
  *
  * Programmed by Naohide Sano
  */
@@ -41,6 +41,7 @@ public class EmuAudioFileReader extends AudioFileReader {
 
     private static final Logger logger = getLogger(EmuAudioFileReader.class.getName());
 
+    // TODO what's this?
     private URI uri;
 
     @Override
@@ -99,6 +100,7 @@ logger.log(TRACE, e.getMessage(), e);
             throw (UnsupportedAudioFileException) new UnsupportedAudioFileException().initCause(e);
         }
         AudioFileFormat.Type type = EmuFileFormatType.valueOf(emu, manager.isCompressed());
+logger.log(TRACE, "type: " + type);
         Map<String, Object> props = new HashMap<>();
         props.put("emu", manager.getEmu());
         AudioFormat format = new AudioFormat(encoding, samplingRate, NOT_SPECIFIED, 2, NOT_SPECIFIED, NOT_SPECIFIED, true, props);
