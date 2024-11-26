@@ -5,7 +5,7 @@
 
   <groupId>vavi</groupId>
   <artifactId>vavi-sound-emu</artifactId>
-  <version>0.0.5</version>
+  <version>0.0.6</version>
 
   <properties>
     <vavi.test.volume>0.02</vavi.test.volume>
