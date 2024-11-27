@@ -50,6 +50,6 @@ public class EmuFileFormatType extends AudioFileFormat.Type {
 
     public static EmuFileFormatType valueOf(String name, boolean isCompressed) {
 logger.log(Level.TRACE, "name: " + name + ", isCompressed: " + isCompressed);
-        return Arrays.stream(types).filter(t -> name.equalsIgnoreCase(t.toString()) && t.compressed == isCompressed).findFirst().get();
+        return Arrays.stream(types).filter(t -> name.equalsIgnoreCase(t.toString()) && t.compressed == isCompressed).findFirst().orElseThrow();
     }
 }

@@ -11,8 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -41,13 +39,9 @@ public class EmuAudioFileReader extends AudioFileReader {
 
     private static final Logger logger = getLogger(EmuAudioFileReader.class.getName());
 
-    // TODO what's this?
-    private URI uri;
-
     @Override
     public AudioFileFormat getAudioFileFormat(File file) throws UnsupportedAudioFileException, IOException {
         try (InputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
-            uri = file.toURI();
             return getAudioFileFormat(inputStream, (int) file.length());
         }
     }
@@ -55,10 +49,6 @@ public class EmuAudioFileReader extends AudioFileReader {
     @Override
     public AudioFileFormat getAudioFileFormat(URL url) throws UnsupportedAudioFileException, IOException {
         try (InputStream inputStream = new BufferedInputStream(url.openStream())) {
-            try {
-                uri = url.toURI();
-            } catch (URISyntaxException ignore) {
-            }
             return getAudioFileFormat(inputStream);
         }
     }
