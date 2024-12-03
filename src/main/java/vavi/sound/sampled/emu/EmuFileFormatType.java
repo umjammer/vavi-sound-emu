@@ -28,7 +28,7 @@ public class EmuFileFormatType extends AudioFileFormat.Type {
      * Specifies an emulator audio file.
      */
     public static final EmuFileFormatType NSF = new EmuFileFormatType("NES", "nsf", false);
-    public static final EmuFileFormatType SFC = new EmuFileFormatType("SFC", "sfc", false);
+    public static final EmuFileFormatType SFC = new EmuFileFormatType("SPC", "spc", false);
     public static final EmuFileFormatType GBS = new EmuFileFormatType("GBS", "gbs", false);
     public static final EmuFileFormatType VGM = new EmuFileFormatType("VGM", "vgm", false);
     public static final EmuFileFormatType VGZ = new EmuFileFormatType("VGM", "vgz", true);
@@ -50,6 +50,6 @@ public class EmuFileFormatType extends AudioFileFormat.Type {
 
     public static EmuFileFormatType valueOf(String name, boolean isCompressed) {
 logger.log(Level.TRACE, "name: " + name + ", isCompressed: " + isCompressed);
-        return Arrays.stream(types).filter(t -> name.equalsIgnoreCase(t.toString()) && t.compressed == isCompressed).findFirst().get();
+        return Arrays.stream(types).filter(t -> name.equalsIgnoreCase(t.toString()) && t.compressed == isCompressed).findFirst().orElseThrow();
     }
 }

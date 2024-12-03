@@ -2,17 +2,18 @@
 [![Java CI](https://github.com/umjammer/vavi-sound-emu/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-sound-emu/actions/workflows/maven.yml)
 [![CodeQL](https://github.com/umjammer/vavi-sound-emu/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/umjammer/vavi-sound-emu/actions/workflows/codeql-analysis.yml)
 ![Java](https://img.shields.io/badge/Java-17-b07219)
+[![Parent](https://img.shields.io/badge/Parent-vavi--sound--sandbox-pink)](https://github.com/umjammer/vavi-sound-sandbox)
 
 # vavi-sound-emu
 
 java port game music emu. mavenized and spi-zed also. 
 
-| name | description | status  | comment                    |
-|------|-------------|---------|----------------------------|
-| gbs  | Game Boy    | TBD     | not tested but probably ok |
-| nsf  | NES         | ✅️      |                            |
-| spc  | SNES        | TBD     | not tested but probably ok |
-| vgm  | Mega Drive  | ✅       |                            |
+| name | description | status | comment |
+|------|-------------|:------:|---------|
+| gbs  | Game Boy    |   ✅    |         |
+| nsf  | NES         |   ✅️   |         |
+| spc  | SNES        |   ✅️   |         |
+| vgm  | Mega Drive  |   ✅    |         |
 
 ## Install
 

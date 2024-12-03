@@ -21,7 +21,7 @@ public class EmuEncoding extends AudioFormat.Encoding {
     /** Specifies NES sound data. */
     public static final EmuEncoding NSF = new EmuEncoding("NSF");
     /** Specifies SNES sound data. */
-    public static final EmuEncoding SPC = new EmuEncoding("NSF");
+    public static final EmuEncoding SPC = new EmuEncoding("SPC");
     /** Specifies Game Boy sound data. */
     public static final EmuEncoding GBS = new EmuEncoding("GBS");
     /** Specifies VGM sound data. */
