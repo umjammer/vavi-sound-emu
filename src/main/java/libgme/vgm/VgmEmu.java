@@ -249,7 +249,7 @@ logger.log(Level.TRACE, "LOOP: " + endlessLoopFlag);
                     pos += 4;
                     if (type == pcm_block_type)
                         pcm_data = pos;
-                    pos += size;
+                    pos += (int) size;
                     break;
 
                 case cmd_pcm_seek:
