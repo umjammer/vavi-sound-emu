@@ -76,6 +76,7 @@ Debug.println("volume: " + volume);
     void test0() throws Exception {
 
         Path path = Path.of(vgm);
+Debug.println(vgm);
         AudioInputStream sourceAis = new EmuAudioFileReader().getAudioInputStream(new BufferedInputStream(Files.newInputStream(path)));
 
         AudioFormat inAudioFormat = sourceAis.getFormat();
@@ -123,6 +124,7 @@ Debug.println("OUT: " + outAudioFormat);
     void test1() throws Exception {
 
         Path path = Path.of(vgm);
+Debug.println(vgm);
         AudioInputStream sourceAis = AudioSystem.getAudioInputStream(new BufferedInputStream(Files.newInputStream(path)));
 
         AudioFormat inAudioFormat = sourceAis.getFormat();
