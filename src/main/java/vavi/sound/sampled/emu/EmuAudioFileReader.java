@@ -73,6 +73,10 @@ public class EmuAudioFileReader extends AudioFileReader {
      * @throws IOException                   if an I/O exception occurs.
      */
     protected static AudioFileFormat getAudioFileFormat(InputStream bitStream, int mediaLength) throws UnsupportedAudioFileException, IOException {
+        if (Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.emu.off", "false"))) {
+logger.log(DEBUG, "off by system property");
+            throw new UnsupportedAudioFileException("off by system property");
+        }
 logger.log(DEBUG, "enter: available: " + bitStream.available());
         EmuAudioManager manager = new EmuAudioManager(44100);
         AudioFormat.Encoding encoding;

@@ -1,3 +1,20 @@
+/*
+ * Ym2612.C : Ym2612 emulator
+ *
+ * Almost constants are taken from the MAME core
+ *
+ * This source is a part of Gens project
+ * Written by Stéphane Dallongeville (gens@consolemul.com)
+ * Copyright (c) 2002 by Stéphane Dallongeville
+ *
+ * Modified by Maxim, Blargg
+ * - removed non-Sound-related functionality
+ * - added high-pass PCM filter
+ * - added per-channel muting control
+ * - made it use a context struct to allow multiple
+ * instances
+ */
+
 package libgme.vgm;
 
 import java.lang.System.Logger;
@@ -10,6 +27,7 @@ import static java.lang.System.getLogger;
  * Test port of Gens YM2612 core.
  *
  * @author Stephan Dittrich
+ * @author Maxim, Blargg
  * @version 2005
  */
 public final class YM2612 {

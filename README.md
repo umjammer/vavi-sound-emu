@@ -8,12 +8,12 @@
 
 java port game music emu. mavenized and spi-zed also. 
 
-| name | description | status | comment |
-|------|-------------|:------:|---------|
-| gbs  | Game Boy    |   ✅    |         |
-| nsf  | NES         |   ✅️   |         |
-| spc  | SNES        |   ✅️   |         |
-| vgm  | Mega Drive  |   ✅    |         |
+| name | description | status | comment                                          |
+|------|-------------|:------:|--------------------------------------------------|
+| gbs  | Game Boy    |   ✅    | green                                            |
+| nsf  | NES         |   ✅️   | green                                            |
+| spc  | SNES        |   ✅️   | green                                            |
+| vgm  | Mega Drive  |   ✅    | Ym2612(mame:dallongeville+green), Sn76489(green) |
 
 ## Install
 
@@ -47,6 +47,7 @@ java port game music emu. mavenized and spi-zed also.
 
 ## References
 
+ * https://www.slack.net/~ant/ (blargg's site)
  * https://github.com/GeoffWilson/VGM
  * https://github.com/libgme/game-music-emu
 
@@ -55,5 +56,7 @@ java port game music emu. mavenized and spi-zed also.
  * ~~make those using service loader~~
  * ~~javax sound spi~~
  * vgm after 1.50
+   * game-music-emu cannot play "Magical Sound Shower"
+   * MDPlayer can play above
  * ~~`vavi.sound.sampled.emu.TestCase#test5`~~
  * ~~spi properties for track # etc.~~
