@@ -18,6 +18,8 @@
 
 package libgme;
 
+import java.util.Arrays;
+
 import libgme.util.StereoBuffer;
 
 
@@ -53,7 +55,7 @@ public abstract class ClassicEmu extends MusicEmu {
                 break;
 
             if (trackEnded) {
-                java.util.Arrays.fill(out, pos, pos + count, (byte) 0);
+                Arrays.fill(out, pos, pos + count, (byte) 0);
                 break;
             }
 
