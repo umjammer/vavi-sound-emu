@@ -58,10 +58,10 @@ class Emu2PcmAudioInputStream extends AudioInputStream {
         public EmuOutputEngine(MusicEmu emu, Map<String, Object> props) throws IOException {
             this.emu = emu;
 logger.log(Level.DEBUG, "engine: " + emu.getClass().getName());
-            int track = 1;
+            int track = 0;
             try {
                 track = (int) props.get("track");
-                if (track < 1 || track > emu.trackCount()) track = 1;
+                if (track < 0 || track > emu.trackCount()) track = 0;
             } catch (NullPointerException ignore) {
                 // track # is not set
             } catch (Exception e) {

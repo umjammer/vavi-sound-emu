@@ -23,7 +23,8 @@ import libgme.util.BlipBuffer;
 
 public class SmsOsc {
 
-    static final int masterVolume = (int) (0.40 * 65536 / 128);
+    static final int DEFAULT_MASTER_VOLUME = (int) (0.40 * 65536 / 128);
+    int masterVolume = DEFAULT_MASTER_VOLUME;
 
     BlipBuffer output;
     int outputSelect;

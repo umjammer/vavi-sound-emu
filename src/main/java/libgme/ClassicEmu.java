@@ -74,7 +74,7 @@ public abstract class ClassicEmu extends MusicEmu {
 
     // internal
 
-    static final int bufLength = 32;
+    static final int bufLength = 20;
     protected StereoBuffer buf = new StereoBuffer();
 
     protected void setClockRate(int rate) {
@@ -91,8 +91,7 @@ public abstract class ClassicEmu extends MusicEmu {
 
     /** Subclass can also get number of msec to run, and return number of clocks emulated */
     protected int runMsec(int msec) {
-        assert bufLength == 32;
-        return runClocks(buf.clockRate() >> 5);
+        return runClocks((int) ((long) buf.clockRate() * msec / 1000));
     }
 
     public StereoBuffer getBuf() {
