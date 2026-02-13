@@ -26,6 +26,8 @@ public class EmuEncoding extends AudioFormat.Encoding {
     public static final EmuEncoding GBS = new EmuEncoding("GBS");
     /** Specifies VGM sound data. */
     public static final EmuEncoding VGM = new EmuEncoding("VGM");
+    /** Specifies KSS sound data. */
+    public static final EmuEncoding KSS = new EmuEncoding("KSS");
 
     /**
      * Constructs a new encoding.
@@ -36,9 +38,9 @@ public class EmuEncoding extends AudioFormat.Encoding {
         super(name);
     }
 
-    static final EmuEncoding[] encodings = {NSF, SPC, GBS, VGM};
+    static final EmuEncoding[] encodings = {NSF, SPC, GBS, VGM, KSS};
 
     public static EmuEncoding valueOf(String name) {
-        return Arrays.stream(encodings).filter(e -> name.equalsIgnoreCase(e.toString())).findFirst().get();
+        return Arrays.stream(encodings).filter(e -> name.equalsIgnoreCase(e.toString())).findFirst().orElseThrow();
     }
 }

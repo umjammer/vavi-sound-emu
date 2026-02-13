@@ -62,12 +62,12 @@ public class EmuPlayer {
 
     public static class JavaEngine implements Engine {
 
-        SourceDataLine line;
-        AudioFormat audioFormat;
-        DataLine.Info lineInfo;
+        protected SourceDataLine line;
+        protected AudioFormat audioFormat;
+        protected DataLine.Info lineInfo;
         private int sampleRate = 0;
-        volatile boolean playing;
-        MusicEmu emu;
+        protected volatile boolean playing;
+        protected MusicEmu emu;
         double volume = 0.2;
 
         @Override

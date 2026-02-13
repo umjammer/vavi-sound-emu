@@ -22,12 +22,13 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,13 +40,13 @@ import static vavix.util.DelayedWorker.later;
 
 
 /**
- * TestCase.
+ * SpiTest.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 241118 nsano initial version <br>
  */
 @PropsEntity(url = "file:local.properties")
-class TestCase {
+class SpiTest {
 
     static boolean localPropertiesExists() {
         return Files.exists(Paths.get("local.properties"));
@@ -120,7 +121,7 @@ Debug.println("OUT: " + outAudioFormat);
     }
 
     @Test
-    @DisplayName("as spi")
+    @DisplayName("via spi")
     void test1() throws Exception {
 
         Path path = Path.of(vgm);
@@ -186,7 +187,7 @@ Debug.println("OUT: " + outAudioFormat);
     @Test
     @DisplayName("when unsupported file coming")
     void test5() throws Exception {
-        InputStream is = TestCase.class.getResourceAsStream("/test.caf");
+        InputStream is = SpiTest.class.getResourceAsStream("/test.caf");
         int available = is.available();
 Debug.println("1: " + is.available());
         UnsupportedAudioFileException e = assertThrows(UnsupportedAudioFileException.class, () -> {

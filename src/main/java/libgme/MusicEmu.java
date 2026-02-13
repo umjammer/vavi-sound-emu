@@ -22,6 +22,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
+import java.util.Arrays;
 
 import static java.lang.System.getLogger;
 
@@ -97,7 +98,7 @@ public abstract class MusicEmu {
             if ((currentTime += count >> 1) > fadeStart)
                 applyFade(out, count);
         } else {
-            java.util.Arrays.fill(out, 0, count * 2, (byte) 0);
+            Arrays.fill(out, 0, count * 2, (byte) 0);
         }
         return count;
     }

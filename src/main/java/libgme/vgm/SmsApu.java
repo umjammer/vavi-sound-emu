@@ -118,7 +118,7 @@ public final class SmsApu {
             osc.output = osc.outputs[osc.outputSelect];
             if (osc.output != oldOutput && osc.lastAmp != 0) {
                 if (oldOutput != null)
-                    oldOutput.addDelta(time, -osc.lastAmp * SmsOsc.masterVolume);
+                    oldOutput.addDelta(time, -osc.lastAmp * osc.masterVolume);
                 osc.lastAmp = 0;
             }
         }
@@ -149,6 +149,15 @@ logger.log(Level.TRACE, String.format("psg: %02x", data));
             noise.feedback = ((data & 0x04) != 0) ? noiseFeedback : loopedFeedback;
             noise.shifter = 0x8000;
         }
+    }
+
+    public void volume(double vol) {
+        // C++: vol *= 0.85 / (osc_count * 64 * 2); then applied to Blip_Synth
+        // Java default masterVolume = 0.40 * 65536 / 128
+        // Scale: (0.85 / (4 * 64 * 2)) / (0.40 / 128) = 0.85/512 / 0.003125 = ~0.5312
+        int mv = (int) (vol * 0.85 / (oscCount * 64 * 2) * 65536);
+        for (int i = 0; i < oscCount; i++)
+            oscs[i].masterVolume = mv;
     }
 
     public void endFrame(int endTime) {

@@ -32,6 +32,7 @@ public class EmuFileFormatType extends AudioFileFormat.Type {
     public static final EmuFileFormatType GBS = new EmuFileFormatType("GBS", "gbs", false);
     public static final EmuFileFormatType VGM = new EmuFileFormatType("VGM", "vgm", false);
     public static final EmuFileFormatType VGZ = new EmuFileFormatType("VGM", "vgz", true);
+    public static final EmuFileFormatType KSS = new EmuFileFormatType("KSS", "kss", false);
 
     private final boolean compressed;
 
@@ -46,10 +47,12 @@ public class EmuFileFormatType extends AudioFileFormat.Type {
         this.compressed = compressed;
     }
 
-    private static final EmuFileFormatType[] types = {NSF, SFC, GBS, VGM, VGZ};
+    private static final EmuFileFormatType[] types = {NSF, SFC, GBS, VGM, VGZ, KSS};
 
     public static EmuFileFormatType valueOf(String name, boolean isCompressed) {
 logger.log(Level.TRACE, "name: " + name + ", isCompressed: " + isCompressed);
-        return Arrays.stream(types).filter(t -> name.equalsIgnoreCase(t.toString()) && t.compressed == isCompressed).findFirst().orElseThrow();
+        return Arrays.stream(types).filter(t ->
+                (name.equalsIgnoreCase(t.getExtension()) || name.equalsIgnoreCase(t.toString())) &&
+                        t.compressed == isCompressed).findFirst().orElseThrow();
     }
 }

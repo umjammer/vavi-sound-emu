@@ -6,14 +6,17 @@
 
 # vavi-sound-emu
 
-java port game music emu. mavenized and spi-zed also. 
+<img alt="logo" src="src/test/resources/duke_game.png" width="180" />
+
+java port game music emu. mavenized and spi-nized also. 
 
 | name | description | status | comment                                          |
 |------|-------------|:------:|--------------------------------------------------|
 | gbs  | Game Boy    |   ✅    | green                                            |
 | nsf  | NES         |   ✅️   | green                                            |
 | spc  | SNES        |   ✅️   | green                                            |
-| vgm  | Mega Drive  |   ✅    | Ym2612(mame:dallongeville+green), Sn76489(green) |
+| vgm  | All         |   ✅    | Ym2612(mame:dallongeville+green), Sn76489(green) |
+| kss  | MSX         |   ✅    | Ay38910(green), Sn76489(green)                   |
 
 ## Install
 
@@ -50,13 +53,22 @@ java port game music emu. mavenized and spi-zed also.
  * https://www.slack.net/~ant/ (blargg's site)
  * https://github.com/GeoffWilson/VGM
  * https://github.com/libgme/game-music-emu
+ * https://www.zophar.net/music/kss.html (kss)
 
 ## TODO
 
  * ~~make those using service loader~~
  * ~~javax sound spi~~
- * vgm after 1.50
-   * game-music-emu cannot play "Magical Sound Shower"
-   * MDPlayer can play above
+ * ~~vgm after 1.50~~
+   * ~~game-music-emu cannot play "Magical Sound Shower"~~ not version, but chips impls
+   * ~~MDPlayer can play above~~ ditto
  * ~~`vavi.sound.sampled.emu.TestCase#test5`~~
  * ~~spi properties for track # etc.~~
+ * ~~kss~~
+ * gym
+ * sap
+
+---
+
+<sub>image designed by @umjammer, drawn by nano banana</sub>
+
