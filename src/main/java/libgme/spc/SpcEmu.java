@@ -20,13 +20,15 @@ package libgme.spc;
 
 import java.lang.System.Logger.Level;
 
+import libgme.MusicEmu;
+
 
 /**
  * Nintendo SPC music file player
  *
  * @see "https://www.slack.net/~ant"
  */
-public final class SpcEmu extends SpcCpu {
+public final class SpcEmu extends MusicEmu {
 
     private static final class Timer {
 
@@ -70,6 +72,7 @@ public final class SpcEmu extends SpcCpu {
     static final int timerCount = 3;
     static final int regCount = 0x10;
 
+    SpcCpu cpu = new SpcCpu();
     int dspTime;
     int romEnabled;
     byte[] spc;
@@ -82,6 +85,11 @@ public final class SpcEmu extends SpcCpu {
     final Timer[] timers = new Timer[timerCount];
 
     public static final String MAGIC = "SNES-SPC700 Sound File Data";
+
+    public SpcEmu() {
+        cpu.reader = this::cpuRead;
+        cpu.writer = this::cpuWrite;
+    }
 
     @Override
     protected int setSampleRate_(int rate) {
@@ -152,7 +160,7 @@ public final class SpcEmu extends SpcCpu {
     public void startTrack(int track) {
         super.startTrack(track);
 
-        time = 0;
+        cpu.time = 0;
         dspTime = 32;
 
         // RAM
@@ -162,13 +170,13 @@ public final class SpcEmu extends SpcCpu {
         dsp.init(ram, spc, dspStateOff);
 
         // CPU
-        reset(ram);
-        pc = (spc[cpuStateOff + 1] & 0xff) << 8 | (spc[cpuStateOff] & 0xff);
-        a = spc[cpuStateOff + 2] & 0xff;
-        x = spc[cpuStateOff + 3] & 0xff;
-        y = spc[cpuStateOff + 4] & 0xff;
-        sp = spc[cpuStateOff + 6] & 0xff;
-        setPsw(spc[cpuStateOff + 5] & 0xff);
+        cpu.reset(ram);
+        cpu.pc = (spc[cpuStateOff + 1] & 0xff) << 8 | (spc[cpuStateOff] & 0xff);
+        cpu.a = spc[cpuStateOff + 2] & 0xff;
+        cpu.x = spc[cpuStateOff + 3] & 0xff;
+        cpu.y = spc[cpuStateOff + 4] & 0xff;
+        cpu.sp = spc[cpuStateOff + 6] & 0xff;
+        cpu.setPsw(spc[cpuStateOff + 5] & 0xff);
 
         // SMP registers
         for (int i = 0; i < regCount; i++) {
@@ -215,15 +223,15 @@ public final class SpcEmu extends SpcCpu {
 
         // Run for count/2*32 clocks + extra to get DSP time half-way between samples,
         // since CPU might run for slightly less than requested
-        int clockCount = count * (32 / 2) + 16 - ((time - dspTime) & 31);
-        time -= clockCount;
+        int clockCount = count * (32 / 2) + 16 - ((cpu.time - dspTime) & 31);
+        cpu.time -= clockCount;
         dspTime -= clockCount;
         timers[0].time -= clockCount;
         timers[1].time -= clockCount;
         timers[2].time -= clockCount;
-        runCpu();
+        cpu.runCpu();
 
-        if (time < 0) // emulation error
+        if (cpu.time < 0) // emulation error
         {
             setTrackEnded();
             logger.log(Level.ERROR, "emulation error");
@@ -231,13 +239,13 @@ public final class SpcEmu extends SpcCpu {
         }
 
         // Catch up to CPU
-        runTimer(timers[0], time);
-        runTimer(timers[1], time);
-        runTimer(timers[2], time);
+        runTimer(timers[0], cpu.time);
+        runTimer(timers[1], cpu.time);
+        runTimer(timers[2], cpu.time);
 
         // Run DSP to present
         int delta;
-        if ((delta = time - dspTime) >= 0) {
+        if ((delta = cpu.time - dspTime) >= 0) {
             delta = (delta >> 5) + 1;
             dspTime += delta << 5;
             dsp.run(delta);
@@ -256,7 +264,7 @@ public final class SpcEmu extends SpcCpu {
                 Timer t = timers[addr - t0targetReg];
                 int period = ((data - 1) & 0xff) + 1;
                 if (t.period != period) {
-                    runTimer(t, time);
+                    runTimer(t, cpu.time);
                     t.period = period;
                 }
                 break;
@@ -297,7 +305,7 @@ public final class SpcEmu extends SpcCpu {
                     Timer t = timers[i];
                     int enabled = data >> i & 1;
                     if (t.enabled != enabled) {
-                        runTimer(t, time);
+                        runTimer(t, cpu.time);
                         t.enabled = enabled;
                         if (enabled != 0) {
                             t.divider = 0;
@@ -310,29 +318,23 @@ public final class SpcEmu extends SpcCpu {
         }
     }
 
-    @Override
-    public void cpuWrite(int addr, int data) {
+    private void cpuWrite(int addr, int data) {
         // RAM
         ram[addr] = (byte) data;
-        if ((addr -= 0xF0) >= 0) // 64%
-        {
+        if ((addr -= 0xF0) >= 0) { // 64%
             // $F0-$FF
-            if (addr < regCount) // 87%
-            {
+            if (addr < regCount) { // 87%
                 regs[addr] = (data &= 0xff);
 
                 // Ports
 
                 // Registers other than $F2 and $F4-$F7
                 //if ( addr != 2 && addr != 4 && addr != 5 && addr != 6 && addr != 7 )
-                if ((~0x2F000000 << addr) < 0) // 36%
-                {
-                    if (addr == dspdataReg) // 99%
-                    {
+                if ((~0x2F000000 << addr) < 0) { // 36%
+                    if (addr == dspdataReg) { // 99%
                         // Run DSP to present
                         int delta;
-                        if ((delta = time - dspTime) >= 0) // 95%
-                        {
+                        if ((delta = cpu.time - dspTime) >= 0) { // 95%
                             delta = (delta >> 5) + 1;
                             dspTime += delta << 5;
                             dsp.run(delta);
@@ -347,8 +349,7 @@ public final class SpcEmu extends SpcCpu {
                 }
             }
             // IPL ROM area or address wrapped around
-            else if ((addr -= romAddr - 0xF0) >= 0) // 1% in IPL ROM area or address wrapped around
-            {
+            else if ((addr -= romAddr - 0xF0) >= 0) { // 1% in IPL ROM area or address wrapped around
                 if (addr < romSize) {
                     hiRam[addr] = (byte) data;
                     if (romEnabled != 0)
@@ -362,8 +363,7 @@ public final class SpcEmu extends SpcCpu {
         }
     }
 
-    @Override
-    public int cpuRead(int addr) {
+    private int cpuRead(int addr) {
         // Low RAM
         if (addr < 0xF0) // 60%
             return ram[addr] & 0xff;
@@ -371,8 +371,8 @@ public final class SpcEmu extends SpcCpu {
         // Timers
         if ((addr ^= 0xff) < timerCount) { // 68%
             Timer t = timers[2 - addr]; // TODO: reorder timers to eliminate 2-
-            if (time >= t.time)
-                runTimer_(t, time);
+            if (cpu.time >= t.time)
+                runTimer_(t, cpu.time);
             int result = t.counter;
             t.counter = 0;
             return result;
@@ -388,7 +388,7 @@ public final class SpcEmu extends SpcCpu {
 
                 // Run to present
                 int delta;
-                if ((delta = time - dspTime) >= 0) // 1%
+                if ((delta = cpu.time - dspTime) >= 0) // 1%
                 {
                     delta = (delta >> 5) + 1;
                     dspTime += delta << 5;
@@ -407,5 +407,10 @@ public final class SpcEmu extends SpcCpu {
 
         // Address wrapped around
         return cpuRead(addr - 0x10000);
+    }
+
+    @Override
+    public boolean isSupportedByName(String name) {
+        return name.endsWith(".SPC");
     }
 }

@@ -394,6 +394,7 @@ logger.log(Level.TRACE, "LOOP: " + endlessLoopFlag);
         int endTime = toPSGTime(duration);
         delay = time - duration;
         apu[0].endFrame(endTime);
+        if (apu[1] != null) apu[1].endFrame(endTime);
         if (pos >= data.length || endOfStream) {
             setTrackEnded();
             if (pos > data.length) {

@@ -18,7 +18,8 @@
 
 package libgme.gbs;
 
-import libgme.ClassicEmu;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 
 /**
@@ -26,15 +27,10 @@ import libgme.ClassicEmu;
  *
  * @see "https://www.slack.net/~ant"
  */
-public abstract class GbCpu extends ClassicEmu {
+public class GbCpu {
 
     public GbCpu() {
         rstBase = 0;
-    }
-
-    @Override
-    public boolean isSupportedByName(String name) {
-        return name.endsWith(".GBS");
     }
 
     /**
@@ -90,12 +86,9 @@ public abstract class GbCpu extends ClassicEmu {
     public int time;
 
     // Memory read and write handlers */
-    protected int cpuRead(int addr) {
-        return 0;
-    }
+    Function<Integer, Integer> reader;
 
-    protected void cpuWrite(int addr, int data) {
-    }
+    BiConsumer<Integer, Integer> writer;
 
     int[] pages = new int[pageCount + 1];
     int cz, ph;
@@ -149,7 +142,7 @@ loop:
                     case 3 -> de & 0xff;
                     case 4 -> hl >> 8;
                     case 5 -> hl & 0xff;
-                    case 6 -> cpuRead(hl);
+                    case 6 -> reader.apply(hl);
                     default -> a;
                 };
 
@@ -251,7 +244,7 @@ loop:
                         hl = (hl & 0xff00) | data;
                         continue;
                     case 6:
-                        cpuWrite(hl, data);
+                        writer.accept(hl, data);
                         continue;
                     default:
                         a = data;
@@ -475,7 +468,7 @@ loop:
                 case 0xAE: // XOR  (HL)
                 case 0xB6: // OR   (HL)
                 case 0xBE: // CP   (HL)
-                    data = cpuRead(hl);
+                    data = reader.apply(hl);
                     break;
 
                 case 0x3C: // INC  A
@@ -952,7 +945,7 @@ loop:
                 case 0x7E: // LD   A,(HL)
                 case 0x2A: // LD   A,(HL+)
                 case 0x3A: // LD   A,(HL-)
-                    a = cpuRead(data);
+                    a = reader.apply(data);
                     continue;
 
                 case 0xE0: // LDH  (n),A
@@ -963,12 +956,12 @@ loop:
                 case 0x12: // LD   (DE),A
                 case 0x22: // LD   (HL+),A
                 case 0x32: // LD   (HL-),A
-                    cpuWrite(data, a);
+                    writer.accept(data, a);
                     continue;
 
                 case 0x08: // LD   (nn),SP
-                    cpuWrite(data, sp & 0xff);
-                    cpuWrite((data + 1) & 0xffFF, sp >> 8);
+                    writer.accept(data, sp & 0xff);
+                    writer.accept((data + 1) & 0xffFF, sp >> 8);
                     continue;
 
                 case 0x34: // INC  (HL)
@@ -981,7 +974,7 @@ loop:
                 case 0x74: // LD   (HL),H
                 case 0x75: // LD   (HL),L
                 case 0x77: // LD   (HL),A
-                    cpuWrite(hl, data);
+                    writer.accept(hl, data);
                     continue;
 
                 case 0x01: // LD   BC,nn

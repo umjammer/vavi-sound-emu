@@ -18,7 +18,8 @@
 
 package libgme.nsf;
 
-import libgme.ClassicEmu;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 
 /**
@@ -26,7 +27,7 @@ import libgme.ClassicEmu;
  *
  * @see "https://www.slack.net/~ant"
  */
-public abstract class NesCpu extends ClassicEmu {
+public final class NesCpu {
 
     // Resets registers and uses supplied physical memory
     public final void reset(byte[] mem, int unmapped) {
@@ -66,7 +67,7 @@ public abstract class NesCpu extends ClassicEmu {
         return pages[addr >> pageShift] + addr;
     }
 
-// Emulation
+    // Emulation
 
     // Registers. NOT kept updated during runCpu()
     public int a, x, y, p, s, pc;
@@ -75,12 +76,9 @@ public abstract class NesCpu extends ClassicEmu {
     public int time;
 
     // Memory read and write handlers
-    protected int cpuRead(int addr) {
-        return 0;
-    }
+    Function<Integer, Integer> reader;
 
-    protected void cpuWrite(int addr, int data) {
-    }
+    BiConsumer<Integer, Integer> writer;
 
     final int[] pages = new int[pageCount + 1];
     int c, nz;
@@ -91,25 +89,25 @@ public abstract class NesCpu extends ClassicEmu {
         pages[page] = offset - page * pageSize;
     }
 
-    static final int[] instrTimes =
-            {// 0 1 2 3 4 5 6 7 8 9 A B C D E F
-                    7, 6, 2, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6,// 0
-                    2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,// 1
-                    6, 6, 2, 8, 3, 3, 5, 5, 4, 2, 2, 2, 4, 4, 6, 6,// 2
-                    2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,// 3
-                    6, 6, 2, 8, 3, 3, 5, 5, 3, 2, 2, 2, 3, 4, 6, 6,// 4
-                    2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,// 5
-                    6, 6, 2, 8, 3, 3, 5, 5, 4, 2, 2, 2, 5, 4, 6, 6,// 6
-                    2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,// 7
-                    2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4,// 8
-                    2, 6, 2, 6, 4, 4, 4, 4, 2, 5, 2, 5, 5, 5, 5, 5,// 9
-                    2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4,// A
-                    2, 5, 2, 5, 4, 4, 4, 4, 2, 4, 2, 4, 4, 4, 4, 4,// B
-                    2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,// C
-                    2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,// D
-                    2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,// E
-                    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7 // F
-            }; // 0xF2 was 2
+    static final int[] instrTimes = {
+            // 0 1 2 3 4 5 6 7 8 9 A B C D E F
+            7, 6, 2, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6, // 0
+            2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7, // 1
+            6, 6, 2, 8, 3, 3, 5, 5, 4, 2, 2, 2, 4, 4, 6, 6, // 2
+            2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7, // 3
+            6, 6, 2, 8, 3, 3, 5, 5, 3, 2, 2, 2, 3, 4, 6, 6, // 4
+            2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7, // 5
+            6, 6, 2, 8, 3, 3, 5, 5, 4, 2, 2, 2, 5, 4, 6, 6, // 6
+            2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7, // 7
+            2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4, // 8
+            2, 6, 2, 6, 4, 4, 4, 4, 2, 5, 2, 5, 5, 5, 5, 5, // 9
+            2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4, // A
+            2, 5, 2, 5, 4, 4, 4, 4, 2, 4, 2, 4, 4, 4, 4, 4, // B
+            2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6, // C
+            2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7, // D
+            2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6, // E
+            2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7  // F
+    }; // 0xF2 was 2
 
     static final int[] illop_lens = {
             0x95, 0x95, 0x95, 0xD5, 0x95, 0x95, 0xD5, 0xF5
@@ -125,7 +123,7 @@ public abstract class NesCpu extends ClassicEmu {
     static final int C01 = 0x01;
 
     /** Runs until time >= 0 */
-    public final void runCpu() {
+    public void runCpu() {
         // locals are faster, and first three are more efficient to access
         byte[] mem = this.mem;
         int nz = this.nz;
@@ -139,7 +137,7 @@ public abstract class NesCpu extends ClassicEmu {
         int p = this.p;
         int c = this.c;
         int[] pages = this.pages;
-        int[] instrTimes = this.instrTimes;
+        int[] instrTimes = NesCpu.instrTimes;
 
         int addr = 0;
 
@@ -190,7 +188,7 @@ loop:
                     pc += 3;
                     int lsb;
                     time += (lsb = (mem[instr] & 0xff) + x) >> 8;
-                    a = nz = cpuRead(((mem[instr + 1] & 0xff) << 8) + lsb);
+                    a = nz = reader.apply(((mem[instr + 1] & 0xff) << 8) + lsb);
                     continue;
                 }
 
@@ -471,7 +469,7 @@ loop:
                     addr = ((mem[(z + 1) & 0xff] & 0xff) << 8) + lsb;
                     if (opcode != 0x91) {
                         time += lsb >> 8;
-                        nz = cpuRead(addr);
+                        nz = reader.apply(addr);
                     }
                     break;
                 }
@@ -488,7 +486,7 @@ loop:
                     int z = mem[instr] + x;
                     addr = (mem[(z + 1) & 0xff] & 0xff) << 8 | (mem[z & 0xff] & 0xff);
                     if (opcode != 0x81)
-                        nz = cpuRead(addr);
+                        nz = reader.apply(addr);
                     break;
                 }
 
@@ -520,7 +518,7 @@ loop:
                 case 0xED: // SBC a
                 case 0xEE: // INC a
                     pc += 3;
-                    nz = cpuRead(addr = (mem[instr + 1] & 0xff) << 8 | (mem[instr] & 0xff));
+                    nz = reader.apply(addr = (mem[instr + 1] & 0xff) << 8 | (mem[instr] & 0xff));
                     break;
 
                 case 0x1E: // ASL a,X
@@ -530,7 +528,7 @@ loop:
                 case 0xDE: // DEC a,X
                 case 0xFE: // INC a,X
                     pc += 3;
-                    nz = cpuRead(addr = ((mem[instr + 1] & 0xff) << 8 | (mem[instr] & 0xff)) + x);
+                    nz = reader.apply(addr = ((mem[instr + 1] & 0xff) << 8 | (mem[instr] & 0xff)) + x);
                     // RMW instructions have no extra clock for page crossing
                     break;
 
@@ -547,7 +545,7 @@ loop:
                     addr = ((mem[instr + 1] & 0xff) << 8) + lsb;
                     if (opcode != 0x9D) {
                         time += lsb >> 8;
-                        nz = cpuRead(addr);
+                        nz = reader.apply(addr);
                     }
                     break;
                 }
@@ -566,7 +564,7 @@ loop:
                     addr = ((mem[instr + 1] & 0xff) << 8) + lsb;
                     if (opcode != 0x99) {
                         time += lsb >> 8;
-                        nz = cpuRead(addr);
+                        nz = reader.apply(addr);
                     }
                     break;
                 }
@@ -653,7 +651,7 @@ loop:
                 case 0x9D: // STA a,X
                 case 0x99: // STA a,Y
                     if (addr > 0x7FF) {
-                        cpuWrite(addr, a);
+                        writer.accept(addr, a);
                         continue;
                     }
                 case 0x95: // STA z,X
@@ -662,7 +660,7 @@ loop:
 
                 case 0x8E: // STX a
                     if (addr > 0x7FF) {
-                        cpuWrite(addr, x);
+                        writer.accept(addr, x);
                         continue;
                     }
                 case 0x86: // STX z
@@ -672,7 +670,7 @@ loop:
 
                 case 0x8C: // STY a
                     if (addr > 0x7FF) {
-                        cpuWrite(addr, y);
+                        writer.accept(addr, y);
                         continue;
                     }
                 case 0x84: // STY z
@@ -782,7 +780,7 @@ loop:
                     continue;
 
                 case 0x6C: // JMP (a)
-                    pc = cpuRead(addr + 1 - (((addr & 0xff) + 1) & 0x100)) << 8 | cpuRead(addr);
+                    pc = reader.apply(addr + 1 - (((addr & 0xff) + 1) & 0x100)) << 8 | reader.apply(addr);
                     continue;
 
                 case 0x4C: // JMP a
@@ -798,7 +796,7 @@ loop:
 
                 case 0x00: {// BRK #n
                     int t = pc + 2;
-                    pc = cpuRead(0xffFF) << 8 | cpuRead(0xffFE);
+                    pc = reader.apply(0xffFF) << 8 | reader.apply(0xffFE);
                     mem[(sp - 1) | 0x100] = (byte) (t >> 8);
                     mem[sp = (sp - 2) | 0x100] = (byte) t;
                     break;
@@ -938,14 +936,12 @@ loop:
 //                case 0x56: // LSR z,X
                     if (addr <= 0x7FF) {
                         mem[addr] = (byte) nz;
-                        continue;
+                    } else {
+                        writer.accept(addr, nz);
                     }
-                    cpuWrite(addr, nz);
-                    continue;
             }
         }
 
-stop:
         this.a = a;
         this.x = x;
         this.y = y;
