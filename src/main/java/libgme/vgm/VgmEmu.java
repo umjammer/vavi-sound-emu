@@ -238,8 +238,8 @@ logger.log(Level.DEBUG, "dual fm: %08x".formatted(fm_clock_rate));
                 cmd = data[pos++] & 0xff;
             switch (cmd) {
                 case cmd_end:
-                    endOfStream = !endlessLoopFlag;
-logger.log(Level.TRACE, "LOOP: " + endlessLoopFlag);
+                    endOfStream = !isEndlessLoopFlag();
+logger.log(Level.TRACE, "LOOP: " + isEndlessLoopFlag());
                     pos = loopBegin;
                     break;
 
