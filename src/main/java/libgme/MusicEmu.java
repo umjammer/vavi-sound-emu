@@ -40,8 +40,6 @@ public abstract class MusicEmu {
 
     protected static final Logger logger = getLogger(MusicEmu.class.getName());
 
-    protected boolean endlessLoopFlag = Boolean.parseBoolean(System.getProperty("libgme.endless", "false"));
-
     protected MusicEmu() {
         trackCount = 0;
         trackEnded = true;
@@ -126,11 +124,11 @@ public abstract class MusicEmu {
     }
 
     public boolean isEndlessLoopFlag() {
-        return endlessLoopFlag;
+        return Boolean.parseBoolean(System.getProperty("libgme.endless", "false"));
     }
 
     public void setEndlessLoopFlag(boolean endlessLoopFlag) {
-        this.endlessLoopFlag = endlessLoopFlag;
+        System.getProperty("libgme.endless", String.valueOf(endlessLoopFlag));
     }
 
     // protected

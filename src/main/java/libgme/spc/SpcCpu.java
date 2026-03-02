@@ -18,7 +18,9 @@
 
 package libgme.spc;
 
-import libgme.MusicEmu;
+
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 
 /**
@@ -26,7 +28,7 @@ import libgme.MusicEmu;
  *
  * @see "https://www.slack.net/~ant"
  */
-public abstract class SpcCpu extends MusicEmu {
+public class SpcCpu {
 
     // Registers. NOT kept updated during runCpu()
     public int a, x, y, psw, sp, pc;
@@ -35,12 +37,9 @@ public abstract class SpcCpu extends MusicEmu {
     public int time;
 
     // Memory read and write handlers */
-    protected int cpuRead(int addr) {
-        return 0;
-    }
+    Function<Integer, Integer> reader;
 
-    protected void cpuWrite(int addr, int data) {
-    }
+    BiConsumer<Integer, Integer> writer;
 
     // Resets registers and uses supplied physical memory */
     public final void reset(byte[] mem) {
@@ -62,24 +61,24 @@ public abstract class SpcCpu extends MusicEmu {
     private byte[] mem;
 
     static final int[] instrTimes = {
-                  // 0 1 2 3 4 5 6 7 8 9 A B C D E F
-                    2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 5, 4, 5, 4, 6, 8, // 0
-                    2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 6, 5, 2, 2, 4, 6, // 1
-                    2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 5, 4, 5, 4, 5, 2, // 2
-                    2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 6, 5, 2, 2, 3, 8, // 3
-                    2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 4, 4, 5, 4, 6, 6, // 4
-                    2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 4, 5, 2, 2, 4, 3, // 5
-                    2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 4, 4, 5, 4, 5, 5, // 6
-                    2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 5, 5, 2, 2, 3, 6, // 7
-                    2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 5, 4, 5, 2, 4, 5, // 8
-                    2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 5, 5, 2, 2, 12, 5,// 9
-                    3, 8, 4, 5, 3, 4, 3, 6, 2, 6, 4, 4, 5, 2, 4, 4, // A
-                    2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 5, 5, 2, 2, 3, 4, // B
-                    3, 8, 4, 5, 4, 5, 4, 7, 2, 5, 6, 4, 5, 2, 4, 9, // C
-                    2, 8, 4, 5, 5, 6, 6, 7, 4, 5, 5, 5, 2, 2, 6, 3, // D
-                    2, 8, 4, 5, 3, 4, 3, 6, 2, 4, 5, 3, 4, 3, 4, 0, // E
-                    2, 8, 4, 5, 4, 5, 5, 6, 3, 4, 5, 4, 2, 2, 4, 0, // F
-            };
+            // 0 1 2 3 4 5 6 7 8 9 A B C D E F
+            2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 5, 4, 5, 4, 6, 8, // 0
+            2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 6, 5, 2, 2, 4, 6, // 1
+            2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 5, 4, 5, 4, 5, 2, // 2
+            2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 6, 5, 2, 2, 3, 8, // 3
+            2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 4, 4, 5, 4, 6, 6, // 4
+            2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 4, 5, 2, 2, 4, 3, // 5
+            2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 4, 4, 5, 4, 5, 5, // 6
+            2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 5, 5, 2, 2, 3, 6, // 7
+            2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 5, 4, 5, 2, 4, 5, // 8
+            2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 5, 5, 2, 2, 12, 5,// 9
+            3, 8, 4, 5, 3, 4, 3, 6, 2, 6, 4, 4, 5, 2, 4, 4, // A
+            2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 5, 5, 2, 2, 3, 4, // B
+            3, 8, 4, 5, 4, 5, 4, 7, 2, 5, 6, 4, 5, 2, 4, 9, // C
+            2, 8, 4, 5, 5, 6, 6, 7, 4, 5, 5, 5, 2, 2, 6, 3, // D
+            2, 8, 4, 5, 3, 4, 3, 6, 2, 4, 5, 3, 4, 3, 4, 0, // E
+            2, 8, 4, 5, 4, 5, 5, 6, 3, 4, 5, 4, 2, 2, 4, 0, // F
+    };
 
     // Hex value in name to clarify code and bit shifting.
     // Flag stored in indicated variable during emulation
@@ -106,7 +105,7 @@ public abstract class SpcCpu extends MusicEmu {
         int psw = this.psw;
         int sp = (this.sp + 1) | 0x100;
         int time = this.time;
-        int[] instrTimes = this.instrTimes;
+        int[] instrTimes = SpcCpu.instrTimes;
 
         // unpack psw
         int c, dp;
@@ -130,25 +129,25 @@ loop:
             this.time = (time += instrTimes[opcode = mem[pc] & 0xff]);
             switch (opcode) {
 
-                //////// Often used
+                // Often used
 
                 case 0xE4: // MOV   A, d
-                    a = nz = cpuRead(mem[pc + 1] & 0xff | dp);
+                    a = nz = reader.apply(mem[pc + 1] & 0xff | dp);
                     pc += 2;
                     continue;
 
                 case 0xF5: // MOV   A, !a+X
-                    a = nz = cpuRead(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + x);
+                    a = nz = reader.apply(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + x);
                     pc += 3;
                     continue;
 
                 case 0xF4: // MOV   A, d+X
-                    a = nz = cpuRead((mem[pc + 1] + x) & 0xff | dp);
+                    a = nz = reader.apply((mem[pc + 1] + x) & 0xff | dp);
                     pc += 2;
                     continue;
 
                 case 0xEB: // MOV   Y, d
-                    y = nz = cpuRead(mem[pc + 1] & 0xff | dp);
+                    y = nz = reader.apply(mem[pc + 1] & 0xff | dp);
                     pc += 2;
                     continue;
 
@@ -421,62 +420,62 @@ loop:
 
                 case 0xBF: // MOV   A, (X)+
                     pc++;
-                    a = nz = cpuRead(x + dp);
+                    a = nz = reader.apply(x + dp);
                     x = (x + 1) & 0xff;
                     continue;
 
                 case 0xD9: // MOV   d+Y, X
-                    cpuWrite((mem[pc + 1] + y) & 0xff | dp, x);
+                    writer.accept((mem[pc + 1] + y) & 0xff | dp, x);
                     pc += 2;
                     continue;
 
                 case 0xD6: // MOV   !a+Y, A
-                    cpuWrite(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + y, a);
+                    writer.accept(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + y, a);
                     pc += 3;
                     continue;
 
                 case 0xD5: // MOV   !a+X, A
-                    cpuWrite(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + x, a);
+                    writer.accept(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + x, a);
                     pc += 3;
                     continue;
 
                 case 0xF9: // MOV   X, d+Y
-                    x = nz = cpuRead((mem[pc + 1] + y) & 0xff | dp);
+                    x = nz = reader.apply((mem[pc + 1] + y) & 0xff | dp);
                     pc += 2;
                     continue;
 
                 case 0xD7: {// MOV   [d]+Y, A
                     int t = mem[pc + 1];
-                    cpuWrite(((mem[(t + 1) & 0xff | dp] & 0xff) << 8 | (mem[t & 0xff | dp] & 0xff)) + y, a);
+                    writer.accept(((mem[(t + 1) & 0xff | dp] & 0xff) << 8 | (mem[t & 0xff | dp] & 0xff)) + y, a);
                     pc += 2;
                     continue;
                 }
 
                 case 0xC7: {// MOV   [d+X], A
                     int t = mem[pc + 1] + x;
-                    cpuWrite((mem[(t + 1) & 0xff | dp] & 0xff) << 8 | (mem[t & 0xff | dp] & 0xff), a);
+                    writer.accept((mem[(t + 1) & 0xff | dp] & 0xff) << 8 | (mem[t & 0xff | dp] & 0xff), a);
                     pc += 2;
                     continue;
                 }
 
                 case 0xC6: // MOV   (X), A
                     pc++;
-                    cpuWrite(x + dp, a);
+                    writer.accept(x + dp, a);
                     continue;
 
                 case 0xAF: // MOV   (X)+, A
                     pc++;
-                    cpuWrite(x + dp, a);
+                    writer.accept(x + dp, a);
                     x = (x + 1) & 0xff;
                     continue;
 
                 case 0x8F: // MOV   d, #i
-                    cpuWrite(mem[pc + 2] & 0xff | dp, mem[pc + 1]);
+                    writer.accept(mem[pc + 2] & 0xff | dp, mem[pc + 1] & 0xff);
                     pc += 3;
                     continue;
 
                 case 0xFA: // MOV   dd, ds
-                    cpuWrite(mem[pc + 2] & 0xff | dp, cpuRead(mem[pc + 1] & 0xff | dp));
+                    writer.accept(mem[pc + 2] & 0xff | dp, reader.apply(mem[pc + 1] & 0xff | dp));
                     pc += 3;
                     continue;
 
@@ -484,14 +483,14 @@ loop:
                     data = mem[pc + 2];
                     addr = (data & 0x1F) << 8 | (mem[pc + 1] & 0xff);
                     data = data >> 5 & 7;
-                    cpuWrite(addr, cpuRead(addr) & ~(1 << data) | ((c & 0x100) >> (8 - data)));
+                    writer.accept(addr, reader.apply(addr) & ~(1 << data) | ((c & 0x100) >> (8 - data)));
                     pc += 3;
                     continue;
 
                 case 0xEA: // NOT1  m.b
                     data = mem[pc + 2];
                     addr = (data & 0x1F) << 8 | (mem[pc + 1] & 0xff);
-                    cpuWrite(addr, cpuRead(addr) ^ (1 << (data >> 5 & 7)));
+                    writer.accept(addr, reader.apply(addr) ^ (1 << (data >> 5 & 7)));
                     pc += 3;
                     continue;
 
@@ -502,7 +501,7 @@ loop:
                 case 0x2A: // OR1   C, /m.b
                 case 0x8A: // EOR1  C, m.b
                     data = mem[pc + 2];
-                    data = cpuRead((data & 0x1F) << 8 | (mem[pc + 1] & 0xff)) << (8 - (data >> 5 & 7));
+                    data = reader.apply((data & 0x1F) << 8 | (mem[pc + 1] & 0xff)) << (8 - (data >> 5 & 7));
                     pc += 3;
                     switch (opcode) {
                         case 0x4A: // AND1  C, m.b
@@ -547,12 +546,12 @@ loop:
                 case 0xB2: // CLR1  d.5
                 case 0xD2: // CLR1  d.6
                 case 0xF2: {// CLR1  d.7
-                    data = cpuRead(addr = mem[pc + 1] & 0xff | dp);
+                    data = reader.apply(addr = mem[pc + 1] & 0xff | dp);
                     int t = 1 << (opcode >> 5);
                     data |= t;
                     if ((opcode & 0x10) != 0)
                         data ^= t;
-                    cpuWrite(addr, data);
+                    writer.accept(addr, data);
                     pc += 2;
                     continue;
                 }
@@ -636,8 +635,8 @@ loop:
 
                 case 0xDA: {// MOVW  d, YA
                     int t = mem[pc + 1];
-                    cpuWrite(t & 0xff | dp, a);
-                    cpuWrite((t + 1) & 0xff | dp, y);
+                    writer.accept(t & 0xff | dp, a);
+                    writer.accept((t + 1) & 0xff | dp, y);
                     pc += 2;
                     continue;
                 }
@@ -653,7 +652,7 @@ loop:
 
                     // addr >= 0xEF || addr <= 0xff
                     if ((addr ^ 0xff) <= 0x11) // 1%
-                        data = cpuRead(addr + 1) << 8 | cpuRead(addr);
+                        data = reader.apply(addr + 1) << 8 | reader.apply(addr);
 
                     pc += 2;
                     switch (opcode) {
@@ -669,8 +668,8 @@ loop:
                             // addr >= 0xEF || addr <= 0xff
                             if ((addr ^ 0xff) <= 0x11) // 1%
                             {
-                                cpuWrite(addr, data);
-                                cpuWrite(addr + 1, data >> 8);
+                                writer.accept(addr, data);
+                                writer.accept(addr + 1, data >> 8);
                             }
                             continue;
 
@@ -722,12 +721,12 @@ loop:
                 case 0xE3: // BBS   d.7, r
                 case 0x6E: // DBNZ  d, r
                 case 0x2E: // CBNE  d, r
-                    data = cpuRead((addr = mem[pc + 1] & 0xff | dp));
+                    data = reader.apply((addr = mem[pc + 1] & 0xff | dp));
                     pc += 3;
                     break;
 
                 case 0xDE: // CBNE  d+X, r
-                    data = cpuRead((addr = (mem[pc + 1] + x) & 0xff | dp));
+                    data = reader.apply((addr = (mem[pc + 1] + x) & 0xff | dp));
                     pc += 3;
                     break;
 
@@ -755,7 +754,7 @@ loop:
                 case 0xB8: // SBC   d, #i
                 case 0x18: // OR    d, #i
                     nz = mem[pc + 1] & 0xff;
-                    data = cpuRead(addr = mem[pc + 2] & 0xff | dp);
+                    data = reader.apply(addr = mem[pc + 2] & 0xff | dp);
                     pc += 3;
                     break;
 
@@ -765,8 +764,8 @@ loop:
                 case 0x99: // ADC   (X), (Y)
                 case 0xB9: // SBC   (X), (Y)
                 case 0x19: // OR    (X), (Y)
-                    nz = cpuRead(y + dp);
-                    data = cpuRead(addr = x + dp);
+                    nz = reader.apply(y + dp);
+                    data = reader.apply(addr = x + dp);
                     pc++;
                     break;
 
@@ -776,8 +775,8 @@ loop:
                 case 0x89: // ADC   dd, ds
                 case 0xA9: // SBC   dd, ds
                 case 0x09: // OR    dd, ds
-                    nz = cpuRead(mem[pc + 1] & 0xff | dp);
-                    data = cpuRead(addr = mem[pc + 2] & 0xff | dp);
+                    nz = reader.apply(mem[pc + 1] & 0xff | dp);
+                    data = reader.apply(addr = mem[pc + 2] & 0xff | dp);
                     pc += 3;
                     break;
 
@@ -802,7 +801,7 @@ loop:
                 case 0xE9: // MOV   X, !a
                 case 0x5E: // CMP   Y, !a
                 case 0xEC: // MOV   Y, !a
-                    nz = cpuRead(addr = (mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff));
+                    nz = reader.apply(addr = (mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff));
                     pc += 3;
                     break;
 
@@ -812,7 +811,7 @@ loop:
                 case 0x95: // ADC   A, !a+X
                 case 0xB5: // SBC   A, !a+X
                 case 0x15: // OR    A, !a+X
-                    nz = cpuRead(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + x);
+                    nz = reader.apply(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + x);
                     pc += 3;
                     break;
 
@@ -823,7 +822,7 @@ loop:
                 case 0xB6: // SBC   A, !a+Y
                 case 0x16: // OR    A, !a+Y
                 case 0xF6: // MOV   A, !a+Y
-                    nz = cpuRead(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + y);
+                    nz = reader.apply(((mem[pc + 2] & 0xff) << 8 | (mem[pc + 1] & 0xff)) + y);
                     pc += 3;
                     break;
 
@@ -834,7 +833,7 @@ loop:
                 case 0xA6: // SBC   A, (X)
                 case 0x06: // OR    A, (X)
                 case 0xE6: // MOV   A, (X)
-                    nz = cpuRead(x + dp);
+                    nz = reader.apply(x + dp);
                     pc++;
                     break;
 
@@ -853,7 +852,7 @@ loop:
                 case 0x3E: // CMP   X, d
                 case 0xF8: // MOV   X, d
                 case 0x7E: // CMP   Y, d
-                    nz = cpuRead(addr = mem[pc + 1] & 0xff | dp);
+                    nz = reader.apply(addr = mem[pc + 1] & 0xff | dp);
                     pc += 2;
                     break;
 
@@ -870,7 +869,7 @@ loop:
                 case 0x9B: // DEC   d+X
                 case 0xBB: // INC   d+X
                 case 0xFB: // MOV   Y, d+X
-                    nz = cpuRead(addr = (mem[pc + 1] + x) & 0xff | dp);
+                    nz = reader.apply(addr = (mem[pc + 1] + x) & 0xff | dp);
                     pc += 2;
                     break;
 
@@ -882,7 +881,7 @@ loop:
                 case 0x17: // OR    A, [d]+Y
                 case 0xF7: {// MOV   A, [d]+Y
                     int t = mem[pc + 1];
-                    nz = cpuRead(((mem[(t + 1) & 0xff | dp] & 0xff) << 8 | (mem[t & 0xff | dp] & 0xff)) + y);
+                    nz = reader.apply(((mem[(t + 1) & 0xff | dp] & 0xff) << 8 | (mem[t & 0xff | dp] & 0xff)) + y);
                     pc += 2;
                     break;
                 }
@@ -895,7 +894,7 @@ loop:
                 case 0x07: // OR    A, [d+X]
                 case 0xE7: {// MOV   A, [d+X]
                     int t = mem[pc + 1] + x;
-                    nz = cpuRead((mem[(t + 1) & 0xff | dp] & 0xff) << 8 | (mem[t & 0xff | dp] & 0xff));
+                    nz = reader.apply((mem[(t + 1) & 0xff | dp] & 0xff) << 8 | (mem[t & 0xff | dp] & 0xff));
                     pc += 2;
                     break;
                 }
@@ -963,7 +962,7 @@ loop:
                     continue;
 
                 case 0x6E: // DBNZ  d, r
-                    cpuWrite(addr, --data);
+                    writer.accept(addr, --data);
                     if (data != 0) {
                         pc += mem[pc - 1];
                         time += 2;
@@ -1078,7 +1077,7 @@ loop:
                     psw = (psw & ~(v40 | h08)) |
                             (flags >> 1 & h08) |
                             ((flags + 0x80) >> 2 & v40);
-                    cpuWrite(addr, nz);
+                    writer.accept(addr, nz);
                     continue;
                 }
 
@@ -1097,7 +1096,7 @@ loop:
                 case 0x39: // AND   (X), (Y)
                 case 0x38: // AND   d, #i
                 case 0x29: // AND   dd, ds
-                    cpuWrite(addr, nz &= data);
+                    writer.accept(addr, nz &= data);
                     continue;
 
                 case 0x05: // OR    A, !a
@@ -1115,7 +1114,7 @@ loop:
                 case 0x19: // OR    (X), (Y)
                 case 0x18: // OR    d, #i
                 case 0x09: // OR    dd, ds
-                    cpuWrite(addr, nz |= data);
+                    writer.accept(addr, nz |= data);
                     continue;
 
                 case 0x45: // EOR   A, !a
@@ -1133,19 +1132,19 @@ loop:
                 case 0x59: // EOR   (X), (Y)
                 case 0x58: // EOR   d, #i
                 case 0x49: // EOR   dd, ds
-                    cpuWrite(addr, nz ^= data);
+                    writer.accept(addr, nz ^= data);
                     continue;
 
                 case 0x8C: // DEC   !a
                 case 0x8B: // DEC   d
                 case 0x9B: // DEC   d+X
-                    cpuWrite(addr, --nz);
+                    writer.accept(addr, --nz);
                     continue;
 
                 case 0xAC: // INC   !a
                 case 0xAB: // INC   d
                 case 0xBB: // INC   d+X
-                    cpuWrite(addr, ++nz);
+                    writer.accept(addr, ++nz);
                     continue;
 
                 case 0x0C: // ASL   !a
@@ -1157,7 +1156,7 @@ loop:
                 case 0x3B: {// ROL   d+X
                     int t = c >> 8 & 1;
                     c = nz << 1;
-                    cpuWrite(addr, nz = c | t);
+                    writer.accept(addr, nz = c | t);
                     continue;
                 }
 
@@ -1170,39 +1169,39 @@ loop:
                 case 0x7B: {// ROR   d+X
                     int t = c & 0x100;
                     c = nz << 8;
-                    cpuWrite(addr, nz = (nz | t) >> 1);
+                    writer.accept(addr, nz = (nz | t) >> 1);
                     continue;
                 }
 
                 case 0x4E: {// TCLR1 !a
                     int t = nz & ~a;
                     nz = (byte) (a - nz);
-                    cpuWrite(addr, t);
+                    writer.accept(addr, t);
                     continue;
                 }
 
                 case 0x0E: {// TSET1 !a
                     int t = nz | a;
                     nz = (byte) (a - nz);
-                    cpuWrite(addr, t);
+                    writer.accept(addr, t);
                     continue;
                 }
 
                 case 0xC4: // MOV   d, A
                 case 0xD4: // MOV   d+X, A
                 case 0xC5: // MOV   !a, A
-                    cpuWrite(addr, a);
+                    writer.accept(addr, a);
                     continue;
 
                 case 0xD8: // MOV   d, X
                 case 0xC9: // MOV   !a, X
-                    cpuWrite(addr, x);
+                    writer.accept(addr, x);
                     continue;
 
                 case 0xCB: // MOV   d, Y
                 case 0xDB: // MOV   d+X, Y
                 case 0xCC: // MOV   !a, Y
-                    cpuWrite(addr, y);
+                    writer.accept(addr, y);
                     continue;
 
                 case 0xE5: // MOV   A, !a
@@ -1248,10 +1247,5 @@ loop:
         this.psw = psw;
         this.sp = (sp - 1) & 0xff;
         this.time = time;
-    }
-
-    @Override
-    public boolean isSupportedByName(String name) {
-        return name.endsWith(".SPC");
     }
 }

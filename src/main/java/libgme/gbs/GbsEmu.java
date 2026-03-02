@@ -20,6 +20,7 @@ package libgme.gbs;
 
 import java.lang.System.Logger.Level;
 
+import libgme.ClassicEmu;
 import libgme.util.MemPager;
 
 
@@ -28,7 +29,7 @@ import libgme.util.MemPager;
  *
  * @see "https://www.slack.net/~ant"
  */
-public final class GbsEmu extends GbCpu {
+public final class GbsEmu extends ClassicEmu {
 
     // header offsets
     static final int trackCountOff = 0x04;
@@ -47,6 +48,7 @@ public final class GbsEmu extends GbCpu {
     static final int ramSize = 0x4000 + 0x2000;
     static final int bankSize = 0x4000;
 
+    GbCpu cpu = new GbCpu();
     final MemPager rom = new MemPager(bankSize, ramSize);
     final byte[] header = new byte[0x70];
     byte[] ram;
@@ -59,13 +61,18 @@ public final class GbsEmu extends GbCpu {
 
     public static final String MAGIC = "GBS\u0001";
 
+    public GbsEmu() {
+        cpu.reader = this::cpuRead;
+        cpu.writer = this::cpuWrite;
+    }
+
     @Override
     protected int parseHeader(byte[] in) {
         if (!isHeader(in, MAGIC))
             throw new IllegalArgumentException("Not a GBS file");
 
-        rstBase = getLE16(in, loadAddrOff);
-        ram = rom.load(in, header, rstBase, 0xff);
+        cpu.rstBase = getLE16(in, loadAddrOff);
+        ram = rom.load(in, header, cpu.rstBase, 0xff);
 
         setClockRate(4194304);
         apu.setOutput(buf.center(), buf.left(), buf.right());
@@ -82,7 +89,7 @@ public final class GbsEmu extends GbCpu {
         int addr = rom.maskAddr(n * bankSize);
         if (addr == 0 && rom.size() > bankSize)
             n = 1;
-        mapMemory(bankSize, bankSize, rom.mapAddr(addr));
+        cpu.mapMemory(bankSize, bankSize, rom.mapAddr(addr));
     }
 
     static final byte[] rates = {10, 4, 6, 8};
@@ -107,10 +114,10 @@ public final class GbsEmu extends GbCpu {
     };
 
     void cpuCall(int addr) {
-        assert sp == getLE16(header, stackPtrOff);
-        pc = addr;
-        cpuWrite(--sp, idleAddr >> 8);
-        cpuWrite(--sp, idleAddr & 0xff);
+        assert cpu.sp == getLE16(header, stackPtrOff);
+        cpu.pc = addr;
+        cpuWrite(--cpu.sp, idleAddr >> 8);
+        cpuWrite(--cpu.sp, idleAddr & 0xff);
     }
 
     @Override
@@ -123,9 +130,9 @@ public final class GbsEmu extends GbCpu {
             apu.write(0, i + apu.startAddr, sound_data[i]);
         }
 
-        reset(ram, rom.unmapped());
-        mapMemory(ramAddr, 0x10000 - ramAddr, 0);
-        mapMemory(0, bankSize, rom.mapAddr(0));
+        cpu.reset(ram, rom.unmapped());
+        cpu.mapMemory(ramAddr, 0x10000 - ramAddr, 0);
+        cpu.mapMemory(0, bankSize, rom.mapAddr(0));
         setBank(1);
 
         java.util.Arrays.fill(ram, 0, 0x4000, (byte) 0);
@@ -133,16 +140,16 @@ public final class GbsEmu extends GbCpu {
         java.util.Arrays.fill(ram, 0x5F80, ramSize, (byte) 0);
 
         ram[hiPage] = 0; // joypad reads back as 0
-        ram[mapAddr(idleAddr)] = (byte) 0xED; // illegal instruction
+        ram[cpu.mapAddr(idleAddr)] = (byte) 0xED; // illegal instruction
 
         ram[hiPage + 6] = header[timerModuloOff];
         ram[hiPage + 7] = header[timerModeOff];
         updateTimer();
         nextPlay = playPeriod;
 
-        a = track;
-        pc = idleAddr;
-        sp = getLE16(header, stackPtrOff);
+        cpu.a = track;
+        cpu.pc = idleAddr;
+        cpu.sp = getLE16(header, stackPtrOff);
         cpuCall(getLE16(header, initAddrOff));
     }
 
@@ -153,16 +160,16 @@ public final class GbsEmu extends GbCpu {
     @Override
     protected int runClocks(int clockCount) {
         endTime = clockCount;
-        time = -endTime;
+        cpu.time = -endTime;
 
         while (true) {
-            runCpu();
-            if (time >= 0)
+            cpu.runCpu();
+            if (cpu.time >= 0)
                 break;
 
-            if (pc != idleAddr) {
+            if (cpu.pc != idleAddr) {
                 // TODO: PC overflow handling
-                pc = (pc + 1) & 0xffFF;
+                cpu.pc = (cpu.pc + 1) & 0xffFF;
                 setTrackEnded();
                 logger.log(Level.ERROR, "emulation error");
                 return endTime;
@@ -170,11 +177,11 @@ public final class GbsEmu extends GbCpu {
 
             // Next play call
             int next = nextPlay - endTime;
-            if (time < next) {
-                time = 0;
+            if (cpu.time < next) {
+                cpu.time = 0;
                 if (next > 0)
                     break;
-                time = next;
+                cpu.time = next;
             }
 
             nextPlay += playPeriod;
@@ -182,7 +189,7 @@ public final class GbsEmu extends GbCpu {
         }
 
         // End time frame
-        endTime += time;
+        endTime += cpu.time;
         nextPlay -= endTime;
         if (nextPlay < 0) // could go negative if routine is taking too long to return
             nextPlay = 0;
@@ -191,18 +198,16 @@ public final class GbsEmu extends GbCpu {
         return endTime;
     }
 
-    @Override
-    protected int cpuRead(int addr) {
+    private int cpuRead(int addr) {
         assert 0 <= addr && addr < 0x10000;
 
-        if (apu.startAddr <= addr && addr <= apu.endAddr)
-            return apu.read(time + endTime, addr);
+        if (GbApu.startAddr <= addr && addr <= GbApu.endAddr)
+            return apu.read(cpu.time + endTime, addr);
 
-        return ram[mapAddr(addr)] & 0xff;
+        return ram[cpu.mapAddr(addr)] & 0xff;
     }
 
-    @Override
-    protected void cpuWrite(int addr, int data) {
+    private void cpuWrite(int addr, int data) {
         assert 0 <= data && data < 0x100;
         assert 0 <= addr && addr < 0x10000;
 
@@ -210,8 +215,8 @@ public final class GbsEmu extends GbCpu {
         if (offset >= 0) {
             ram[offset] = (byte) data;
             if (addr < 0xff80 && addr >= 0xff00) {
-                if (apu.startAddr <= addr && addr <= apu.endAddr) {
-                    apu.write(time + endTime, addr, data);
+                if (GbApu.startAddr <= addr && addr <= GbApu.endAddr) {
+                    apu.write(cpu.time + endTime, addr, data);
                 } else if ((addr ^ 0xff06) < 2) {
                     updateTimer();
                 } else if (addr == 0xff00) {
@@ -223,5 +228,10 @@ public final class GbsEmu extends GbCpu {
         } else if ((addr ^ 0x2000) <= 0x2000 - 1) {
             setBank(data);
         }
+    }
+
+    @Override
+    public boolean isSupportedByName(String name) {
+        return name.endsWith(".GBS");
     }
 }
