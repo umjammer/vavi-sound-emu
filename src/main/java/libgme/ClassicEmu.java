@@ -46,7 +46,9 @@ public abstract class ClassicEmu extends MusicEmu {
     protected int play_(byte[] out, int count) {
         int pos = 0;
         while (true) {
-            int n = buf.readSamples(out, pos, count);
+            // psg
+            int n = buf.readSamples(out, pos, count); // TODO w/o this, we cannot get n???
+            // for each (mostly for fm)
             mixSamples(out, pos, n);
 
             pos += n;

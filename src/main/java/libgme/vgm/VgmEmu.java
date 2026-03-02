@@ -86,6 +86,7 @@ logger.log(Level.DEBUG, "dual fm: %08x".formatted(fm_clock_rate));
 
         setClockRate(clockRate);
         apu[0].setOutput(buf.center(), buf.left(), buf.right());
+        if (apu[1] != null) apu[1].setOutput(buf.center(), buf.left(), buf.right());
 
         return 1;
     }
@@ -119,6 +120,7 @@ logger.log(Level.DEBUG, "dual fm: %08x".formatted(fm_clock_rate));
     int delay;
     int psgFactor;
     int loopBegin;
+    /** FM sample buffer, PSG sample buffer is {@link #buf} */
     final int[] fm_buf_lr = new int[48000 / 10 * 2];
     int[] fm_pos = new int[2];
     int dac_disabled; // -1 if disabled
@@ -277,14 +279,14 @@ logger.log(Level.TRACE, "LOOP: " + isEndlessLoopFlag());
                     break;
 
                 case cmd_ym2413:
-//                    if ( ym2413[0].run_until( to_fm_time( vgm_time ) ) )
-//                        ym2413[0].write( pos [0], pos [1] );
+//                    if (ym2413[0].run_until(to_fm_time(vgm_time)))
+//                        ym2413[0].write(pos[0], pos[1]);
                     pos += 2;
                     break;
 
                 case cmd_ym2413_2:
-//                    if ( ym2413[1].run_until( to_fm_time( vgm_time ) ) )
-//                        ym2413[1].write( pos [0], pos [1] );
+//                    if (ym2413[1].run_until(to_fm_time(vgm_time)))
+//                        ym2413[1].write(pos[0], pos[1]);
                     pos += 2;
                     break;
 
