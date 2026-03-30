@@ -23,6 +23,7 @@ import java.lang.System.Logger.Level;
 
 import libgme.ClassicEmu;
 import libgme.util.DataReader;
+import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
 
@@ -47,7 +48,7 @@ public final class VgmEmu extends ClassicEmu {
 
         // Data and loop
         this.data = data;
-        loopBegin = getLE32(data, 28) + 28;
+        loopBegin = ByteUtil.readLeInt(data, 28) + 28;
         if (loopBegin <= 28) {
             loopBegin = data.length;
         } else if (data[data.length - 1] != cmd_end) {
@@ -56,7 +57,7 @@ public final class VgmEmu extends ClassicEmu {
         }
 
         // PSG clock rate
-        int clockRate = getLE32(data, 0x0c);
+        int clockRate = ByteUtil.readLeInt(data, 0x0c);
         if (clockRate == 0)
             clockRate = 3579545;
 logger.log(Level.DEBUG, "clockRate: %08x".formatted(clockRate));
@@ -67,7 +68,7 @@ logger.log(Level.DEBUG, "dual apu");
         }
 
         // FM clock rate
-        fm_clock_rate = getLE32(data, 0x2c);
+        fm_clock_rate = ByteUtil.readLeInt(data, 0x2c);
         fm[0] = null;
         if (fm_clock_rate != 0) {
             fm_clock_rate &= ~0xc000_0000;
@@ -354,7 +355,7 @@ logger.log(Level.TRACE, "LOOP: " + isEndlessLoopFlag());
                         logger.log(Level.ERROR, "emulation error");
                     }
                     int type = data[pos++];
-                    long size = getLE32(data, pos);
+                    long size = ByteUtil.readLeInt(data, pos);
                     pos += 4;
                     if (type == pcm_block_type)
                         pcm_data = pos;
@@ -362,7 +363,7 @@ logger.log(Level.TRACE, "LOOP: " + isEndlessLoopFlag());
                     break;
 
                 case cmd_pcm_seek:
-                    pcm_pos = pcm_data + getLE32(data, pos);
+                    pcm_pos = pcm_data + ByteUtil.readLeInt(data, pos);
                     pos += 4;
                     break;
 

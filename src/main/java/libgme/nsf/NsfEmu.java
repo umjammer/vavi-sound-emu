@@ -22,6 +22,7 @@ import java.lang.System.Logger.Level;
 
 import libgme.ClassicEmu;
 import libgme.util.MemPager;
+import vavi.util.ByteUtil;
 
 
 /**
@@ -82,7 +83,7 @@ public final class NsfEmu extends ClassicEmu {
             throw new IllegalArgumentException("Not an NSF file");
 
         // Load ROM data
-        int loadAddr = getLE16(in, loadAddrOff);
+        int loadAddr = ByteUtil.readLeShort(in, loadAddrOff) & 0xffff;
         ram = rom.load(in, header, loadAddr % bankSize, 0xF2);
 
         if (header[chipFlagsOff] != 0)
@@ -109,7 +110,7 @@ public final class NsfEmu extends ClassicEmu {
         }
 
         // NTSC rate
-        int playbackRate = getLE16(header, ntscSpeedOff);
+        int playbackRate = ByteUtil.readLeShort(header, ntscSpeedOff) & 0xffff;
         clockRate = 1789772.727273;
         int standardRate = 0x411A;
         playPeriod = 29781;
@@ -117,7 +118,7 @@ public final class NsfEmu extends ClassicEmu {
 
         if ((header[speedFlagsOff] & 3) == 1) {
             // PAL rate
-            playbackRate = getLE16(header, palSpeedOff);
+            playbackRate = ByteUtil.readLeShort(header, palSpeedOff) & 0xffff;
             clockRate = 1662607.125;
             standardRate = 0x4E20;
             playPeriod = 33247;
@@ -176,7 +177,7 @@ public final class NsfEmu extends ClassicEmu {
         cpu.p = 0;
         cpu.s = 0xff;
         cpu.pc = idleAddr;
-        cpuCall(getLE16(header, initAddrOff));
+        cpuCall(ByteUtil.readLeShort(header, initAddrOff) & 0xffff);
     }
 
     @Override
@@ -216,7 +217,7 @@ public final class NsfEmu extends ClassicEmu {
             }
 
             nextPlay += playPeriod;
-            cpuCall(getLE16(header, playAddrOff));
+            cpuCall(ByteUtil.readLeShort(header, playAddrOff) & 0xffff);
         }
 
         // End time frame
