@@ -7,6 +7,7 @@
 package vavi.sound.sampled.emu;
 
 import java.io.IOException;
+import java.lang.System.Logger;
 import java.util.Arrays;
 import java.util.stream.Stream;
 import javax.sound.sampled.AudioFormat;
@@ -14,6 +15,7 @@ import javax.sound.sampled.AudioFormat.Encoding;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.spi.FormatConversionProvider;
 
+import static java.lang.System.Logger.Level.DEBUG;
 import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
 import static javax.sound.sampled.AudioSystem.NOT_SPECIFIED;
 import static vavi.sound.sampled.emu.EmuEncoding.encodings;
@@ -21,11 +23,16 @@ import static vavi.sound.sampled.emu.EmuEncoding.encodings;
 
 /**
  * EmuFormatConversionProvider.
- *
+ * <p>
+ * system property
+ * <li>{@code vavi.sound.sampled.spi.emu} ... this conversion provider enabled or not, default {@code true}</li>
+ * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 241116 nsano initial version <br>
  */
 public class EmuFormatConversionProvider extends FormatConversionProvider {
+
+    private static final Logger logger = System.getLogger(EmuFormatConversionProvider.class.getName());
 
     @Override
     public AudioFormat.Encoding[] getSourceEncodings() {
@@ -70,13 +77,19 @@ public class EmuFormatConversionProvider extends FormatConversionProvider {
                 };
             }
         } else if (sourceFormat.getEncoding() instanceof EmuEncoding && targetEncoding.equals(PCM_SIGNED)) {
-            return new AudioFormat[] {
-                    new AudioFormat(sourceFormat.getSampleRate(),
-                            16,           // sample size in bits
-                            sourceFormat.getChannels(),
-                            true,                 // signed
-                            true)                        // little endian (for PCM wav)
-            };
+            if (sourceFormat.getEncoding().equals(EmuEncoding.VGM) &&
+                    !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu", "true"))) {
+logger.log(DEBUG, "disabled conversion spi by system property");
+                return new AudioFormat[0];
+            } else {
+                return new AudioFormat[] {
+                        new AudioFormat(sourceFormat.getSampleRate(),
+                                16,           // sample size in bits
+                                sourceFormat.getChannels(),
+                                true,                 // signed
+                                true)                        // little endian (for PCM wav)
+                };
+            }
         } else {
             return new AudioFormat[0];
         }
