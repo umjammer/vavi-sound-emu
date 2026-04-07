@@ -47,6 +47,7 @@ java port game music emu. mavenized and spi-nized also.
 ### system properties
 
  * `libgme.endless` ... loop audio playing or not, default `false`
+ * `vavi.sound.sampled.spi.emu` ... these reader and conversion provider enabled or not (works for `VGM` encoding only), default `true`
 
 ## References
 
@@ -67,6 +68,8 @@ java port game music emu. mavenized and spi-nized also.
  * ~~kss~~
  * gym
  * sap
+ * ~~off vgm spi by system property~~
+   * ~~it's better to return empty at `FormatConversionProvider#getTargetFormats`?~~
 
 ---
 
