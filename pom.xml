@@ -61,6 +61,8 @@
         <version>3.2.5</version>
         <configuration>
           <argLine>
+            --add-opens java.base/sun.nio.ch=ALL-UNNAMED
+            --add-opens java.base/java.io=ALL-UNNAMED
             -Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties
             -Dvavi.test.volume=@{vavi.test.volume}
           </argLine>
@@ -96,9 +98,9 @@
       <version>1.1.10</version>
     </dependency>
     <dependency>
-      <groupId>com.github.umjammer</groupId>
+      <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound</artifactId>
-      <version>1.0.23</version>
+      <version>1.0.24</version>
     </dependency>
 
     <dependency>
