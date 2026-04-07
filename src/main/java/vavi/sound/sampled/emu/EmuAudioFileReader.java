@@ -21,6 +21,8 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.sound.sampled.spi.AudioFileReader;
 
+import vavi.sound.SoundUtil;
+
 import static java.lang.System.Logger.Level.DEBUG;
 import static java.lang.System.Logger.Level.TRACE;
 import static java.lang.System.getLogger;
@@ -31,7 +33,10 @@ import static javax.sound.sampled.AudioSystem.NOT_SPECIFIED;
  * Provider for emulator audio file reading services. This implementation can parse
  * the format information from emulator audio file, and can produce audio input
  * streams from files of this type.
- *
+ * <p>
+ * system property
+ * <li>{@code vavi.sound.sampled.spi.emu} ... this reader enabled or not, default {@code true}</li>
+ * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 241116 nsano initial version <br>
  */
@@ -73,10 +78,13 @@ public class EmuAudioFileReader extends AudioFileReader {
      * @throws IOException                   if an I/O exception occurs.
      */
     protected static AudioFileFormat getAudioFileFormat(InputStream bitStream, int mediaLength) throws UnsupportedAudioFileException, IOException {
-        if (Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.emu.off", "false"))) {
-logger.log(DEBUG, "off by system property");
+        // TODO Archives#inputStream breaks stream, so detecting vgm is such a gross way.
+        if ((SoundUtil.getSource(bitStream).getPath().endsWith(".vgm") || SoundUtil.getSource(bitStream).getPath().endsWith(".vgz")) &&
+                !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu", "true"))) {
+logger.log(DEBUG, "disabled reader spi by system property");
             throw new UnsupportedAudioFileException("off by system property");
         }
+
 logger.log(DEBUG, "enter: available: " + bitStream.available());
         EmuAudioManager manager = new EmuAudioManager(44100);
         AudioFormat.Encoding encoding;
@@ -87,6 +95,7 @@ logger.log(DEBUG, "enter: available: " + bitStream.available());
 
             emu = manager.getEmu().getClass().getSimpleName().replace("Emu", "");
             encoding = EmuEncoding.valueOf(emu);
+
             samplingRate = manager.getSampleRate();
         } catch (IllegalArgumentException e) {
 logger.log(DEBUG, "error exit: available: " + bitStream.available());

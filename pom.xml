@@ -5,7 +5,7 @@
 
   <groupId>vavi</groupId>
   <artifactId>vavi-sound-emu</artifactId>
-  <version>0.0.10</version>
+  <version>0.0.11</version>
 
   <properties>
     <vavi.test.volume>0.02</vavi.test.volume>
@@ -52,7 +52,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.12.1</version>
         <configuration>
-          <release>17</release>
+          <release>25</release>
         </configuration>
       </plugin>
       <plugin>
@@ -61,6 +61,8 @@
         <version>3.2.5</version>
         <configuration>
           <argLine>
+            --add-opens java.base/sun.nio.ch=ALL-UNNAMED
+            --add-opens java.base/java.io=ALL-UNNAMED
             -Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties
             -Dvavi.test.volume=@{vavi.test.volume}
           </argLine>
@@ -82,7 +84,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>6.0.2</version>
+        <version>6.0.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -96,9 +98,9 @@
       <version>1.1.10</version>
     </dependency>
     <dependency>
-      <groupId>com.github.umjammer</groupId>
+      <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound</artifactId>
-      <version>1.0.22</version>
+      <version>1.0.24</version>
     </dependency>
 
     <dependency>

@@ -1,7 +1,7 @@
 [![Release](https://jitpack.io/v/umjammer/vavi-sound-emu.svg)](https://jitpack.io/#umjammer/vavi-sound-emu)
 [![Java CI](https://github.com/umjammer/vavi-sound-emu/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-sound-emu/actions/workflows/maven.yml)
 [![CodeQL](https://github.com/umjammer/vavi-sound-emu/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/umjammer/vavi-sound-emu/actions/workflows/codeql-analysis.yml)
-![Java](https://img.shields.io/badge/Java-17-b07219)
+![Java](https://img.shields.io/badge/Java-25-b07219)
 [![Parent](https://img.shields.io/badge/Parent-vavi--sound--sandbox-pink)](https://github.com/umjammer/vavi-sound-sandbox)
 
 # vavi-sound-emu
@@ -47,6 +47,7 @@ java port game music emu. mavenized and spi-nized also.
 ### system properties
 
  * `libgme.endless` ... loop audio playing or not, default `false`
+ * `vavi.sound.sampled.spi.emu` ... these reader and conversion provider enabled or not (works for `VGM` encoding only), default `true`
 
 ## References
 
@@ -67,6 +68,8 @@ java port game music emu. mavenized and spi-nized also.
  * ~~kss~~
  * gym
  * sap
+ * ~~off vgm spi by system property~~
+   * ~~it's better to return empty at `FormatConversionProvider#getTargetFormats`?~~
 
 ---
 

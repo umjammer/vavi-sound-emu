@@ -159,20 +159,6 @@ public abstract class MusicEmu {
         trackEnded = true;
     }
 
-    /** Reads 16 bit little endian int starting at in [pos] */
-    protected static int getLE16(byte[] in, int pos) {
-        return (in[pos] & 0xff) |
-                (in[pos + 1] & 0xff) << 8;
-    }
-
-    /** Reads 32 bit little endian int starting at in [pos] */
-    protected static int getLE32(byte[] in, int pos) {
-        return (in[pos] & 0xff) |
-                (in[pos + 1] & 0xff) << 8 |
-                (in[pos + 2] & 0xff) << 16 |
-                (in[pos + 3] & 0xff) << 24;
-    }
-
     /** True if first bytes of file match expected string */
     protected static boolean isHeader(byte[] header, String expected) {
         for (int i = expected.length(); --i >= 0; ) {

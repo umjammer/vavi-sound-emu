@@ -22,6 +22,7 @@ import java.lang.System.Logger.Level;
 
 import libgme.ClassicEmu;
 import libgme.util.MemPager;
+import vavi.util.ByteUtil;
 
 
 /**
@@ -71,7 +72,7 @@ public final class GbsEmu extends ClassicEmu {
         if (!isHeader(in, MAGIC))
             throw new IllegalArgumentException("Not a GBS file");
 
-        cpu.rstBase = getLE16(in, loadAddrOff);
+        cpu.rstBase = ByteUtil.readLeShort(in, loadAddrOff) & 0xffff;
         ram = rom.load(in, header, cpu.rstBase, 0xff);
 
         setClockRate(4194304);
@@ -114,7 +115,7 @@ public final class GbsEmu extends ClassicEmu {
     };
 
     void cpuCall(int addr) {
-        assert cpu.sp == getLE16(header, stackPtrOff);
+        assert cpu.sp == (ByteUtil.readLeShort(header, stackPtrOff) & 0xffff);
         cpu.pc = addr;
         cpuWrite(--cpu.sp, idleAddr >> 8);
         cpuWrite(--cpu.sp, idleAddr & 0xff);
@@ -149,8 +150,8 @@ public final class GbsEmu extends ClassicEmu {
 
         cpu.a = track;
         cpu.pc = idleAddr;
-        cpu.sp = getLE16(header, stackPtrOff);
-        cpuCall(getLE16(header, initAddrOff));
+        cpu.sp = ByteUtil.readLeShort(header, stackPtrOff) & 0xffff;
+        cpuCall(ByteUtil.readLeShort(header, initAddrOff) & 0xffff);
     }
 
     @Override
@@ -185,7 +186,7 @@ public final class GbsEmu extends ClassicEmu {
             }
 
             nextPlay += playPeriod;
-            cpuCall(getLE16(header, playAddrOff));
+            cpuCall(ByteUtil.readLeShort(header, playAddrOff) & 0xffff);
         }
 
         // End time frame
