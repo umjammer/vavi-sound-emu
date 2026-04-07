@@ -196,5 +196,6 @@ Debug.println("2: " + is.available());
         });
 Debug.println("3: " + is.available());
         assertEquals(available, is.available()); // spi must not consume input stream even one byte
+        is.close();
     }
 }

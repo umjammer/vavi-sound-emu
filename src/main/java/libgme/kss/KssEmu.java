@@ -7,6 +7,7 @@
 package libgme.kss;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 import libgme.ClassicEmu;
@@ -181,7 +182,7 @@ public class KssEmu extends ClassicEmu {
     }
 
     @Override
-    public boolean isSupported(java.io.InputStream in) throws IOException {
+    public boolean isSupported(InputStream in) throws IOException {
         byte[] buf = new byte[4];
         int read = 0;
         int offset = 0;
