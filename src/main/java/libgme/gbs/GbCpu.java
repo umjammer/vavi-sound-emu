@@ -69,23 +69,24 @@ public class GbCpu {
         }
     }
 
-    // Maps address to memory */
+    /** Maps address to memory */
     public final int mapAddr(int addr) {
         return pages[addr >> pageShift] + addr;
     }
 
     // Emulation
 
-    // Registers. NOT kept updated during runCpu() */
+    // Registers. NOT kept updated during runCpu()
     public int a, bc, de, hl, sp, pc;
 
-    // Base address for RST vectors (normally 0) */
+    /** Base address for RST vectors (normally 0) */
     public int rstBase;
 
-    // Current time */
+    /** Current time */
     public int time;
 
-    // Memory read and write handlers */
+    // Memory read and write handlers
+
     Function<Integer, Integer> reader;
 
     BiConsumer<Integer, Integer> writer;
