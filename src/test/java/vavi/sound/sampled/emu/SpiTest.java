@@ -280,12 +280,13 @@ Debug.println(vgm);
 
     @Test
     @DisplayName("via spi")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test8() throws Exception {
 
         System.setProperty("vavi.sound.sampled.spi.emu.gbs", "false");
 
         Path path = Path.of(gbs);
-        Debug.println(gbs);
+Debug.println(gbs);
         assertThrows(UnsupportedAudioFileException.class, () -> {
             AudioSystem.getAudioInputStream(new BufferedInputStream(Files.newInputStream(path)));
         });

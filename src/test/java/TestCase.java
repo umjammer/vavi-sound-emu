@@ -80,7 +80,7 @@ Debug.println(vgz);
 
         player.setEngine(engine);
         player.loadFile(vgz);
-        player.setTrack(track);
+        player.setTrack(track - 1);
         player.play();
 
         if (!onIde) later(time, cdl::countDown);
@@ -104,7 +104,7 @@ Debug.println(vgz);
 
         manager.setEngine(engine);
         manager.loadFile(new BufferedInputStream(Files.newInputStream(Path.of(vgz))));
-        manager.setTrack(track);
+        manager.setTrack(track - 1);
         manager.play();
 
         if (!onIde) later(time, cdl::countDown);

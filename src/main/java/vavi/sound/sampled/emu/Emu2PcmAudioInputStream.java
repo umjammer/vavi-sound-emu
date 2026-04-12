@@ -68,7 +68,7 @@ logger.log(Level.DEBUG, "engine: " + emu.getClass().getName());
             } catch (NullPointerException ignore) {
                 // track # is not set
             } catch (Exception e) {
-logger.log(Level.WARNING, "wrong props::track: " + e.toString());
+logger.log(Level.WARNING, "wrong props::track: " + e);
             }
 logger.log(Level.DEBUG, "props: " + props  + ", track: " + track + " / " + emu.trackCount() + " (1 origin)");
             emu.startTrack(track - 1);
