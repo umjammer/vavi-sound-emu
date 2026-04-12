@@ -23,7 +23,10 @@ import static java.lang.System.getLogger;
 
 /**
  * Converts an Emulator music BitStream into a PCM 16bits/sample audio stream.
- *
+ * <p>
+ * target property
+ * <li>{@code track} ... specify track # in the file to play, 1 origin</li>
+ * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 241116 nsano initial version <br>
  */
@@ -58,17 +61,17 @@ class Emu2PcmAudioInputStream extends AudioInputStream {
         public EmuOutputEngine(MusicEmu emu, Map<String, Object> props) throws IOException {
             this.emu = emu;
 logger.log(Level.DEBUG, "engine: " + emu.getClass().getName());
-            int track = 0;
+            int track = 1;
             try {
-                track = (int) props.get("track");
-                if (track < 0 || track > emu.trackCount()) track = 0;
+                track = (int) props.getOrDefault("track", 1);
+                if (track < 1 || track >= emu.trackCount()) track = 1;
             } catch (NullPointerException ignore) {
                 // track # is not set
             } catch (Exception e) {
 logger.log(Level.WARNING, "wrong props::track: " + e.toString());
             }
-            emu.startTrack(track);
-logger.log(Level.DEBUG, "props: " + props  + ", track: " + track + " / " + emu.trackCount());
+logger.log(Level.DEBUG, "props: " + props  + ", track: " + track + " / " + emu.trackCount() + " (1 origin)");
+            emu.startTrack(track - 1);
         }
 
         @Override
