@@ -13,6 +13,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import javax.sound.sampled.AudioFormat;
@@ -29,6 +30,7 @@ import vavi.util.properties.annotation.PropsEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -198,5 +200,56 @@ Debug.println("2: " + is.available());
 Debug.println("3: " + is.available());
         assertEquals(available, is.available()); // spi must not consume input stream even one byte
         is.close();
+    }
+
+    @Test
+    @DisplayName("wav out")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    void test6() throws Exception {
+        System.setProperty("javax.sound.sampled.SourceDataLine", "#WaveOut Mixer");
+
+        Path path = Path.of(vgm);
+Debug.println(vgm);
+        AudioInputStream sourceAis = AudioSystem.getAudioInputStream(new BufferedInputStream(Files.newInputStream(path)));
+
+        AudioFormat inAudioFormat = sourceAis.getFormat();
+Debug.println("IN: " + inAudioFormat);
+
+        Map<String, Object> props = new HashMap<>();
+        props.put("track", track);
+        AudioFormat outAudioFormat = new AudioFormat(
+                PCM_SIGNED,
+                inAudioFormat.getSampleRate(),
+                16,
+                inAudioFormat.getChannels(),
+                2 * inAudioFormat.getChannels(),
+                inAudioFormat.getSampleRate(),
+                true,
+                props);
+Debug.println("OUT: " + outAudioFormat);
+
+        assertTrue(AudioSystem.isConversionSupported(outAudioFormat, inAudioFormat));
+
+        AudioInputStream pcmAis = AudioSystem.getAudioInputStream(outAudioFormat, sourceAis);
+        DataLine.Info info = new DataLine.Info(SourceDataLine.class, pcmAis.getFormat());
+        SourceDataLine line = (SourceDataLine) AudioSystem.getLine(info);
+        line.open(pcmAis.getFormat());
+        line.addLineListener(ev -> Debug.println(ev.getType()));
+        line.start();
+
+        byte[] buf = new byte[1024];
+        while (!later(120 * 1000).come()) {
+            int r = pcmAis.read(buf, 0, 1024);
+            if (r < 0) {
+                break;
+            }
+            line.write(buf, 0, r);
+        }
+        line.drain();
+        line.stop();
+        line.close();
+
+        if ("#WaveOut Mixer".equals(System.getProperty("javax.sound.sampled.SourceDataLine")))
+            Files.move(Path.of(System.getProperty("vavi.sound.sampled.misc.waveout")), Path.of("tmp", "waveout.wav"), StandardCopyOption.REPLACE_EXISTING);
     }
 }
