@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioFormat.Encoding;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.sound.sampled.spi.AudioFileReader;
@@ -27,6 +28,7 @@ import static java.lang.System.Logger.Level.DEBUG;
 import static java.lang.System.Logger.Level.TRACE;
 import static java.lang.System.getLogger;
 import static javax.sound.sampled.AudioSystem.NOT_SPECIFIED;
+import static vavi.sound.sampled.emu.EmuEncoding.GBS;
 
 
 /**
@@ -35,7 +37,8 @@ import static javax.sound.sampled.AudioSystem.NOT_SPECIFIED;
  * streams from files of this type.
  * <p>
  * system property
- * <li>{@code vavi.sound.sampled.spi.emu} ... this reader enabled or not, default {@code true}</li>
+ * <li>{@code vavi.sound.sampled.spi.emu.vgm} ... this reader enabled vgm or not, default {@code true}</li>
+ * <li>{@code vavi.sound.sampled.spi.emu.gbs} ... this reader enabled gbs or not, default {@code true}</li>
  * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 241116 nsano initial version <br>
@@ -79,11 +82,7 @@ public class EmuAudioFileReader extends AudioFileReader {
      */
     protected static AudioFileFormat getAudioFileFormat(InputStream bitStream, int mediaLength) throws UnsupportedAudioFileException, IOException {
         // TODO Archives#inputStream breaks stream, so detecting vgm is such a gross way.
-        if ((SoundUtil.getSource(bitStream).getPath().endsWith(".vgm") || SoundUtil.getSource(bitStream).getPath().endsWith(".vgz")) &&
-                !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu", "true"))) {
-logger.log(DEBUG, "disabled reader spi by system property");
-            throw new UnsupportedAudioFileException("off by system property");
-        }
+        checkVgmSupported(bitStream);
 
 logger.log(DEBUG, "enter: available: " + bitStream.available());
         EmuAudioManager manager = new EmuAudioManager(44100);
@@ -108,6 +107,18 @@ logger.log(TRACE, "type: " + type);
         props.put("emu", manager.getEmu());
         AudioFormat format = new AudioFormat(encoding, samplingRate, NOT_SPECIFIED, 2, NOT_SPECIFIED, NOT_SPECIFIED, true, props);
         return new AudioFileFormat(type, format, NOT_SPECIFIED);
+    }
+
+    // disable
+    private static void checkVgmSupported(InputStream is) throws UnsupportedAudioFileException {
+        if ((SoundUtil.getSource(is).getPath().endsWith(".vgm") || SoundUtil.getSource(is).getPath().endsWith(".vgz")) &&
+                !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.vgm", "true"))) {
+logger.log(DEBUG, "disabled reader spi by system property");
+            throw new UnsupportedAudioFileException("vgm is off by system property");
+        } else if (SoundUtil.getSource(is).getPath().endsWith(".gbs") &&
+                !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.gbs", "true"))) {
+            throw new UnsupportedAudioFileException("gbs is off by system property");
+        }
     }
 
     @Override
