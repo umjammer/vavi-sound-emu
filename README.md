@@ -42,12 +42,13 @@ java port game music emu. mavenized and spi-nized also.
 
 ### properties for target `AudioFormat`
 
- * `track` ... specify track # in the file to play
+ * `track` ... specify track # in the file to play (1 origin)
 
 ### system properties
 
  * `libgme.endless` ... loop audio playing or not, default `false`
- * `vavi.sound.sampled.spi.emu` ... these reader and conversion provider enabled or not (works for `VGM` encoding only), default `true`
+ * `vavi.sound.sampled.spi.emu.vgm` ... these reader and conversion provider enabled vgm or not, default `true`
+ * `vavi.sound.sampled.spi.emu.gbs` ... these reader and conversion provider enabled gbs or not, default `true`
 
 ## References
 
