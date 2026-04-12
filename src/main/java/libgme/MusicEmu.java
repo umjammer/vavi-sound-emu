@@ -22,6 +22,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.Arrays;
 
 import static java.lang.System.getLogger;
@@ -70,8 +71,9 @@ public abstract class MusicEmu {
 
     /** Starts track, where 0 is first track */
     public void startTrack(int track) {
-        if (track < 0 || track > trackCount)
-            throw new IllegalArgumentException("Invalid track");
+        if (track < 0 || track >= trackCount)
+            throw new IllegalArgumentException("Invalid track: " + track + " / " + trackCount + " (0 origin)");
+logger.log(Level.DEBUG, "inside track no: " + track + " / " + trackCount + " (0 origin)");
 
         trackEnded = false;
         currentTrack = track;

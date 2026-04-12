@@ -65,7 +65,6 @@ public class DataReader {
             if (size >= data.length)
                 data = resize(data, data.length * 2);
         }
-        in.close();
 
         if (data.length - size > data.length / 4)
             data = resize(data, size);

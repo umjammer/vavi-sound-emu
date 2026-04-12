@@ -25,7 +25,8 @@ import static vavi.sound.sampled.emu.EmuEncoding.encodings;
  * EmuFormatConversionProvider.
  * <p>
  * system property
- * <li>{@code vavi.sound.sampled.spi.emu} ... this conversion provider enabled or not, default {@code true}</li>
+ * <li>{@code vavi.sound.sampled.spi.emu.vgm} ... this conversion provider enabled vgm or not, default {@code true}</li>
+ * <li>{@code vavi.sound.sampled.spi.emu.gbs} ... this conversion provider enabled gbs or not, default {@code true}</li>
  * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 241116 nsano initial version <br>
@@ -77,8 +78,7 @@ public class EmuFormatConversionProvider extends FormatConversionProvider {
                 };
             }
         } else if (sourceFormat.getEncoding() instanceof EmuEncoding && targetEncoding.equals(PCM_SIGNED)) {
-            if (sourceFormat.getEncoding().equals(EmuEncoding.VGM) &&
-                    !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu", "true"))) {
+            if (isDisabled(sourceFormat.getEncoding())) {
 logger.log(DEBUG, "disabled conversion spi by system property");
                 return new AudioFormat[0];
             } else {
@@ -92,6 +92,19 @@ logger.log(DEBUG, "disabled conversion spi by system property");
             }
         } else {
             return new AudioFormat[0];
+        }
+    }
+
+    //
+    private static boolean isDisabled(Encoding encoding) {
+        if (encoding.equals(EmuEncoding.VGM) &&
+                !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.vgm", "true"))) {
+            return true;
+        } else if (encoding.equals(EmuEncoding.GBS) &&
+                !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.gbs", "true"))) {
+            return true;
+        } else {
+            return false;
         }
     }
 

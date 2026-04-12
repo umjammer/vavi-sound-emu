@@ -19,9 +19,12 @@ import java.util.Scanner;
 import libgme.EmuPlayer;
 import libgme.MusicEmu;
 import libgme.VGMPlayer;
+import libgme.gbs.GbsEmu;
 import libgme.util.DataReader;
+import libgme.vgm.VgmEmu;
 import vavi.util.archive.Archives;
 
+import static java.lang.System.Logger.Level.DEBUG;
 import static java.lang.System.getLogger;
 
 
@@ -55,18 +58,22 @@ public class EmuAudioManager extends EmuPlayer {
     public void loadFile(InputStream is) throws IOException {
 
 logger.log(Level.TRACE, "input stream B: " + is.getClass().getName() + ", " + is.available());
+        is.mark(10);
         InputStream in = Archives.getInputStream(is);
+        if (in == is) is.reset();
         loadedStream = in;
 logger.log(Level.TRACE, "input stream A: " + is.getClass().getName() + ", " + is.available());
-        if (!in.markSupported()) {
-            in = new BufferedInputStream(in);
+        if (!loadedStream.markSupported()) {
+            loadedStream = new BufferedInputStream(loadedStream);
         }
 
-        MusicEmu emu = createEmu(in);
-        if (emu == null)
+        MusicEmu emu = createEmu(loadedStream);
+        if (emu == null) {
+            if (in != is) is.reset();
             throw new IllegalArgumentException("unsupported file");
+        }
         actualSampleRate = emu.setSampleRate(sampleRate);
-        emu.loadFile(DataReader.loadData(in));
+        emu.loadFile(DataReader.loadData(loadedStream));
 
         // now that new emulator is ready, replace old one
         setEmu(emu, actualSampleRate);
@@ -82,6 +89,11 @@ logger.log(Level.TRACE, "input stream A: " + is.getClass().getName() + ", " + is
         }
 
         for (MusicEmu musicEmu : serviceLoader) {
+            boolean disabled = isDisabled(musicEmu);
+            if (disabled) {
+logger.log(DEBUG, "disabled reader spi by system property: " + musicEmu.getClass().getSimpleName());
+                continue;
+            }
             try {
 logger.log(Level.TRACE, musicEmu + ": " + is.available());
                 is.mark(musicEmu.getMagic().length());
@@ -102,6 +114,18 @@ logger.log(Level.TRACE, musicEmu + ": " + is.available());
         }
 
         return null;
+    }
+
+    // disable
+    private static boolean isDisabled(MusicEmu musicEmu) {
+        if ((musicEmu.isSupportedByName(".VGM") || musicEmu.isSupportedByName(".VGZ")) &&
+                !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.vgm", "true"))) {
+            return true;
+        } else if (musicEmu.isSupportedByName(".GBS") &&
+                !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.gbs", "true"))) {
+            return true;
+        }
+        return false;
     }
 
     private static final String[] compressedStream;
