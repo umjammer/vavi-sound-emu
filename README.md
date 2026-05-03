@@ -49,6 +49,14 @@ java port game music emu. mavenized and spi-nized also.
  * `libgme.endless` ... loop audio playing or not, default `false`
  * `vavi.sound.sampled.spi.emu.vgm` ... these reader and conversion provider enabled vgm or not, default `true`
  * `vavi.sound.sampled.spi.emu.gbs` ... these reader and conversion provider enabled gbs or not, default `true`
+ * `vavi.sound.sampled.spi.emu.nsf` ... these reader and conversion provider enabled nsf or not, default `true`
+
+### jvm options
+
+```
+--add-opens=java.base/java.io=ALL-UNNAMED
+--add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+```
 
 ## References
 
