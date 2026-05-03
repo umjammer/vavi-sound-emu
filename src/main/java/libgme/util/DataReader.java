@@ -22,16 +22,22 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.net.URL;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import vavi.util.StringUtil;
 
 
 /**
  * @see "https://www.slack.net/~ant"
  */
 public class DataReader {
+
+    private static final Logger logger = System.getLogger(DataReader.class.getName());
 
     /** Opens InputStream to file stored in various ways */
     static InputStream openHttp(String path) throws IOException {
@@ -69,6 +75,7 @@ public class DataReader {
         if (data.length - size > data.length / 4)
             data = resize(data, size);
 
+logger.log(Level.TRACE, data.length + " bytes\n" + StringUtil.getDump(data, 32));
         return data;
     }
 

@@ -84,6 +84,9 @@ logger.log(Level.DEBUG, "dual fm: %08x".formatted(fm_clock_rate));
         } else {
             buf.setVolume(1.0);
         }
+if (fm[0] == null && fm[1] == null) {
+ logger.log(Level.WARNING, "no suitable fm assigned");
+}
 
         setClockRate(clockRate);
         apu[0].setOutput(buf.center(), buf.left(), buf.right());
