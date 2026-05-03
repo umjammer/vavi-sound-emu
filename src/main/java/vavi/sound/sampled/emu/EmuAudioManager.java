@@ -19,9 +19,7 @@ import java.util.Scanner;
 import libgme.EmuPlayer;
 import libgme.MusicEmu;
 import libgme.VGMPlayer;
-import libgme.gbs.GbsEmu;
 import libgme.util.DataReader;
-import libgme.vgm.VgmEmu;
 import vavi.util.archive.Archives;
 
 import static java.lang.System.Logger.Level.DEBUG;
@@ -30,7 +28,12 @@ import static java.lang.System.getLogger;
 
 /**
  * EmuAudioManager.
- *
+ * <p>
+ * system property
+ * <li>{@code vavi.sound.sampled.spi.emu.vgm} ... this reader enabled vgm or not, default {@code true}</li>
+ * <li>{@code vavi.sound.sampled.spi.emu.gbs} ... this reader enabled gbs or not, default {@code true}</li>
+ * <li>{@code vavi.sound.sampled.spi.emu.nsf} ... this reader enabled nsf or not, default {@code true}</li>
+ * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2024-11-21 nsano initial version <br>
  */
@@ -118,12 +121,12 @@ logger.log(Level.TRACE, musicEmu + ": " + is.available());
 
     // disable
     private static boolean isDisabled(MusicEmu musicEmu) {
-        if ((musicEmu.isSupportedByName(".VGM") || musicEmu.isSupportedByName(".VGZ")) &&
-                !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.vgm", "true"))) {
-            return true;
-        } else if (musicEmu.isSupportedByName(".GBS") &&
-                !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.gbs", "true"))) {
-            return true;
+        if ((musicEmu.isSupportedByName(".VGM") || musicEmu.isSupportedByName(".VGZ"))) {
+            return !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.vgm", "true"));
+        } else if (musicEmu.isSupportedByName(".GBS")) {
+            return !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.gbs", "true"));
+        } else if (musicEmu.isSupportedByName(".NSF")) {
+            return !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.nsf", "true"));
         }
         return false;
     }
