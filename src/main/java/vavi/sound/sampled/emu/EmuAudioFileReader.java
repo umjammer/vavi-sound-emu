@@ -31,11 +31,7 @@ import static javax.sound.sampled.AudioSystem.NOT_SPECIFIED;
  * Provider for emulator audio file reading services. This implementation can parse
  * the format information from emulator audio file, and can produce audio input
  * streams from files of this type.
- * <p>
- * system property
- * <li>{@code vavi.sound.sampled.spi.emu.vgm} ... this reader enabled vgm or not, default {@code true}</li>
- * <li>{@code vavi.sound.sampled.spi.emu.gbs} ... this reader enabled gbs or not, default {@code true}</li>
- * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 241116 nsano initial version <br>
  */

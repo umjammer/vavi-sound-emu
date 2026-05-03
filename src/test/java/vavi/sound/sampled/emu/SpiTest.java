@@ -261,7 +261,7 @@ Debug.println("OUT: " + outAudioFormat);
     }
 
     @Test
-    @DisplayName("via spi")
+    @DisplayName("off vgm")
     void test7() throws Exception {
 
         System.setProperty("vavi.sound.sampled.spi.emu.vgm", "false");
@@ -279,7 +279,7 @@ Debug.println(vgm);
     }
 
     @Test
-    @DisplayName("via spi")
+    @DisplayName("off gbs")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test8() throws Exception {
 

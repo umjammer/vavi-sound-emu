@@ -47,7 +47,7 @@ class TestCase {
     double volume = 0.2;
 
     @Property
-    String vgz = "src/test/resources/test.vgm";
+    String vgm = "src/test/resources/test.vgm";
 
     /** 1 origin */
     @Property(name = "track")
@@ -71,7 +71,7 @@ Debug.println("volume: " + volume);
 Debug.print("libgme.endless: " + System.getProperty("libgme.endless"));
 
         VGMPlayer player = new VGMPlayer(44100);
-Debug.println(vgz);
+Debug.println(vgm);
         CountDownLatch cdl = new CountDownLatch(1);
 
         JavaEngine engine = new JavaEngine();
@@ -79,7 +79,7 @@ Debug.println(vgz);
         engine.setVolume(volume);
 
         player.setEngine(engine);
-        player.loadFile(vgz);
+        player.loadFile(vgm);
         player.setTrack(track - 1);
         player.play();
 
@@ -95,7 +95,7 @@ Debug.println(vgz);
         System.setProperty("libgme.endless", String.valueOf(onIde));
 
         EmuAudioManager manager = new EmuAudioManager(44100);
-Debug.println(vgz);
+Debug.println(vgm);
         CountDownLatch cdl = new CountDownLatch(1);
 
         JavaEngine engine = new JavaEngine();
@@ -103,7 +103,7 @@ Debug.println(vgz);
         engine.setVolume(volume);
 
         manager.setEngine(engine);
-        manager.loadFile(new BufferedInputStream(Files.newInputStream(Path.of(vgz))));
+        manager.loadFile(new BufferedInputStream(Files.newInputStream(Path.of(vgm))));
         manager.setTrack(track - 1);
         manager.play();
 
@@ -120,7 +120,7 @@ Debug.println(vgz);
         System.setProperty("libgme.endless", "false");
 
         VGMPlayer player = new VGMPlayer(44100);
-Debug.println(vgz);
+Debug.println(vgm);
         CountDownLatch cdl = new CountDownLatch(1);
 
         class ProbingEngine extends JavaEngine {
@@ -156,8 +156,8 @@ Debug.println(vgz);
         engine.setVolume(volume);
 
         player.setEngine(engine);
-        player.loadFile(vgz);
-        System.err.println("File size: " + Files.size(Path.of(vgz)));
+        player.loadFile(vgm);
+        System.err.println("File size: " + Files.size(Path.of(vgm)));
         for (int t = 0; t < 10; t++) {
             System.err.println("Trying track " + t);
             player.setTrack(t);
