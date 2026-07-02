@@ -20,8 +20,13 @@ package libgme.gbs;
 
 import java.lang.System.Logger.Level;
 
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
+
 import libgme.ClassicEmu;
 import libgme.util.MemPager;
+import vavi.sound.sampled.emu.EmuEncoding;
+import vavi.sound.sampled.emu.EmuFileFormatType;
 import vavi.util.ByteUtil;
 
 
@@ -234,5 +239,15 @@ public final class GbsEmu extends ClassicEmu {
     @Override
     public boolean isSupportedByName(String name) {
         return name.endsWith(".GBS");
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return new EmuEncoding("GBS");
+    }
+
+    @Override
+    public Type getType() {
+        return new EmuFileFormatType("GBS", "gbs");
     }
 }

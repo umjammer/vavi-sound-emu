@@ -21,7 +21,12 @@ package libgme.sap;
 import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
+
 import libgme.ClassicEmu;
+import vavi.sound.sampled.emu.EmuEncoding;
+import vavi.sound.sampled.emu.EmuFileFormatType;
 import vavi.util.ByteUtil;
 
 
@@ -394,5 +399,15 @@ public final class SapEmu extends ClassicEmu {
 
         if ((addr & ~0x0010) != 0xD20F || data != 0x03)
             logger.log(Level.DEBUG, "Unmapped write $%04X <- $%02X".formatted(addr, data));
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return new EmuEncoding("SAP");
+    }
+
+    @Override
+    public Type getType() {
+        return new EmuFileFormatType("SAP", "sap");
     }
 }

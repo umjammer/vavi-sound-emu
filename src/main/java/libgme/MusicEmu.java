@@ -25,6 +25,9 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.Arrays;
 
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
+
 import static java.lang.System.getLogger;
 
 
@@ -225,4 +228,10 @@ logger.log(Level.DEBUG, "inside track no: " + track + " / " + trackCount + " (0 
     public boolean isGunzipNeeded(String name) {
         return false;
     }
+
+    // spi
+
+    public abstract Encoding getEncoding();
+
+    public abstract Type getType();
 }

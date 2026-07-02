@@ -20,9 +20,14 @@ package libgme.gym;
 
 import java.util.Arrays;
 
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
+
 import libgme.ClassicEmu;
 import libgme.vgm.SmsApu;
 import libgme.vgm.YM2612;
+import vavi.sound.sampled.emu.EmuEncoding;
+import vavi.sound.sampled.emu.EmuFileFormatType;
 import vavi.util.ByteUtil;
 
 
@@ -281,5 +286,15 @@ public final class GymEmu extends ClassicEmu {
         }
 
         fm_pos = in_off;
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return new EmuEncoding("GYM");
+    }
+
+    @Override
+    public Type getType() {
+        return new EmuFileFormatType("GYM", "gym");
     }
 }

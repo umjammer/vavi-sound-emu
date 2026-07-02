@@ -91,7 +91,7 @@ logger.log(TRACE, e.getMessage(), e);
 logger.log(DEBUG, "error exit: available: " + bitStream.available());
             throw (UnsupportedAudioFileException) new UnsupportedAudioFileException().initCause(e);
         }
-        AudioFileFormat.Type type = EmuFileFormatType.valueOf(emu, manager.isCompressed());
+        AudioFileFormat.Type type = EmuFileFormatType.valueOf(emu);
 logger.log(TRACE, "type: " + type);
         Map<String, Object> props = new HashMap<>();
         props.put("emu", manager.getEmu());

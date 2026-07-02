@@ -10,8 +10,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
+
 import libgme.ClassicEmu;
 import libgme.vgm.SmsApu;
+import vavi.sound.sampled.emu.EmuEncoding;
+import vavi.sound.sampled.emu.EmuFileFormatType;
 import vavi.util.ByteUtil;
 
 
@@ -314,5 +319,15 @@ public class KssEmu extends ClassicEmu {
     protected void setTempo(double t) {
         int period = (header.deviceFlags & 0x40) != 0 ? CLOCK_RATE / 50 : CLOCK_RATE / 60;
         playPeriod = (int) (period / t);
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return new EmuEncoding("KSS");
+    }
+
+    @Override
+    public Type getType() {
+        return new EmuFileFormatType("KSS", "kss");
     }
 }

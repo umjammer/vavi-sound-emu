@@ -37,8 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static vavi.sound.SoundUtil.volume;
-import static vavi.sound.sampled.emu.EmuEncoding.GBS;
-import static vavi.sound.sampled.emu.EmuEncoding.VGM;
 import static vavix.util.DelayedWorker.later;
 
 
@@ -183,7 +181,7 @@ Debug.println("OUT: " + outAudioFormat);
     void test2() throws Exception {
         URL url = Paths.get(file).toUri().toURL();
         AudioInputStream ais = AudioSystem.getAudioInputStream(url);
-        assertEquals(VGM, ais.getFormat().getEncoding());
+        assertEquals(EmuEncoding.valueOf("VGM"), ais.getFormat().getEncoding());
     }
 
     @Test
@@ -191,7 +189,7 @@ Debug.println("OUT: " + outAudioFormat);
     void test3() throws Exception {
         File file = Paths.get(this.file).toFile();
         AudioInputStream ais = AudioSystem.getAudioInputStream(file);
-        assertEquals(VGM, ais.getFormat().getEncoding());
+        assertEquals(EmuEncoding.valueOf("VGM"), ais.getFormat().getEncoding());
     }
 
     @Test
@@ -275,7 +273,7 @@ Debug.println(vgm);
         System.setProperty("vavi.sound.sampled.spi.emu.vgm", "true");
 
         AudioInputStream sourceAis = AudioSystem.getAudioInputStream(new BufferedInputStream(Files.newInputStream(path)));
-        assertEquals(VGM, sourceAis.getFormat().getEncoding());
+        assertEquals(EmuEncoding.valueOf("VGM"), sourceAis.getFormat().getEncoding());
     }
 
     @Test
@@ -294,6 +292,6 @@ Debug.println(gbs);
         System.setProperty("vavi.sound.sampled.spi.emu.gbs", "true");
 
         AudioInputStream sourceAis = AudioSystem.getAudioInputStream(new BufferedInputStream(Files.newInputStream(path)));
-        assertEquals(GBS, sourceAis.getFormat().getEncoding());
+        assertEquals(EmuEncoding.valueOf("GBS"), sourceAis.getFormat().getEncoding());
     }
 }

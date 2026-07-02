@@ -20,7 +20,12 @@ package libgme.spc;
 
 import java.lang.System.Logger.Level;
 
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
+
 import libgme.MusicEmu;
+import vavi.sound.sampled.emu.EmuEncoding;
+import vavi.sound.sampled.emu.EmuFileFormatType;
 
 
 /**
@@ -412,5 +417,15 @@ public final class SpcEmu extends MusicEmu {
     @Override
     public boolean isSupportedByName(String name) {
         return name.endsWith(".SPC");
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return new EmuEncoding("SPC");
+    }
+
+    @Override
+    public Type getType() {
+        return new EmuFileFormatType("SPC", "spc");
     }
 }

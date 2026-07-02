@@ -6,8 +6,12 @@
 
 package vavi.sound.sampled.emu;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ServiceLoader;
 import javax.sound.sampled.AudioFormat;
+
+import libgme.MusicEmu;
 
 
 /**
@@ -18,33 +22,26 @@ import javax.sound.sampled.AudioFormat;
  */
 public class EmuEncoding extends AudioFormat.Encoding {
 
-    /** Specifies NES sound data. */
-    public static final EmuEncoding NSF = new EmuEncoding("NSF");
-    /** Specifies SNES sound data. */
-    public static final EmuEncoding SPC = new EmuEncoding("SPC");
-    /** Specifies Game Boy sound data. */
-    public static final EmuEncoding GBS = new EmuEncoding("GBS");
-    /** Specifies VGM sound data. */
-    public static final EmuEncoding VGM = new EmuEncoding("VGM");
-    /** Specifies KSS sound data. */
-    public static final EmuEncoding KSS = new EmuEncoding("KSS");
-    /** Specifies GYM sound data. */
-    public static final EmuEncoding GYM = new EmuEncoding("GYM");
-    /** Specifies SAP sound data. */
-    public static final EmuEncoding SAP = new EmuEncoding("SAP");
-
     /**
      * Constructs a new encoding.
      *
      * @param name Name of the emulator audio encoding.
      */
-    private EmuEncoding(String name) {
+    public EmuEncoding(String name) {
         super(name);
     }
 
-    static final EmuEncoding[] encodings = {NSF, SPC, GBS, VGM, KSS, GYM, SAP};
+    public static final List<EmuEncoding> encodings = new ArrayList<>();
+
+    static {
+        for (var fileFormat : ServiceLoader.load(MusicEmu.class)) {
+            if (fileFormat.getEncoding() != null) {
+                encodings.add((EmuEncoding) fileFormat.getEncoding());
+            }
+        }
+    }
 
     public static EmuEncoding valueOf(String name) {
-        return Arrays.stream(encodings).filter(e -> name.equalsIgnoreCase(e.toString())).findFirst().orElseThrow();
+        return encodings.stream().filter(e -> name.equalsIgnoreCase(e.toString())).findFirst().orElseThrow();
     }
 }

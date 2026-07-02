@@ -8,7 +8,6 @@ package vavi.sound.sampled.emu;
 
 import java.io.IOException;
 import java.lang.System.Logger;
-import java.util.Arrays;
 import java.util.stream.Stream;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioFormat.Encoding;
@@ -37,20 +36,20 @@ public class EmuFormatConversionProvider extends FormatConversionProvider {
 
     @Override
     public AudioFormat.Encoding[] getSourceEncodings() {
-        return Stream.concat(Arrays.stream(encodings), Stream.of(PCM_SIGNED))
+        return Stream.concat(encodings.stream(), Stream.of(PCM_SIGNED))
                 .toArray(Encoding[]::new);
     }
 
     @Override
     public AudioFormat.Encoding[] getTargetEncodings() {
-        return Stream.concat(Arrays.stream(encodings), Stream.of(PCM_SIGNED))
+        return Stream.concat(encodings.stream(), Stream.of(PCM_SIGNED))
                 .toArray(Encoding[]::new);
     }
 
     @Override
     public AudioFormat.Encoding[] getTargetEncodings(AudioFormat sourceFormat) {
         if (sourceFormat.getEncoding().equals(PCM_SIGNED)) {
-            return Arrays.stream(encodings).toArray(Encoding[]::new);
+            return encodings.toArray(Encoding[]::new);
         } else if (sourceFormat.getEncoding() instanceof EmuEncoding) {
             return new AudioFormat.Encoding[] {PCM_SIGNED};
         } else {
@@ -97,10 +96,10 @@ logger.log(DEBUG, "disabled conversion spi by system property");
 
     //
     private static boolean isDisabled(Encoding encoding) {
-        if (encoding.equals(EmuEncoding.VGM) &&
+        if (encoding.equals(EmuEncoding.valueOf("VGM")) &&
                 !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.vgm", "true"))) {
             return true;
-        } else if (encoding.equals(EmuEncoding.GBS) &&
+        } else if (encoding.equals(EmuEncoding.valueOf("GBS")) &&
                 !Boolean.parseBoolean(System.getProperty("vavi.sound.sampled.spi.emu.gbs", "true"))) {
             return true;
         } else {
