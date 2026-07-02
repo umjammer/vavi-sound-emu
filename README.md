@@ -17,6 +17,7 @@ java port game music emu. mavenized and spi-nized also.
 | spc  | SNES        |   ✅️   | green                                            |
 | vgm  | All         |   ✅    | Ym2612(mame:dallongeville+green), Sn76489(green) |
 | kss  | MSX         |   ✅    | Ay38910(green), Sn76489(green)                   |
+| gym  | Genesis     |   ✅    | Ym2612(mame:dallongeville+green), Sn76489(green) |
 
 ## Install
 
@@ -64,6 +65,7 @@ java port game music emu. mavenized and spi-nized also.
  * https://github.com/GeoffWilson/VGM
  * https://github.com/libgme/game-music-emu
  * https://www.zophar.net/music/kss.html (kss)
+ * https://web.archive.org/web/*/http://www.zophar.net/gym/* (gym)
 
 ## TODO
 
@@ -75,8 +77,8 @@ java port game music emu. mavenized and spi-nized also.
  * ~~`vavi.sound.sampled.emu.TestCase#test5`~~
  * ~~spi properties for track # etc.~~
  * ~~kss~~
- * gym
  * sap
+ * ~~gym~~
  * ~~off vgm spi by system property~~
    * ~~it's better to return empty at `FormatConversionProvider#getTargetFormats`?~~
 

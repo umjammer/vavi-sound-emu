@@ -33,6 +33,7 @@ public class EmuFileFormatType extends AudioFileFormat.Type {
     public static final EmuFileFormatType VGM = new EmuFileFormatType("VGM", "vgm", false);
     public static final EmuFileFormatType VGZ = new EmuFileFormatType("VGM", "vgz", true);
     public static final EmuFileFormatType KSS = new EmuFileFormatType("KSS", "kss", false);
+    public static final EmuFileFormatType GYM = new EmuFileFormatType("GYM", "gym", false);
 
     private final boolean compressed;
 

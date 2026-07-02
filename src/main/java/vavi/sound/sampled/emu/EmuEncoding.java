@@ -28,6 +28,8 @@ public class EmuEncoding extends AudioFormat.Encoding {
     public static final EmuEncoding VGM = new EmuEncoding("VGM");
     /** Specifies KSS sound data. */
     public static final EmuEncoding KSS = new EmuEncoding("KSS");
+    /** Specifies GYM sound data. */
+    public static final EmuEncoding GYM = new EmuEncoding("GYM");
 
     /**
      * Constructs a new encoding.
