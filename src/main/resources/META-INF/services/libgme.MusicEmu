@@ -4,3 +4,4 @@ libgme.spc.SpcEmu
 libgme.vgm.VgmEmu
 libgme.kss.KssEmu
 libgme.gym.GymEmu
+libgme.sap.SapEmu

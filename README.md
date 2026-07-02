@@ -18,6 +18,7 @@ java port game music emu. mavenized and spi-nized also.
 | vgm  | All         |   ✅    | Ym2612(mame:dallongeville+green), Sn76489(green) |
 | kss  | MSX         |   ✅    | Ay38910(green), Sn76489(green)                   |
 | gym  | Genesis     |   ✅    | Ym2612(mame:dallongeville+green), Sn76489(green) |
+| sap  | Atari XL/XE |   ✅    | Pokey(green), 6502(green)                        |
 
 ## Install
 
@@ -77,8 +78,8 @@ java port game music emu. mavenized and spi-nized also.
  * ~~`vavi.sound.sampled.emu.TestCase#test5`~~
  * ~~spi properties for track # etc.~~
  * ~~kss~~
- * sap
  * ~~gym~~
+ * ~~sap~~
  * ~~off vgm spi by system property~~
    * ~~it's better to return empty at `FormatConversionProvider#getTargetFormats`?~~
 

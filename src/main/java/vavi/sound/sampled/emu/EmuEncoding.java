@@ -30,6 +30,8 @@ public class EmuEncoding extends AudioFormat.Encoding {
     public static final EmuEncoding KSS = new EmuEncoding("KSS");
     /** Specifies GYM sound data. */
     public static final EmuEncoding GYM = new EmuEncoding("GYM");
+    /** Specifies SAP sound data. */
+    public static final EmuEncoding SAP = new EmuEncoding("SAP");
 
     /**
      * Constructs a new encoding.
@@ -40,7 +42,7 @@ public class EmuEncoding extends AudioFormat.Encoding {
         super(name);
     }
 
-    static final EmuEncoding[] encodings = {NSF, SPC, GBS, VGM, KSS};
+    static final EmuEncoding[] encodings = {NSF, SPC, GBS, VGM, KSS, GYM, SAP};
 
     public static EmuEncoding valueOf(String name) {
         return Arrays.stream(encodings).filter(e -> name.equalsIgnoreCase(e.toString())).findFirst().orElseThrow();
