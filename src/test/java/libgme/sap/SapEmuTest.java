@@ -18,6 +18,8 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
+
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
@@ -186,6 +188,7 @@ Debug.println("track " + track + ": samples: " + r[0] + ", nonZero: " + r[1] + "
 
     @Test
     @DisplayName("real rips render (put *.sap files in tmp, e.g. from asma.atari.org)")
+    @EnabledIf("localPropertiesExists")
     void test4() throws Exception {
         List<Path> files;
         try (Stream<Path> s = Files.list(Path.of(sapDir))) {
@@ -210,6 +213,7 @@ Debug.println("%-30s type=%c stereo=%b tracks=%d: samples: %d, nonZero: %d, maxA
 
     @Test
     @DisplayName("stereo rip drives both channels differently")
+    @EnabledIf("localPropertiesExists")
     void test5() throws Exception {
         assumeTrue(sapStereo != null && Files.exists(Path.of(sapStereo)), "no stereo sap file: " + sapStereo);
 

@@ -16,6 +16,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
+
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
@@ -242,6 +244,7 @@ Debug.println("samples: " + r[0] + ", nonZero: " + r[1]);
 
     @Test
     @DisplayName("real GYM rip (needs gym=... in local.properties)")
+    @EnabledIf("localPropertiesExists")
     void test7() throws Exception {
         assumeTrue(gym != null && Files.exists(Path.of(gym)), "no real gym file: " + gym);
 
