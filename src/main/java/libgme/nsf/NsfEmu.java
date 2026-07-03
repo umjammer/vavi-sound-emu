@@ -20,8 +20,13 @@ package libgme.nsf;
 
 import java.lang.System.Logger.Level;
 
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
+
 import libgme.ClassicEmu;
 import libgme.util.MemPager;
+import vavi.sound.sampled.emu.EmuEncoding;
+import vavi.sound.sampled.emu.EmuFileFormatType;
 import vavi.util.ByteUtil;
 
 
@@ -281,5 +286,15 @@ public final class NsfEmu extends ClassicEmu {
     @Override
     public boolean isSupportedByName(String name) {
         return name.endsWith(".NSF");
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return new EmuEncoding("NSF");
+    }
+
+    @Override
+    public Type getType() {
+        return new EmuFileFormatType("NSF", "nsf");
     }
 }

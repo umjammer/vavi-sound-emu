@@ -7,9 +7,12 @@
 package vavi.sound.sampled.emu;
 
 import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ServiceLoader;
 import javax.sound.sampled.AudioFileFormat;
+
+import libgme.MusicEmu;
 
 import static java.lang.System.getLogger;
 
@@ -25,34 +28,26 @@ public class EmuFileFormatType extends AudioFileFormat.Type {
     private static final Logger logger = getLogger(EmuFileFormatType.class.getName());
 
     /**
-     * Specifies an emulator audio file.
-     */
-    public static final EmuFileFormatType NSF = new EmuFileFormatType("NES", "nsf", false);
-    public static final EmuFileFormatType SFC = new EmuFileFormatType("SPC", "spc", false);
-    public static final EmuFileFormatType GBS = new EmuFileFormatType("GBS", "gbs", false);
-    public static final EmuFileFormatType VGM = new EmuFileFormatType("VGM", "vgm", false);
-    public static final EmuFileFormatType VGZ = new EmuFileFormatType("VGM", "vgz", true);
-    public static final EmuFileFormatType KSS = new EmuFileFormatType("KSS", "kss", false);
-
-    private final boolean compressed;
-
-    /**
      * Constructs a file type.
      *
      * @param name      the name of the emulator audio File Format.
      * @param extension the file extension for this emulator audio File Format.
      */
-    private EmuFileFormatType(String name, String extension, boolean compressed) {
+    public EmuFileFormatType(String name, String extension) {
         super(name, extension);
-        this.compressed = compressed;
     }
 
-    private static final EmuFileFormatType[] types = {NSF, SFC, GBS, VGM, VGZ, KSS};
+    private static final List<EmuFileFormatType> types = new ArrayList<>();
 
-    public static EmuFileFormatType valueOf(String name, boolean isCompressed) {
-logger.log(Level.TRACE, "name: " + name + ", isCompressed: " + isCompressed);
-        return Arrays.stream(types).filter(t ->
-                (name.equalsIgnoreCase(t.getExtension()) || name.equalsIgnoreCase(t.toString())) &&
-                        t.compressed == isCompressed).findFirst().orElseThrow();
+    static {
+        for (var fileFormat : ServiceLoader.load(MusicEmu.class)) {
+            if (fileFormat.getType() != null) {
+                types.add((EmuFileFormatType) fileFormat.getType());
+            }
+        }
+    }
+
+    public static EmuFileFormatType valueOf(String name) {
+        return types.stream().filter(t -> name.equalsIgnoreCase(t.toString())).findFirst().orElseThrow();
     }
 }

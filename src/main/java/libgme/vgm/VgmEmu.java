@@ -21,8 +21,13 @@ package libgme.vgm;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
+
 import libgme.ClassicEmu;
 import libgme.util.DataReader;
+import vavi.sound.sampled.emu.EmuEncoding;
+import vavi.sound.sampled.emu.EmuFileFormatType;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -436,5 +441,15 @@ logger.log(Level.TRACE, "LOOP: " + isEndlessLoopFlag());
         }
 
         fm_pos[0] = in_off;
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return new EmuEncoding("VGM");
+    }
+
+    @Override
+    public Type getType() {
+        return new EmuFileFormatType("VGM", "vgm,vgz");
     }
 }
