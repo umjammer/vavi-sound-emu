@@ -13,7 +13,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import javax.sound.sampled.AudioFormat;
@@ -30,9 +29,11 @@ import vavi.util.properties.annotation.PropsEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -78,7 +79,7 @@ Debug.println("volume: " + volume);
     }
 
     static boolean onIde = System.getProperty("vavi.test", "").equals("ide");
-    static long time = onIde ? 1000 * 1000 : 10 * 1000;
+    static long time = onIde ? 1000 * 1000 : 5 * 1000;
 
     @Test
     @DisplayName("directly")
@@ -209,9 +210,11 @@ Debug.println("3: " + is.available());
 
     @Test
     @DisplayName("wav out")
-    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    @EnabledIf("localPropertiesExists")
     void test6() throws Exception {
         System.setProperty("javax.sound.sampled.SourceDataLine", "#WaveOut Mixer");
+        Path wav = Path.of("tmp", "waveout.wav");
+        System.setProperty("vavi.sound.sampled.misc.waveout", wav.toString());
 
         Path path = Path.of(file);
 Debug.println(file);
@@ -243,7 +246,7 @@ Debug.println("OUT: " + outAudioFormat);
         line.start();
 
         byte[] buf = new byte[1024];
-        while (!later(120 * 1000).come()) {
+        while (!later(time).come()) {
             int r = pcmAis.read(buf, 0, 1024);
             if (r < 0) {
                 break;
@@ -254,8 +257,12 @@ Debug.println("OUT: " + outAudioFormat);
         line.stop();
         line.close();
 
-        if ("#WaveOut Mixer".equals(System.getProperty("javax.sound.sampled.SourceDataLine")))
-            Files.move(Path.of(System.getProperty("vavi.sound.sampled.misc.waveout")), Path.of("tmp", "waveout.wav"), StandardCopyOption.REPLACE_EXISTING);
+        if ("#WaveOut Mixer".equals(System.getProperty("javax.sound.sampled.SourceDataLine"))) {
+            assertTrue(Files.exists(wav));
+            assertDoesNotThrow(() -> Files.delete(wav));
+        }
+
+        System.clearProperty("javax.sound.sampled.SourceDataLine");
     }
 
     @Test
